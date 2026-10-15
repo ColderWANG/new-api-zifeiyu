@@ -19,7 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { ArrowRight, Flame, ShieldCheck, TrendingDown } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { StaggerContainer, StaggerItem } from '@/components/page-transition'
@@ -214,6 +214,7 @@ export function SummaryCards() {
   const runwayDays = getRunwayDays(remainQuota, recentUsage)
 
   const todayUsageDisplay = formatQuota(recentUsage)
+  const balanceDisplay = formatQuota(remainQuota)
   let runwayDisplay: string
   if (runwayDays !== null) {
     if (runwayDays < 1) {
@@ -290,7 +291,7 @@ export function SummaryCards() {
           </StaggerContainer>
         </div>
 
-        <aside className='flex flex-col justify-between gap-5 bg-white p-5 sm:p-6 lg:border-l lg:border-black/10'>
+        <aside className='@container flex min-w-0 flex-col justify-between gap-5 bg-white p-5 sm:p-6 lg:border-l lg:border-black/10'>
           <div className='flex flex-col gap-5'>
             <div className='flex items-center justify-between'>
               <span className='mm-label text-neutral-600'>
@@ -305,8 +306,17 @@ export function SummaryCards() {
               </span>
             </div>
 
-            <div className='font-mono text-[2.75rem] leading-none font-bold tracking-tight text-black tabular-nums'>
-              {formatQuota(remainQuota)}
+            <div
+              className='max-w-full font-mono text-[length:clamp(1rem,var(--balance-font-size),2.75rem)] leading-tight font-bold tracking-tight wrap-anywhere text-black tabular-nums'
+              // Size against the card, not the viewport. Keep the complete value;
+              // exceptionally long currency labels can wrap at the readable minimum.
+              style={
+                {
+                  '--balance-font-size': `${150 / balanceDisplay.length}cqi`,
+                } as CSSProperties
+              }
+            >
+              {balanceDisplay}
             </div>
 
             <Button

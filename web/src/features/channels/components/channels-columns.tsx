@@ -1195,7 +1195,7 @@ export function useChannelsColumns(
               variant={config.variant}
               size='sm'
               copyable={false}
-              className='-ml-1.5'
+              className={`-ml-1.5 ${config.className}`}
             />
           )
         },

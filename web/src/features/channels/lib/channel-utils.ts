@@ -387,17 +387,11 @@ export function getResponseTimeConfig(timeMs: number) {
   if (timeMs === 0) {
     return RESPONSE_TIME_CONFIG.UNKNOWN
   }
-  if (timeMs <= RESPONSE_TIME_THRESHOLDS.EXCELLENT) {
-    return RESPONSE_TIME_CONFIG.EXCELLENT
-  }
   if (timeMs <= RESPONSE_TIME_THRESHOLDS.GOOD) {
     return RESPONSE_TIME_CONFIG.GOOD
   }
   if (timeMs <= RESPONSE_TIME_THRESHOLDS.FAIR) {
     return RESPONSE_TIME_CONFIG.FAIR
-  }
-  if (timeMs <= RESPONSE_TIME_THRESHOLDS.POOR) {
-    return RESPONSE_TIME_CONFIG.POOR
   }
   return RESPONSE_TIME_CONFIG.POOR
 }
