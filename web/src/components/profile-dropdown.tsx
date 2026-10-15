@@ -38,7 +38,7 @@ import { getUserAvatarFallback, getUserAvatarStyle } from '@/lib/avatar'
 import { ROLE } from '@/lib/roles'
 import { useAuthStore } from '@/stores/auth-store'
 
-const avatarFallbackClassName = 'font-semibold text-white'
+const avatarFallbackClassName = 'rounded-none font-semibold text-white'
 
 export function ProfileDropdown() {
   const { t } = useTranslation()
@@ -60,9 +60,14 @@ export function ProfileDropdown() {
     <>
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger
-          render={<Button variant='ghost' className='relative size-6 p-0' />}
+          render={
+            <Button
+              variant='ghost'
+              className='relative size-8 rounded-none p-0'
+            />
+          }
         >
-          <Avatar className='size-6'>
+          <Avatar className='border-border size-8 rounded-none border'>
             <AvatarFallback
               className={`${avatarFallbackClassName} text-[11px]`}
               style={avatarFallbackStyle}
@@ -71,9 +76,9 @@ export function ProfileDropdown() {
             </AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end' sideOffset={8} className='w-56'>
+        <DropdownMenuContent align='end' sideOffset={8} className='w-64'>
           <div className='flex items-center gap-2 px-1.5 py-1.5'>
-            <Avatar className='size-8'>
+            <Avatar className='size-8 rounded-none'>
               <AvatarFallback
                 className={`${avatarFallbackClassName} text-xs`}
                 style={avatarFallbackStyle}

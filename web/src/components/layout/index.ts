@@ -7,7 +7,7 @@ published by the Free Software Foundation, either version 3 of the
 License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
+but WITHOUT ANY WARRANTY; without even implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU Affero General Public License for more details.
 
@@ -37,14 +37,10 @@ export { SectionPageLayout } from './components/section-page-layout'
 export { SidebarViewHeader } from './components/sidebar-view-header'
 export { SystemBrand } from './components/system-brand'
 export { TopNav } from './components/top-nav'
-export { MobileDrawer } from './components/mobile-drawer'
 
 // Configuration
 export { SYSTEM_SETTINGS_VIEW } from './config/system-settings.config'
 export { defaultTopNavLinks } from './config/top-nav.config'
-
-// Constants
-export { MOBILE_DRAWER_ANIMATION, MOBILE_DRAWER_CONFIG } from './constants'
 
 // Sidebar view registry
 export {

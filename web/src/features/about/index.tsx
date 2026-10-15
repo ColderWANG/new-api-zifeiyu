@@ -34,26 +34,28 @@ function EmptyAboutState() {
 
   return (
     <div className='flex min-h-[60vh] items-center justify-center p-8'>
-      <div className='max-w-2xl space-y-6 text-center'>
-        <div className='flex justify-center'>
-          <Construction className='text-muted-foreground h-24 w-24' />
-        </div>
-        <div className='space-y-2'>
-          <h2 className='text-2xl font-bold'>{t('No About Content Set')}</h2>
-          <p className='text-muted-foreground'>
+      <div className='border-border bg-card w-full max-w-3xl border p-8 text-start sm:p-12'>
+        <div className='border-border border-b pb-8'>
+          <div className='border-border bg-muted flex size-12 items-center justify-center border'>
+            <Construction className='text-muted-foreground size-6' />
+          </div>
+          <h2 className='mt-6 font-serif text-3xl leading-none font-semibold tracking-tighter sm:text-4xl'>
+            {t('No About Content Set')}
+          </h2>
+          <p className='text-muted-foreground mt-4 max-w-xl text-sm leading-relaxed'>
             {t(
               'The administrator has not configured any about content yet. You can set it in the settings page, supporting HTML or URL.'
             )}
           </p>
         </div>
-        <div className='space-y-4 text-sm'>
+        <div className='space-y-4 pt-8 text-sm'>
           <p>
             {t('New API Project Repository:')}{' '}
             <a
               href='https://github.com/QuantumNous/new-api'
               target='_blank'
               rel='noopener noreferrer'
-              className='text-primary hover:underline'
+              className='text-foreground decoration-foreground/30 hover:decoration-foreground underline underline-offset-4'
             >
               {t('https://github.com/QuantumNous/new-api')}
             </a>
@@ -63,7 +65,7 @@ function EmptyAboutState() {
               href='https://github.com/QuantumNous/new-api'
               target='_blank'
               rel='noopener noreferrer'
-              className='text-primary hover:underline'
+              className='text-foreground decoration-foreground/30 hover:decoration-foreground underline underline-offset-4'
             >
               {t('NewAPI')}
             </a>{' '}
@@ -72,7 +74,7 @@ function EmptyAboutState() {
               href='https://github.com/QuantumNous'
               target='_blank'
               rel='noopener noreferrer'
-              className='text-primary hover:underline'
+              className='text-foreground decoration-foreground/30 hover:decoration-foreground underline underline-offset-4'
             >
               {t('QuantumNous')}
             </a>{' '}
@@ -81,7 +83,7 @@ function EmptyAboutState() {
               href='https://github.com/songquanpeng/one-api'
               target='_blank'
               rel='noopener noreferrer'
-              className='text-primary hover:underline'
+              className='text-foreground decoration-foreground/30 hover:decoration-foreground underline underline-offset-4'
             >
               {t('One API')}
             </a>{' '}
@@ -90,7 +92,7 @@ function EmptyAboutState() {
               href='https://github.com/songquanpeng'
               target='_blank'
               rel='noopener noreferrer'
-              className='text-primary hover:underline'
+              className='text-foreground decoration-foreground/30 hover:decoration-foreground underline underline-offset-4'
             >
               {t('JustSong')}
             </a>
@@ -101,7 +103,7 @@ function EmptyAboutState() {
               href='https://github.com/QuantumNous/new-api/blob/main/LICENSE'
               target='_blank'
               rel='noopener noreferrer'
-              className='text-primary hover:underline'
+              className='text-foreground decoration-foreground/30 hover:decoration-foreground underline underline-offset-4'
             >
               {t('AGPL v3.0 License')}
             </a>
@@ -128,7 +130,7 @@ export function About() {
   if (isLoading) {
     return (
       <PublicLayout>
-        <div className='mx-auto flex max-w-4xl flex-col gap-4 py-12'>
+        <div className='border-border bg-card mx-auto flex max-w-3xl flex-col gap-0 border p-8 sm:p-12'>
           <Skeleton className='h-8 w-[45%]' />
           <Skeleton className='h-4 w-full' />
           <Skeleton className='h-4 w-[90%]' />
@@ -174,7 +176,7 @@ export function About() {
 
   return (
     <PublicLayout>
-      <div className='mx-auto max-w-6xl px-4 py-8'>
+      <div className='border-border bg-card mx-auto max-w-3xl border p-8 sm:p-12'>
         <RichContent
           mode='markdown'
           content={rawContent}

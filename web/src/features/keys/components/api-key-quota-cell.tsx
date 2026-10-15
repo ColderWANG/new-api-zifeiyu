@@ -115,7 +115,7 @@ export function ApiKeyQuotaCell(props: ApiKeyQuotaCellProps) {
             value={percentage}
             aria-label={t('Remaining percentage')}
             className={cn(
-              'w-full [&_[data-slot=progress-indicator]]:bg-current',
+              'w-full [&_[data-slot=progress-indicator]]:bg-primary dark:[&_[data-slot=progress-indicator]]:bg-primary',
               progressColor
             )}
           />
@@ -143,7 +143,7 @@ export function ApiKeyQuotaCell(props: ApiKeyQuotaCellProps) {
             props.variant === 'card'
               ? 'text-right text-sm leading-5 font-normal'
               : 'text-left font-medium',
-            !props.apiKey.unlimited_quota && 'tabular-nums',
+            !props.apiKey.unlimited_quota && 'font-mono tabular-nums',
             !props.apiKey.unlimited_quota &&
               remaining < 0 &&
               'text-destructive',
@@ -159,7 +159,7 @@ export function ApiKeyQuotaCell(props: ApiKeyQuotaCellProps) {
         )}
         <span
           className={cn(
-            'text-muted-foreground min-w-0 truncate text-right tabular-nums',
+            'text-muted-foreground min-w-0 truncate text-right font-mono tabular-nums',
             props.variant === 'card' && 'text-sm leading-5 font-normal'
           )}
         >

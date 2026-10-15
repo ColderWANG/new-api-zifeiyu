@@ -59,10 +59,9 @@ export function SearchBar(props: SearchBarProps) {
         value={props.value}
         onChange={(e) => props.onChange(e.target.value)}
         className={cn(
-          'border-border/60 bg-background placeholder:text-muted-foreground/50',
-          'hover:border-border',
-          'focus:border-primary/50 focus:ring-primary/20 focus:ring-2',
-          'h-10 w-full rounded-lg border pr-16 pl-10 text-sm transition-all outline-none'
+          'border-border bg-background placeholder:text-muted-foreground/60',
+          'focus:border-foreground focus:outline-none',
+          'h-10 w-full rounded-none border border-b-2 pr-16 pl-10 font-mono text-sm transition-none'
         )}
         aria-label={t('Search models')}
       />
@@ -72,13 +71,13 @@ export function SearchBar(props: SearchBarProps) {
             variant='ghost'
             size='icon'
             onClick={props.onClear}
-            className='text-muted-foreground/60 hover:text-foreground size-7'
+            className='text-muted-foreground hover:text-foreground size-7'
             aria-label={t('Clear search')}
           >
             <X className='size-4' />
           </Button>
         ) : (
-          <kbd className='bg-muted text-muted-foreground pointer-events-none hidden rounded border px-1.5 py-0.5 font-mono text-[10px] sm:inline-block'>
+          <kbd className='bg-muted text-muted-foreground pointer-events-none hidden border px-1.5 py-0.5 font-mono text-[10px] sm:inline-block'>
             ⌘K
           </kbd>
         )}

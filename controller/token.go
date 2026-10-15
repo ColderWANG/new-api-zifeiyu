@@ -143,14 +143,31 @@ func GetAllTokens(c *gin.Context) {
 	common.ApiSuccess(c, pageInfo)
 }
 
+func isValidTokenStatus(status int) bool {
+	return status == common.TokenStatusEnabled ||
+		status == common.TokenStatusDisabled ||
+		status == common.TokenStatusExpired ||
+		status == common.TokenStatusExhausted
+}
+
 func SearchTokens(c *gin.Context) {
 	userId := c.GetInt("id")
 	keyword := c.Query("keyword")
 	token := c.Query("token")
 
+	var status *int
+	if rawStatus := c.Query("status"); rawStatus != "" {
+		parsedStatus, err := strconv.Atoi(rawStatus)
+		if err != nil || !isValidTokenStatus(parsedStatus) {
+			common.ApiErrorT(c, "Invalid token status", nil)
+			return
+		}
+		status = &parsedStatus
+	}
+
 	pageInfo := common.GetPageQuery(c)
 
-	tokens, total, err := model.SearchUserTokens(userId, keyword, token, pageInfo.GetStartIdx(), pageInfo.GetPageSize())
+	tokens, total, err := model.SearchUserTokens(userId, keyword, token, status, pageInfo.GetStartIdx(), pageInfo.GetPageSize())
 	if err != nil {
 		common.ApiError(c, err)
 		return

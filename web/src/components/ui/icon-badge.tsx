@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright (C) 2023-2026 QuantumNous
 
 This program is free software: you can redistribute it and/or modify
@@ -22,29 +22,38 @@ import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
 const iconBadgeVariants = cva(
-  'flex shrink-0 items-center justify-center [&>svg]:shrink-0',
+  'flex shrink-0 items-center justify-center rounded-none border border-black dark:border-white [&>svg]:shrink-0',
   {
     variants: {
       tone: {
-        neutral: 'bg-muted text-muted-foreground',
-        primary: 'bg-primary/10 text-primary',
-        success: 'bg-success/10 text-success',
-        warning: 'bg-warning/10 text-warning',
-        info: 'bg-info/10 text-info',
-        destructive: 'bg-destructive/10 text-destructive',
-        'chart-1': 'bg-chart-1/10 text-chart-1',
-        'chart-2': 'bg-chart-2/10 text-chart-2',
-        'chart-3': 'bg-chart-3/10 text-chart-3',
-        'chart-4': 'bg-chart-4/10 text-chart-4',
-        'chart-5': 'bg-chart-5/10 text-chart-5',
+        neutral:
+          'bg-neutral-100 text-black dark:bg-neutral-900 dark:text-white',
+        primary: 'bg-black text-white dark:bg-white dark:text-black',
+        success:
+          'bg-neutral-100 text-black dark:bg-neutral-900 dark:text-white',
+        warning:
+          'border-dashed bg-white text-black dark:bg-black dark:text-white',
+        info: 'bg-neutral-100 text-black dark:bg-neutral-900 dark:text-white',
+        destructive:
+          'bg-black text-white dark:bg-white dark:text-black font-bold',
+        'chart-1':
+          'bg-neutral-100 text-black dark:bg-neutral-900 dark:text-white',
+        'chart-2':
+          'bg-neutral-100 text-black dark:bg-neutral-900 dark:text-white',
+        'chart-3':
+          'bg-neutral-100 text-black dark:bg-neutral-900 dark:text-white',
+        'chart-4':
+          'bg-neutral-100 text-black dark:bg-neutral-900 dark:text-white',
+        'chart-5':
+          'bg-neutral-100 text-black dark:bg-neutral-900 dark:text-white',
       },
       size: {
-        xs: 'size-5 rounded-md [&>svg]:size-3',
-        sm: 'size-7 rounded-md [&>svg]:size-3.5',
-        md: 'size-8 rounded-lg [&>svg]:size-4',
-        title: 'size-8 rounded-lg sm:size-9 [&>svg]:size-4',
-        lg: 'size-10 rounded-xl [&>svg]:size-5',
-        stat: 'size-5 rounded-md sm:size-7 [&>svg]:size-3 sm:[&>svg]:size-3.5',
+        xs: 'size-5 [&>svg]:size-3',
+        sm: 'size-7 [&>svg]:size-3.5',
+        md: 'size-8 [&>svg]:size-4',
+        title: 'size-8 sm:size-9 [&>svg]:size-4',
+        lg: 'size-10 [&>svg]:size-5',
+        stat: 'size-5 sm:size-7 [&>svg]:size-3 sm:[&>svg]:size-3.5',
       },
     },
     defaultVariants: {

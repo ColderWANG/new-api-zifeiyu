@@ -66,12 +66,12 @@ export function TermsFooter({
   const [firstLink, secondLink] = activeLinks
 
   return (
-    <p className={cn('text-muted-foreground text-center text-xs', className)}>
+    <p className={cn('text-center text-xs text-neutral-500', className)}>
       {text}{' '}
       {firstLink && (
         <a
           href={firstLink.href}
-          className='hover:text-primary underline underline-offset-4'
+          className='font-semibold text-black underline decoration-2 underline-offset-4'
         >
           {firstLink.label}
         </a>
@@ -82,7 +82,7 @@ export function TermsFooter({
           {t('and')}{' '}
           <a
             href={secondLink.href}
-            className='hover:text-primary underline underline-offset-4'
+            className='font-semibold text-black underline decoration-2 underline-offset-4'
           >
             {secondLink.label}
           </a>

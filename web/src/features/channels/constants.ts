@@ -242,6 +242,15 @@ export const CHANNEL_STATUS_OPTIONS = [
   { value: 'disabled', label: 'Disabled' },
 ] as const
 
+export const CHANNEL_STATUS_SEARCH_VALUES = CHANNEL_STATUS_OPTIONS.map(
+  (option) => option.value
+) as [
+  (typeof CHANNEL_STATUS_OPTIONS)[number]['value'],
+  ...(typeof CHANNEL_STATUS_OPTIONS)[number]['value'][],
+]
+
+export const CHANNEL_FILTER_ALL_VALUE = 'all' as const
+
 export const CHANNEL_STATUS_CONFIG = {
   [CHANNEL_STATUS.UNKNOWN]: {
     variant: 'neutral' as const,

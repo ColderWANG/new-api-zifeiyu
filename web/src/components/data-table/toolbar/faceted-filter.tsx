@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { type Column } from '@tanstack/react-table'
+import type { Column } from '@tanstack/react-table'
 import { Check as CheckIcon, PlusCircle as PlusCircledIcon } from 'lucide-react'
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -62,8 +62,13 @@ function DataTableFacetedFilterInner<TData, TValue>({
 }: DataTableFacetedFilterProps<TData, TValue>) {
   const { t } = useTranslation()
   const facets = column?.getFacetedUniqueValues()
-  const filterValue = column?.getFilterValue() as string[] | undefined
-  const selectedValues = new Set(filterValue)
+  const filterValue = Array.isArray(column?.getFilterValue())
+    ? (column.getFilterValue() as unknown[])
+    : []
+  const selectedValues = new Set(filterValue.map(String))
+  const selectedOptions = options.filter((option) =>
+    selectedValues.has(option.value)
+  )
 
   const handleOptionSelect = (optionValue: string) => {
     const nextSelectedValues = getNextSelectedValues(
@@ -81,47 +86,41 @@ function DataTableFacetedFilterInner<TData, TValue>({
     <Popover>
       <PopoverTrigger
         render={
-          <Button variant='outline' size='sm' className='h-8 border-dashed' />
+          <Button
+            variant='outline'
+            size='sm'
+            className='h-8 rounded-none border-2 border-dashed border-black dark:border-white'
+          />
         }
       >
         <PlusCircledIcon className='size-4' />
         {title}
-        {selectedValues?.size > 0 && (
+        {selectedValues.size > 0 && (
           <>
-            <Separator orientation='vertical' className='mx-2 h-4' />
+            <Separator
+              orientation='vertical'
+              className='mx-2 h-4 bg-black/20 dark:bg-white/20'
+            />
             <Badge
               variant='secondary'
-              className='rounded-sm px-1 font-normal lg:hidden'
+              className='rounded-none px-1 font-mono text-xs'
             >
-              {selectedValues.size}
-            </Badge>
-            <div className='hidden space-x-1 lg:flex'>
-              {selectedValues.size > 2 ? (
-                <Badge
-                  variant='secondary'
-                  className='rounded-sm px-1 font-normal'
-                >
-                  {selectedValues.size} {t('selected')}
-                </Badge>
-              ) : (
-                options
-                  .filter((option) => selectedValues.has(option.value))
-                  .map((option) => (
-                    <Badge
-                      variant='secondary'
-                      key={option.value}
-                      className='rounded-sm px-1 font-normal'
-                    >
-                      {t(option.label)}
-                    </Badge>
-                  ))
+              {selectedOptions
+                .slice(0, 2)
+                .map((option) => t(option.label))
+                .join(' / ')}
+              {selectedValues.size > 2 && (
+                <span className='ms-1'>+{selectedValues.size - 2}</span>
               )}
-            </div>
+            </Badge>
           </>
         )}
       </PopoverTrigger>
-      <PopoverContent className='max-w-[360px] min-w-[200px] p-0' align='start'>
-        <Command>
+      <PopoverContent
+        className='max-w-[360px] min-w-[200px] rounded-none border-2 border-black p-0 shadow-none dark:border-white'
+        align='start'
+      >
+        <Command className='rounded-none'>
           <CommandInput placeholder={title} />
           <CommandList>
             <CommandEmpty>{t('No results found.')}</CommandEmpty>
@@ -132,22 +131,26 @@ function DataTableFacetedFilterInner<TData, TValue>({
                   <CommandItem
                     key={option.value}
                     onSelect={() => handleOptionSelect(option.value)}
+                    aria-selected={isSelected}
+                    data-filter-selected={isSelected}
+                    className='rounded-none'
                   >
                     <div
                       className={cn(
-                        'border-primary flex size-4 items-center justify-center rounded-sm border',
+                        'flex size-4 items-center justify-center rounded-none border-2 border-current',
                         isSelected
-                          ? 'bg-primary text-primary-foreground'
-                          : 'opacity-50 [&_svg]:invisible'
+                          ? 'bg-black text-white dark:bg-white dark:text-black'
+                          : 'opacity-40 [&_svg]:hidden'
                       )}
                     >
-                      <CheckIcon className={cn('text-background h-4 w-4')} />
+                      <CheckIcon className='size-3.5 text-current' />
                     </div>
                     {option.iconNode ? (
                       <span className='text-muted-foreground flex size-4 items-center justify-center'>
                         {option.iconNode}
                       </span>
-                    ) : option.icon ? (
+                    ) : null}
+                    {!option.iconNode && option.icon ? (
                       <option.icon className='text-muted-foreground size-4' />
                     ) : null}
                     <span
@@ -160,7 +163,9 @@ function DataTableFacetedFilterInner<TData, TValue>({
                       <span className='text-muted-foreground ms-auto flex h-4 min-w-4 items-center justify-center font-mono text-xs'>
                         {option.count}
                       </span>
-                    ) : facets?.get(option.value) ? (
+                    ) : null}
+                    {typeof option.count !== 'number' &&
+                    facets?.get(option.value) ? (
                       <span className='ms-auto flex h-4 w-4 items-center justify-center font-mono text-xs'>
                         {facets.get(option.value)}
                       </span>
@@ -175,7 +180,7 @@ function DataTableFacetedFilterInner<TData, TValue>({
                 <CommandGroup>
                   <CommandItem
                     onSelect={() => column?.setFilterValue(undefined)}
-                    className='justify-center text-center'
+                    className='justify-center rounded-none text-center'
                   >
                     {t('Clear filters')}
                   </CommandItem>
@@ -189,9 +194,8 @@ function DataTableFacetedFilterInner<TData, TValue>({
   )
 }
 
-export const DataTableFacetedFilter = React.memo(
-  DataTableFacetedFilterInner
-) as typeof DataTableFacetedFilterInner
+export const DataTableFacetedFilter =
+  DataTableFacetedFilterInner as typeof DataTableFacetedFilterInner
 
 function getNextSelectedValues(
   selectedValues: Set<string>,
@@ -209,5 +213,5 @@ function getNextSelectedValues(
     nextSelectedValues.add(optionValue)
   }
 
-  return Array.from(nextSelectedValues)
+  return [...nextSelectedValues]
 }

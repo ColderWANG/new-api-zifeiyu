@@ -128,7 +128,10 @@ export function useApiKeysColumns(now: number): ColumnDef<ApiKey>[] {
             />
           )
         },
-        filterFn: (row, id, value) => value.includes(String(row.getValue(id))),
+        filterFn: (row, id, value) => {
+          if (!Array.isArray(value) || value.length === 0) return true
+          return value.includes(String(row.getValue(id)))
+        },
         size: 120,
         meta: { mobileBadge: true },
       },

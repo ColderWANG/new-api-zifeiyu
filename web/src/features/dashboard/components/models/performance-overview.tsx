@@ -21,14 +21,12 @@ import { Gauge, HeartPulse, Timer } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { IconBadge, type IconBadgeTone } from '@/components/ui/icon-badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getPerfMetricsSummary } from '@/features/performance-metrics/api'
 import {
   formatLatency,
   formatThroughput,
   formatUptimePct,
-  getSuccessRateDotClass,
   getSuccessRateTextClass,
 } from '@/features/performance-metrics/lib/format'
 import type { PerfModelSummary } from '@/features/performance-metrics/types'
@@ -61,35 +59,35 @@ export function PerformanceOverview() {
 
   if (!loading && !hasData) {
     return (
-      <div className='text-muted-foreground overflow-hidden rounded-lg border px-4 py-3 text-center text-xs'>
+      <div className='overflow-hidden rounded-none border border-black bg-white px-4 py-3 text-center font-mono text-xs text-neutral-500'>
         {t('No performance data available')}
       </div>
     )
   }
 
   return (
-    <div className='overflow-hidden rounded-lg border'>
+    <div className='overflow-hidden rounded-none border border-black bg-white'>
       <div className='flex flex-wrap items-center gap-x-5 gap-y-2.5 px-4 py-2.5 sm:px-5 sm:py-3'>
         {/* Title */}
         <div className='flex items-center gap-1.5'>
-          <IconBadge tone='success' size='xs'>
+          <div className='flex size-6 shrink-0 items-center justify-center rounded-none border border-black/25 bg-white text-black [&>svg]:size-3.5'>
             <HeartPulse />
-          </IconBadge>
-          <span className='text-xs font-semibold whitespace-nowrap'>
+          </div>
+          <span className='font-mono text-xs font-bold tracking-wider whitespace-nowrap text-black uppercase'>
             {t('Performance health')}
           </span>
         </div>
 
         {/* Separator */}
-        <div className='bg-border hidden h-4 w-px sm:block' />
+        <div className='hidden h-4 w-px bg-black/20 sm:block' />
 
         {/* 3 KPI inline metrics */}
         {loading ? (
           <div className='flex flex-wrap items-center gap-x-5 gap-y-2'>
             {['success', 'latency', 'throughput'].map((key) => (
               <div key={key} className='flex items-center gap-1.5'>
-                <Skeleton className='h-3 w-14' />
-                <Skeleton className='h-4 w-16' />
+                <Skeleton className='h-3 w-14 rounded-none' />
+                <Skeleton className='h-4 w-16 rounded-none' />
               </div>
             ))}
           </div>
@@ -102,25 +100,22 @@ export function PerformanceOverview() {
               valueClassName={getSuccessRateTextClass(
                 summary?.success_rate ?? Number.NaN
               )}
-              tone='success'
             />
             <InlineMetric
               icon={Timer}
               label={t('Average latency')}
               value={formatLatency(summary?.avg_latency_ms ?? 0)}
-              tone='warning'
             />
             <InlineMetric
               icon={Gauge}
               label={t('Throughput')}
               value={formatThroughput(summary?.avg_tps ?? 0)}
-              tone='info'
             />
           </div>
         )}
 
         {/* Separator */}
-        <div className='bg-border hidden h-4 w-px lg:block' />
+        <div className='hidden h-4 w-px bg-black/20 lg:block' />
 
         {/* Top models inline badges */}
         {!loading && hasData && (
@@ -140,19 +135,20 @@ function InlineMetric(props: {
   label: string
   value: string
   valueClassName?: string
-  tone: IconBadgeTone
 }) {
   const Icon = props.icon
 
   return (
     <div className='flex items-center gap-1.5'>
-      <IconBadge tone={props.tone} size='xs'>
+      <div className='flex size-5 shrink-0 items-center justify-center rounded-none border border-black/20 bg-white text-black [&>svg]:size-3'>
         <Icon />
-      </IconBadge>
-      <span className='text-muted-foreground text-[11px]'>{props.label}</span>
+      </div>
+      <span className='font-mono text-[11px] tracking-wide text-neutral-500 uppercase'>
+        {props.label}
+      </span>
       <span
         className={cn(
-          'font-mono text-xs font-semibold tabular-nums',
+          'font-mono text-xs font-bold tabular-nums text-black',
           props.valueClassName
         )}
       >
@@ -166,23 +162,15 @@ function ModelBadge(props: { model: PerfModelSummary }) {
   const model = props.model
 
   return (
-    <span className='bg-muted/50 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1'>
+    <span className='inline-flex items-center gap-1.5 rounded-none border border-black/20 bg-neutral-50 px-2 py-0.5 text-black transition-colors hover:bg-neutral-100'>
       <span className='max-w-[10rem] truncate font-mono text-[11px]'>
         {model.model_name}
       </span>
       <span
-        className={cn(
-          'size-1.5 rounded-full',
-          getSuccessRateDotClass(model.success_rate)
-        )}
+        className='size-1.5 shrink-0 rounded-none bg-black'
         aria-hidden='true'
       />
-      <span
-        className={cn(
-          'font-mono text-[11px] font-semibold tabular-nums',
-          getSuccessRateTextClass(model.success_rate)
-        )}
-      >
+      <span className='font-mono text-[11px] font-bold text-black tabular-nums'>
         {formatUptimePct(model.success_rate)}
       </span>
     </span>

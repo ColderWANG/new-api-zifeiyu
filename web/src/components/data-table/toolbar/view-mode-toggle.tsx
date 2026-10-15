@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright (C) 2023-2026 QuantumNous
 
 This program is free software: you can redistribute it and/or modify
@@ -70,7 +70,7 @@ export function DataTableViewModeToggle(props: DataTableViewModeToggleProps) {
       role='group'
       aria-label={t('View mode')}
       className={cn(
-        'bg-muted/60 inline-flex h-8 items-center rounded-lg border p-0.5',
+        'inline-flex h-8 items-center rounded-none border-2 border-black bg-white p-0.5 dark:border-white dark:bg-black',
         props.className
       )}
     >
@@ -88,7 +88,7 @@ export function DataTableViewModeToggle(props: DataTableViewModeToggleProps) {
                   onClick={() => props.onChange(segment.value)}
                   aria-label={segment.tooltip}
                   aria-pressed={isActive}
-                  className='h-full w-7'
+                  className='h-full w-7 rounded-none'
                 >
                   <Icon className='size-3.5' />
                 </Button>

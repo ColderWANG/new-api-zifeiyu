@@ -332,7 +332,7 @@ export function DataTableToolbar<TData>(props: DataTableToolbarProps<TData>) {
         'text-muted-foreground hover:text-foreground gap-1 px-2',
         props.hasExpandedActiveFilters &&
           !expanded &&
-          'text-primary hover:text-primary'
+          'text-black hover:text-black dark:text-white dark:hover:text-white'
       )}
     >
       {expanded ? t('Collapse') : t('Expand')}

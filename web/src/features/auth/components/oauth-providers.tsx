@@ -145,19 +145,19 @@ export function OAuthProviders({
   if (providerButtons.length === 0) return null
 
   return (
-    <div className={cn('space-y-3', className)}>
+    <div className={cn('space-y-3 pt-1', className)}>
       <div className='relative'>
         <div className='absolute inset-0 flex items-center'>
-          <span className='w-full border-t' />
+          <span className='h-px w-full bg-black' />
         </div>
-        <div className='relative flex justify-center text-xs uppercase'>
-          <span className='bg-background text-muted-foreground px-2'>
+        <div className='relative flex justify-center text-xs'>
+          <span className='bg-white px-3 text-neutral-500'>
             {t('Or continue with')}
           </span>
         </div>
       </div>
 
-      <div className='flex flex-col gap-2'>
+      <div className='flex flex-col gap-2.5'>
         {providerButtons.map(
           ({ key, label, onClick, icon, disabled: extraDisabled }) => (
             <Button
@@ -166,7 +166,7 @@ export function OAuthProviders({
               type='button'
               disabled={disabled || isLoading || extraDisabled}
               onClick={onClick}
-              className='h-11 w-full justify-center gap-2 rounded-lg'
+              className='h-11 w-full justify-center gap-2 rounded-xl border-slate-200/90 bg-white shadow-sm transition-all hover:border-blue-200 hover:bg-blue-50/60 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-800 dark:hover:bg-slate-800 dark:hover:text-blue-300'
             >
               {icon}
               {label}

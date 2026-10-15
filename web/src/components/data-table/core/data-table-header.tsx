@@ -81,8 +81,9 @@ export function DataTableHeader<TData>({
                   }
                   className={cn(
                     'absolute top-0 right-0 h-full w-2 cursor-col-resize touch-none select-none',
-                    'after:bg-border hover:after:bg-primary after:absolute after:top-2 after:right-0 after:h-[calc(100%-1rem)] after:w-px after:transition-colors',
-                    header.column.getIsResizing() && 'after:bg-primary'
+                    'after:bg-border hover:after:bg-black after:absolute after:top-2 after:right-0 after:h-[calc(100%-1rem)] after:w-px dark:hover:after:bg-white',
+                    header.column.getIsResizing() &&
+                      'after:bg-black dark:after:bg-white'
                   )}
                 />
               )}

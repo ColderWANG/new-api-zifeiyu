@@ -37,6 +37,10 @@ import { useMediaQuery } from '@/hooks'
 import { useTableUrlState } from '@/hooks/use-table-url-state'
 import { handleServerError } from '@/lib/handle-server-error'
 import { requireServerSuccess } from '@/lib/server-error-message'
+import {
+  normalizeSingleSearchValue,
+  toSingleSearchValue,
+} from '@/lib/url-array-schema'
 
 import { deleteDeployment, listDeployments, searchDeployments } from '../api'
 import { getDeploymentStatusOptions } from '../constants'
@@ -76,7 +80,13 @@ export function DeploymentsTable() {
     },
     globalFilter: { enabled: true, key: 'dFilter' },
     columnFilters: [
-      { columnId: 'status', searchKey: 'dStatus', type: 'array' },
+      {
+        columnId: 'status',
+        searchKey: 'dStatus',
+        type: 'array',
+        deserialize: (value) => normalizeSingleSearchValue<string>(value),
+        serialize: toSingleSearchValue,
+      },
     ],
   })
 

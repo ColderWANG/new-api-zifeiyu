@@ -105,12 +105,9 @@ export function ApiKeyGroupCombobox({
             data-auto-group-effect={isAutoSelected ? 'trigger' : undefined}
             disabled={disabled}
             className={cn(
-              'border-input bg-muted/40 hover:bg-muted/55 hover:text-foreground active:bg-background data-popup-open:border-ring data-popup-open:bg-background data-popup-open:ring-ring/20 relative h-auto min-h-14 w-full justify-between gap-2 rounded-lg px-3 py-2 text-start shadow-none transition-[background-color,border-color,box-shadow] duration-150 data-popup-open:ring-[3px] sm:min-h-20 sm:gap-3 sm:px-4 sm:py-3',
+              'border border-border bg-popover hover:bg-accent hover:text-accent-foreground text-foreground relative h-auto min-h-14 w-full justify-between gap-2 rounded-none px-3 py-2 text-start shadow-none duration-100 sm:min-h-20 sm:gap-3 sm:px-4 sm:py-3',
               isAutoSelected &&
-                cn(
-                  AUTO_GROUP_FRAME_CLASS_NAME,
-                  'hover:border-primary/55 data-popup-open:border-primary/55 data-popup-open:ring-primary/20'
-                )
+                cn(AUTO_GROUP_FRAME_CLASS_NAME, 'border border-border')
             )}
           />
         }
@@ -139,24 +136,25 @@ export function ApiKeyGroupCombobox({
         </span>
         <ChevronsUpDown
           aria-hidden='true'
-          className='size-4 shrink-0 opacity-50'
+          className='size-4 shrink-0 opacity-60'
         />
       </PopoverTrigger>
       <PopoverContent
-        className='data-closed:zoom-out-100 data-open:zoom-in-100 data-[side=bottom]:slide-in-from-top-0 data-[side=left]:slide-in-from-right-0 data-[side=right]:slide-in-from-left-0 data-[side=top]:slide-in-from-bottom-0 w-[var(--anchor-width)] overflow-hidden rounded-xl p-0 shadow-lg data-closed:duration-75 data-open:duration-100'
+        className='border-border bg-popover w-[var(--anchor-width)] overflow-hidden rounded-none border p-0 shadow-none'
         onWheel={(event) => event.stopPropagation()}
         onTouchMove={(event) => event.stopPropagation()}
         onPointerDown={(event) => event.stopPropagation()}
       >
-        <Command shouldFilter={false}>
+        <Command shouldFilter={false} className='rounded-none'>
           <CommandInput
             placeholder={t('Search...')}
             value={searchValue}
             onValueChange={setSearchValue}
+            className='border-border rounded-none border-b'
           />
-          <CommandList className='max-h-[360px]'>
+          <CommandList className='max-h-[360px] rounded-none'>
             <CommandEmpty>{t('No group found.')}</CommandEmpty>
-            <CommandGroup>
+            <CommandGroup className='p-1'>
               {filteredOptions.map((option) => {
                 const isAutoOption = option.value === 'auto'
 
@@ -167,12 +165,9 @@ export function ApiKeyGroupCombobox({
                     data-auto-group-effect={isAutoOption ? 'option' : undefined}
                     onSelect={() => handleSelect(option.value)}
                     className={cn(
-                      'data-[selected=true]:bg-muted items-start gap-3 rounded-lg px-3 py-3 transition-colors',
+                      'data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground items-start gap-3 rounded-none px-3 py-3 duration-75',
                       isAutoOption &&
-                        cn(
-                          AUTO_GROUP_FRAME_CLASS_NAME,
-                          'border-primary/35 data-[selected=true]:border-primary/55'
-                        )
+                        cn(AUTO_GROUP_FRAME_CLASS_NAME, 'border-border')
                     )}
                   >
                     {isAutoOption && (

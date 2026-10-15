@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright (C) 2023-2026 QuantumNous
 
 This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 'use client'
 
 import { Dialog as SheetPrimitive } from '@base-ui/react/dialog'
-import { Cancel01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
+import { X } from 'lucide-react'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -47,7 +46,7 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
     <SheetPrimitive.Backdrop
       data-slot='sheet-overlay'
       className={cn(
-        'fixed inset-0 z-50 bg-black/10 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-xs',
+        'fixed inset-0 z-50 bg-black/50 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0',
         className
       )}
       {...props}
@@ -65,11 +64,6 @@ function SheetContent({
   side?: 'top' | 'right' | 'bottom' | 'left'
   showCloseButton?: boolean
 }) {
-  // Side-specific classes are emitted via JS conditionals (rather than
-  // `data-[side=*]:` variants) so consumer-provided width overrides such as
-  // `sm:max-w-2xl` can be correctly merged by `tailwind-merge` and the CSS
-  // cascade — the data-attribute variants would otherwise win on specificity
-  // and trap the panel at the default `sm:max-w-sm` width.
   return (
     <SheetPortal>
       <SheetOverlay />
@@ -77,15 +71,15 @@ function SheetContent({
         data-slot='sheet-content'
         data-side={side}
         className={cn(
-          'bg-background text-foreground fixed z-50 flex flex-col gap-4 overflow-hidden bg-clip-padding text-sm shadow-none transition duration-200 ease-in-out data-ending-style:opacity-0 data-starting-style:opacity-0',
+          'bg-background text-foreground fixed z-50 flex flex-col gap-4 overflow-hidden rounded-none text-sm shadow-none transition duration-150 ease-in-out data-ending-style:opacity-0 data-starting-style:opacity-0',
           side === 'right' &&
-            'inset-y-0 right-0 h-full w-3/4 border-l data-ending-style:translate-x-[2.5rem] data-starting-style:translate-x-[2.5rem] sm:max-w-sm',
+            'inset-y-0 right-0 h-full w-3/4 border-l-2 border-black dark:border-white data-ending-style:translate-x-[2.5rem] data-starting-style:translate-x-[2.5rem] sm:max-w-md',
           side === 'left' &&
-            'inset-y-0 left-0 h-full w-3/4 border-r data-ending-style:translate-x-[-2.5rem] data-starting-style:translate-x-[-2.5rem] sm:max-w-sm',
+            'inset-y-0 left-0 h-full w-3/4 border-r-2 border-black dark:border-white data-ending-style:translate-x-[-2.5rem] data-starting-style:translate-x-[-2.5rem] sm:max-w-md',
           side === 'top' &&
-            'inset-x-0 top-0 h-auto border-b data-ending-style:translate-y-[-2.5rem] data-starting-style:translate-y-[-2.5rem]',
+            'inset-x-0 top-0 h-auto border-b-2 border-black dark:border-white data-ending-style:translate-y-[-2.5rem] data-starting-style:translate-y-[-2.5rem]',
           side === 'bottom' &&
-            'inset-x-0 bottom-0 h-auto border-t data-ending-style:translate-y-[2.5rem] data-starting-style:translate-y-[2.5rem]',
+            'inset-x-0 bottom-0 h-auto border-t-2 border-black dark:border-white data-ending-style:translate-y-[2.5rem] data-starting-style:translate-y-[2.5rem]',
           className
         )}
         {...props}
@@ -96,13 +90,13 @@ function SheetContent({
             data-slot='sheet-close'
             render={
               <Button
-                variant='ghost'
-                className='absolute top-3 right-3'
+                variant='outline'
+                className='absolute top-3 right-3 rounded-none border border-black dark:border-white'
                 size='icon-sm'
               />
             }
           >
-            <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
+            <X className='size-4' />
             <span className='sr-only'>Close</span>
           </SheetPrimitive.Close>
         )}
@@ -115,7 +109,10 @@ function SheetHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot='sheet-header'
-      className={cn('flex flex-col gap-0.5 p-4', className)}
+      className={cn(
+        'flex flex-col gap-1 border-b border-black p-4 dark:border-white',
+        className
+      )}
       {...props}
     />
   )
@@ -125,7 +122,10 @@ function SheetFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot='sheet-footer'
-      className={cn('mt-auto flex flex-col gap-2 p-4', className)}
+      className={cn(
+        'mt-auto flex flex-col gap-2 border-t border-black p-4 dark:border-white',
+        className
+      )}
       {...props}
     />
   )
@@ -135,7 +135,10 @@ function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
   return (
     <SheetPrimitive.Title
       data-slot='sheet-title'
-      className={cn('text-foreground text-base font-medium', className)}
+      className={cn(
+        'text-foreground text-base font-semibold tracking-tight',
+        className
+      )}
       {...props}
     />
   )

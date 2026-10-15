@@ -427,7 +427,7 @@ export interface TaskArtifactsResponse {
 export interface GetLogsParams {
   p?: number
   page_size?: number
-  type?: number
+  type?: number | undefined
   username?: string
   token_name?: string
   model_name?: string
@@ -451,7 +451,7 @@ export interface GetLogsResponse {
 }
 
 export interface GetLogStatsParams {
-  type?: number
+  type?: number | undefined
   username?: string
   token_name?: string
   model_name?: string

@@ -52,7 +52,7 @@ export function LegalConsent({
   return (
     <div
       className={cn(
-        'border-border/60 bg-muted/40 flex items-start gap-3 rounded-md border p-3',
+        'flex items-start gap-3 border-2 border-black bg-white p-3',
         className
       )}
     >
@@ -64,7 +64,7 @@ export function LegalConsent({
       />
       <Label
         htmlFor='legal-consent'
-        className='text-muted-foreground items-start gap-1 text-left text-xs leading-5 font-normal'
+        className='items-start gap-1 text-left text-xs leading-5 font-medium text-neutral-600'
       >
         <span>
           {t('I have read and agree to the')}{' '}
@@ -73,7 +73,7 @@ export function LegalConsent({
               href='/user-agreement'
               target='_blank'
               rel='noopener noreferrer'
-              className='text-primary hover:underline'
+              className='font-semibold text-black underline decoration-2 underline-offset-4'
             >
               {t('User Agreement')}
             </a>
@@ -84,7 +84,7 @@ export function LegalConsent({
               href='/privacy-policy'
               target='_blank'
               rel='noopener noreferrer'
-              className='text-primary hover:underline'
+              className='font-semibold text-black underline decoration-2 underline-offset-4'
             >
               {t('Privacy Policy')}
             </a>

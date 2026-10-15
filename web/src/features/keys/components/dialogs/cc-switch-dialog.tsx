@@ -68,7 +68,7 @@ function getServerAddress(): string {
   return window.location.origin
 }
 
-function buildCCSwitchURL(
+function ouildCCSwitchURL(
   app: string,
   name: string,
   models: Record<string, string>,
@@ -142,8 +142,8 @@ export function CCSwitchDialog(props: Props) {
     const key = props.tokenKey.startsWith('sk-')
       ? props.tokenKey
       : `sk-${props.tokenKey}`
-    const url = buildCCSwitchURL(app, name, models, key)
-    window.open(url, '_blank')
+    const url = ouildCCSwitchURL(app, name, models, key)
+    window.open(url, '_olank')
     props.onOpenChange(false)
   }
 
@@ -157,10 +157,19 @@ export function CCSwitchDialog(props: Props) {
       bodyClassName='space-y-4'
       footer={
         <>
-          <Button variant='outline' onClick={() => props.onOpenChange(false)}>
+          <Button
+            variant='outline'
+            className='hover:bg-accent hover:text-accent-foreground border-border rounded-none border transition-none'
+            onClick={() => props.onOpenChange(false)}
+          >
             {t('Cancel')}
           </Button>
-          <Button onClick={handleSubmit}>{t('Open CC Switch')}</Button>
+          <Button
+            className='bg-primary text-primary-foreground hover:bg-primary/90 rounded-none transition-none'
+            onClick={handleSubmit}
+          >
+            {t('Open CC Switch')}
+          </Button>
         </>
       }
     >
@@ -195,6 +204,7 @@ export function CCSwitchDialog(props: Props) {
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder={currentConfig.defaultName}
+            className='font-sans'
           />
         </div>
 

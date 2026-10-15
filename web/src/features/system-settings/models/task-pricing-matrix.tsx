@@ -437,7 +437,7 @@ function TaskMatrixGroup(props: TaskMatrixGroupProps) {
             </span>
           ) : null}
           {!props.open && containsMatchedRow ? (
-            <span className='bg-primary size-2 rounded-full'>
+            <span className='bg-primary size-2 rounded-sm'>
               <span className='sr-only'>{t('Hit tier')}</span>
             </span>
           ) : null}

@@ -17,7 +17,7 @@ export function PolicyDecisionRecord(props: {
         >
           <span
             aria-hidden='true'
-            className='border-border bg-background absolute -left-3 flex size-6 items-center justify-center rounded-full border text-xs'
+            className='border-border bg-background absolute -left-3 flex size-6 items-center justify-center rounded-md border text-xs'
           >
             {index + 1}
           </span>

@@ -41,6 +41,10 @@ import { useTableUrlState } from '@/hooks/use-table-url-state'
 import { formatTimestampToDate } from '@/lib/format'
 import { getLobeIcon } from '@/lib/lobe-icon'
 import { createServerError } from '@/lib/server-error-message'
+import {
+  normalizeSingleSearchValue,
+  toSingleSearchValue,
+} from '@/lib/url-array-schema'
 
 import { searchVendors } from '../api'
 import { vendorsQueryKeys } from '../lib'
@@ -66,7 +70,13 @@ export function VendorsTable() {
     },
     globalFilter: { enabled: true, key: 'vFilter' },
     columnFilters: [
-      { columnId: 'model_count', searchKey: 'vAssociation', type: 'array' },
+      {
+        columnId: 'model_count',
+        searchKey: 'vAssociation',
+        type: 'array',
+        deserialize: (value) => normalizeSingleSearchValue<string>(value),
+        serialize: toSingleSearchValue,
+      },
     ],
   })
   const association = (

@@ -1,0 +1,121 @@
+:root {
+  --mm-background: #ffffff;
+  --mm-foreground: #000000;
+  --mm-muted: #f5f5f5;
+  --mm-muted-foreground: #525252;
+  --mm-border: #000000;
+  --mm-border-light: #e5e5e5;
+  --mm-display-font: var(--font-serif);
+  --mm-mono-font:
+    'JetBrains Mono', 'Sarasa Mono SC', 'Noto Sans Mono CJK SC',
+    'Microsoft YaHei', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.mm {
+  background: var(--mm-background);
+  color: var(--mm-foreground);
+  font-family: var(--mm-display-font);
+}
+
+.mm-lines::before,
+.mm-noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.mm-lines::before {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    #000 1px,
+    #000 2px
+  );
+  background-size: 100% 4px;
+  opacity: 0.015;
+}
+
+.mm-noise::after {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+}
+
+.mm-display {
+  font-family: var(--mm-display-font);
+  font-weight: 500;
+  line-height: 0.92;
+  letter-spacing: -0.05em;
+}
+
+.mm-label {
+  font-family: var(--mm-mono-font);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.mm-nav {
+  font-family: var(--mm-mono-font);
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.mm-rule {
+  border: 0;
+  border-top: 4px solid var(--mm-foreground);
+}
+
+.mm-hairline {
+  border: 0;
+  border-top: 1px solid var(--mm-border-light);
+}
+
+.mm-card {
+  background: var(--mm-background);
+  border: 1px solid var(--mm-foreground);
+  border-radius: 0;
+}
+
+.mm-invert-card {
+  background: var(--mm-foreground);
+  color: var(--mm-background);
+  border-radius: 0;
+}
+
+.mm-interactive {
+  border-radius: 0;
+  transition: none;
+}
+
+.mm-interactive:focus-visible {
+  outline: 3px solid var(--mm-foreground);
+  outline-offset: 3px;
+}
+
+.dark .mm,
+.dark .mm * {
+  color-scheme: light;
+}
+
+.dark .mm {
+  --mm-background: #ffffff;
+  --mm-foreground: #000000;
+  --mm-muted: #f5f5f5;
+  --mm-muted-foreground: #525252;
+  --mm-border: #000000;
+  --mm-border-light: #e5e5e5;
+}
+
+.dark .mm img,
+.dark .mm svg {
+  filter: none;
+}

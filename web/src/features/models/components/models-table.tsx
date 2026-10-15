@@ -30,6 +30,10 @@ import {
   getServerMessage,
   requireServerSuccess,
 } from '@/lib/server-error-message'
+import {
+  normalizeSingleSearchValue,
+  toSingleSearchValue,
+} from '@/lib/url-array-schema'
 
 import { getModels, searchModels, getVendors } from '../api'
 import { DEFAULT_PAGE_SIZE } from '../constants'
@@ -64,10 +68,34 @@ export function ModelsTable() {
     },
     globalFilter: { enabled: true, key: 'filter' },
     columnFilters: [
-      { columnId: 'status', searchKey: 'status', type: 'array' },
-      { columnId: 'square_state', searchKey: 'square_state', type: 'array' },
-      { columnId: 'vendor_id', searchKey: 'vendor', type: 'array' },
-      { columnId: 'sync_official', searchKey: 'sync', type: 'array' },
+      {
+        columnId: 'status',
+        searchKey: 'status',
+        type: 'array',
+        deserialize: (value) => normalizeSingleSearchValue<string>(value),
+        serialize: toSingleSearchValue,
+      },
+      {
+        columnId: 'square_state',
+        searchKey: 'square_state',
+        type: 'array',
+        deserialize: (value) => normalizeSingleSearchValue<string>(value),
+        serialize: toSingleSearchValue,
+      },
+      {
+        columnId: 'vendor_id',
+        searchKey: 'vendor',
+        type: 'array',
+        deserialize: (value) => normalizeSingleSearchValue<string>(value),
+        serialize: toSingleSearchValue,
+      },
+      {
+        columnId: 'sync_official',
+        searchKey: 'sync',
+        type: 'array',
+        deserialize: (value) => normalizeSingleSearchValue<string>(value),
+        serialize: toSingleSearchValue,
+      },
     ],
   })
 

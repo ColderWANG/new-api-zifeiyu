@@ -38,6 +38,12 @@ export const USER_STATUS = {
   DELETED: -1,
 } as const
 
+export const USER_STATUS_SEARCH_VALUES = [
+  String(USER_STATUS.DELETED),
+  String(USER_STATUS.ENABLED),
+  String(USER_STATUS.DISABLED),
+] as const
+
 export const USER_STATUSES = {
   [USER_STATUS.ENABLED]: {
     labelKey: 'Enabled',
@@ -71,6 +77,12 @@ export const USER_ROLE = {
   ADMIN: 10,
   ROOT: 100,
 } as const
+
+export const USER_ROLE_SEARCH_VALUES = [
+  String(USER_ROLE.USER),
+  String(USER_ROLE.ADMIN),
+  String(USER_ROLE.ROOT),
+] as const
 
 export const USER_ROLES = {
   [USER_ROLE.USER]: {

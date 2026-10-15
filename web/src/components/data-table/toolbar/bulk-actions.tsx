@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright (C) 2023-2026 QuantumNous
 
 This program is free software: you can redistribute it and/or modify
@@ -176,16 +176,16 @@ export function DataTableBulkActions<TData>({
         onKeyDown={handleKeyDown}
         className={cn(
           placement === 'floating'
-            ? 'fixed bottom-6 left-1/2 z-50 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-xl transition-all delay-100 duration-300 ease-out hover:scale-105'
-            : 'shrink-0 rounded-xl',
-          'focus-visible:ring-ring/50 focus-visible:ring-2 focus-visible:outline-none'
+            ? 'fixed bottom-6 left-1/2 z-50 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-none transition-none'
+            : 'shrink-0 rounded-none',
+          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-black dark:focus-visible:outline-white focus-visible:outline-offset-2'
         )}
       >
         <div
           className={cn(
-            'p-2 shadow-xl',
-            'rounded-xl border',
-            'bg-background/95 supports-[backdrop-filter]:bg-background/60 backdrop-blur-lg',
+            'p-2 shadow-none',
+            'rounded-none border-2 border-black dark:border-white',
+            'bg-white dark:bg-black',
             'flex flex-wrap items-center gap-2'
           )}
         >
@@ -196,13 +196,13 @@ export function DataTableBulkActions<TData>({
                   variant='outline'
                   size='icon'
                   onClick={handleClearSelection}
-                  className='size-6'
+                  className='size-7 rounded-none border border-black dark:border-white'
                   aria-label={t('Clear selection')}
                   title={t('Clear selection (Escape)')}
                 />
               }
             >
-              <X />
+              <X className='size-3.5' />
               <span className='sr-only'>{t('Clear selection')}</span>
             </TooltipTrigger>
             <TooltipContent>
@@ -211,31 +211,31 @@ export function DataTableBulkActions<TData>({
           </Tooltip>
 
           <Separator
-            className='h-5'
+            className='h-5 bg-black/20 dark:bg-white/20'
             orientation='vertical'
             aria-hidden='true'
           />
 
           <div
-            className='flex items-center gap-x-1 text-sm'
+            className='flex items-center gap-x-1 font-mono text-xs'
             id='bulk-actions-description'
           >
             <Badge
               variant='default'
-              className='min-w-8 rounded-lg'
+              className='min-w-6 rounded-none'
               aria-label={t('{{count}} selected', { count: selectedCount })}
             >
               {selectedCount}
             </Badge>{' '}
-            <span className='hidden sm:inline'>
+            <span className='hidden font-sans text-sm sm:inline'>
               {entityName}
               {selectedCount > 1 && /^[a-z]+$/i.test(entityName) ? 's' : ''}
             </span>{' '}
-            {t('selected')}
+            <span className='font-sans text-sm'>{t('selected')}</span>
           </div>
 
           <Separator
-            className='h-5'
+            className='h-5 bg-black/20 dark:bg-white/20'
             orientation='vertical'
             aria-hidden='true'
           />

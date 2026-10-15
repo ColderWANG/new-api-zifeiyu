@@ -139,7 +139,7 @@ it('applies the selected mobile date range directly and resets pagination while 
     expect(router.state.location.search).toMatchObject({
       page: 1,
       group: 'default',
-      type: ['2'],
+      type: '2',
       startTime: new Date('2026-09-07T09:30').getTime(),
       endTime: new Date('2026-09-08T17:45').getTime(),
     })

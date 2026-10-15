@@ -17,8 +17,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 .billing-condition-group {
-  --condition-accent: var(--color-blue-500);
-  --condition-label: var(--color-blue-700);
+  --condition-accent: var(--primary);
+  --condition-label: var(--primary);
   --condition-line: color-mix(
     in oklch,
     var(--condition-accent) 45%,
@@ -46,7 +46,7 @@ For commercial licensing, please contact support@quantumnous.com
 }
 
 .dark .billing-condition-group {
-  --condition-label: var(--color-blue-300);
+  --condition-label: var(--primary);
 }
 
 .dark .billing-condition-group[data-condition-kind='any'] {

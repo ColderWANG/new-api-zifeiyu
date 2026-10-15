@@ -207,7 +207,7 @@ export function ChannelAffinitySection(props: Props) {
     <>
       <section
         aria-label={t('Session rules')}
-        className='bg-card min-w-0 overflow-hidden rounded-xl border'
+        className='bg-card min-w-0 overflow-hidden rounded-md border'
       >
         <div className='flex flex-col gap-1.5 px-4 pt-5 sm:px-5'>
           <div className='flex items-center gap-2'>

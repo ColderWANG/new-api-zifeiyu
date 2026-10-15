@@ -98,7 +98,7 @@ export function FlowNodeFilterControl(props: FlowNodeFilterControlProps) {
 
   return (
     <div className='flex min-w-0 flex-col gap-1.5'>
-      <span className='text-muted-foreground text-xs font-medium'>
+      <span className='font-mono text-xs font-medium tracking-wide text-neutral-500 uppercase'>
         {t('Node filters')}
       </span>
       <div className='flex min-w-0 flex-wrap items-center gap-1.5'>
@@ -109,6 +109,7 @@ export function FlowNodeFilterControl(props: FlowNodeFilterControlProps) {
                 type='button'
                 variant='outline'
                 size='sm'
+                className='rounded-none border border-black bg-white font-mono text-xs font-medium text-black transition-none hover:bg-black hover:text-white'
                 aria-label={t('Filter by node')}
               />
             }
@@ -116,18 +117,23 @@ export function FlowNodeFilterControl(props: FlowNodeFilterControlProps) {
             <Filter data-icon='inline-start' aria-hidden='true' />
             {selectedCount > 0 ? t('Selected nodes') : t('All nodes')}
             {selectedCount > 0 && (
-              <Badge variant='secondary' className='rounded-sm px-1'>
+              <Badge
+                variant='secondary'
+                className='rounded-none border border-black/30 bg-neutral-100 px-1 font-mono text-[10px] text-black'
+              >
                 {selectedCount}
               </Badge>
             )}
           </PopoverTrigger>
           <PopoverContent
-            className='w-[min(28rem,calc(100vw-2rem))] p-0'
+            className='w-[min(28rem,calc(100vw-2rem))] rounded-none border-2 border-black bg-white p-0 shadow-none'
             align='start'
           >
-            <PopoverHeader className='px-3 pt-3'>
-              <PopoverTitle>{t('Node filters')}</PopoverTitle>
-              <PopoverDescription>
+            <PopoverHeader className='border-b border-black/20 px-3 pt-3 pb-2'>
+              <PopoverTitle className='font-mono text-sm font-bold tracking-wider text-black uppercase'>
+                {t('Node filters')}
+              </PopoverTitle>
+              <PopoverDescription className='font-mono text-xs text-neutral-500'>
                 {t('Value metric')}: {props.metricLabel}
               </PopoverDescription>
             </PopoverHeader>
@@ -160,14 +166,14 @@ export function FlowNodeFilterControl(props: FlowNodeFilterControlProps) {
                             }
                           >
                             <span
-                              className='size-2.5 shrink-0 rounded-full'
+                              className='size-2.5 shrink-0 rounded-none border border-black/30'
                               style={{ backgroundColor: option.color }}
                               aria-hidden='true'
                             />
                             <span className='min-w-0 flex-1 truncate'>
                               {option.label}
                             </span>
-                            <span className='text-muted-foreground flex shrink-0 items-center gap-1 text-xs'>
+                            <span className='flex shrink-0 items-center gap-1 font-mono text-xs text-neutral-500'>
                               <span>{props.metricLabel}</span>
                               <span className='font-mono'>
                                 {metricValueLabel}
@@ -185,7 +191,7 @@ export function FlowNodeFilterControl(props: FlowNodeFilterControlProps) {
                     <CommandGroup>
                       <CommandItem
                         onSelect={props.onClearNodes}
-                        className='justify-center text-center'
+                        className='justify-center text-center font-mono text-xs'
                       >
                         {t('Clear node filters')}
                       </CommandItem>
@@ -201,14 +207,14 @@ export function FlowNodeFilterControl(props: FlowNodeFilterControlProps) {
           <Badge
             key={flowNodeFilterKey(option)}
             variant='secondary'
-            className='max-w-[14rem] rounded-sm pr-1'
+            className='max-w-[14rem] rounded-none border border-black/30 bg-neutral-50 pr-1 font-mono text-xs text-black'
           >
             <span className='truncate'>
               {t(props.stageLabels[option.kind])}: {option.label}
             </span>
             <button
               type='button'
-              className='hover:bg-muted-foreground/15 flex size-4 shrink-0 items-center justify-center rounded-sm'
+              className='flex size-4 shrink-0 items-center justify-center rounded-none transition-none hover:bg-black hover:text-white'
               aria-label={t('Remove node filter')}
               onClick={() =>
                 props.onRemoveNode({ kind: option.kind, id: option.id })
@@ -225,6 +231,7 @@ export function FlowNodeFilterControl(props: FlowNodeFilterControlProps) {
             variant='ghost'
             size='xs'
             onClick={props.onClearNodes}
+            className='rounded-none font-mono text-xs text-neutral-500 hover:bg-neutral-100 hover:text-black'
           >
             {t('Clear')}
           </Button>

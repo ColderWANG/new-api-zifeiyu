@@ -45,13 +45,18 @@ import {
 import { useMediaQuery } from '@/hooks'
 import { useTableUrlState } from '@/hooks/use-table-url-state'
 import { requireServerSuccess } from '@/lib/server-error-message'
+import {
+  normalizeSingleSearchValue,
+  toSingleSearchValue,
+} from '@/lib/url-array-schema'
 import { cn } from '@/lib/utils'
 
 import { getChannels, searchChannels, getGroups } from '../api'
 import {
-  DEFAULT_PAGE_SIZE,
+  CHANNEL_FILTER_ALL_VALUE,
   CHANNEL_STATUS,
   CHANNEL_STATUS_OPTIONS,
+  DEFAULT_PAGE_SIZE,
 } from '../constants'
 import {
   channelsQueryKeys,
@@ -129,11 +134,25 @@ export function ChannelsTable() {
           const stored = localStorage.getItem(
             CHANNELS_STATUS_FILTER_STORAGE_KEY
           )
-          return stored === 'enabled' || stored === 'disabled' ? [stored] : []
+          return stored === 'enabled' || stored === 'disabled'
+            ? [stored]
+            : [CHANNEL_FILTER_ALL_VALUE]
         },
       },
-      { columnId: 'type', searchKey: 'type', type: 'array' },
-      { columnId: 'group', searchKey: 'group', type: 'array' },
+      {
+        columnId: 'type',
+        searchKey: 'type',
+        type: 'array',
+        deserialize: (value) => normalizeSingleSearchValue<string>(value),
+        serialize: toSingleSearchValue,
+      },
+      {
+        columnId: 'group',
+        searchKey: 'group',
+        type: 'array',
+        deserialize: (value) => normalizeSingleSearchValue<string>(value),
+        serialize: toSingleSearchValue,
+      },
       { columnId: 'model', searchKey: 'model', type: 'string' },
     ],
   })
@@ -148,7 +167,7 @@ export function ChannelsTable() {
         | undefined
       localStorage.setItem(
         CHANNELS_STATUS_FILTER_STORAGE_KEY,
-        status?.[0] ?? 'all'
+        status?.[0] ?? CHANNEL_FILTER_ALL_VALUE
       )
       return next
     })

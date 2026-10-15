@@ -7,7 +7,7 @@ published by the Free Software Foundation, either version 3 of the
 License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
+but WITHOUT ANY WARRANTY; without even implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU Affero General Public License for more details.
 
@@ -38,7 +38,7 @@ type SidebarViewHeaderProps = {
 /**
  * Header for a nested sidebar view (Vercel / Cloudflare drill-in pattern).
  *
- * Renders only the back affordance — workspace context is conveyed by
+ * Renders only the back affordance; workspace context is conveyed by
  * the nav groups below, not a redundant title row.
  */
 export function SidebarViewHeader(props: SidebarViewHeaderProps) {
@@ -52,7 +52,7 @@ export function SidebarViewHeader(props: SidebarViewHeaderProps) {
           <SidebarMenuButton
             tooltip={t(props.view.parent.label)}
             className={cn(
-              'text-muted-foreground hover:text-foreground',
+              'text-sidebar-foreground/70 hover:text-sidebar-foreground',
               'gap-1.5 font-medium'
             )}
             render={

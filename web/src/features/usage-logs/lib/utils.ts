@@ -163,27 +163,25 @@ export function buildApiParams(config: {
 }): GetLogsParams {
   const { page, pageSize, searchParams, columnFilters = [], isAdmin } = config
 
-  // Helper to process type parameter (single value from array)
+  // `0` is a legacy URL sentinel and must never be sent to the backend as a
+  // type filter; omitting the field means "all types".
   const processType = (value: unknown): number | undefined => {
-    const parseType = (raw: unknown): number | undefined => {
-      const type = Number(raw)
-      return Number.isFinite(type) ? type : undefined
-    }
-
-    if (Array.isArray(value) && value.length === 1) {
-      return parseType(value[0])
-    }
-    if (typeof value === 'string' && value !== '') {
-      return parseType(value)
-    }
-    return undefined
+    const raw = Array.isArray(value) ? value[0] : value
+    const type = Number(raw)
+    return raw !== undefined && raw !== null && raw !== '' && type > 0
+      ? type
+      : undefined
   }
 
   // Build base params from search params
   const params: GetLogsParams = {
     p: page,
     page_size: pageSize,
-    ...(searchParams.type ? { type: processType(searchParams.type) } : {}),
+    ...(searchParams.type !== undefined &&
+    searchParams.type !== null &&
+    searchParams.type !== ''
+      ? { type: processType(searchParams.type) }
+      : {}),
     ...(searchParams.model ? { model_name: String(searchParams.model) } : {}),
     ...(searchParams.token ? { token_name: String(searchParams.token) } : {}),
     ...(searchParams.group ? { group: String(searchParams.group) } : {}),

@@ -29,6 +29,7 @@ For commercial licensing, please contact support@quantumnous.com
 
 @import './theme.css';
 @import './theme-presets.css';
+@import '../features/home/monochrome.css';
 
 @layer base {
   :root {
@@ -239,7 +240,7 @@ For commercial licensing, please contact support@quantumnous.com
 
   &::-webkit-scrollbar-thumb {
     background-color: transparent;
-    border-radius: 4px;
+    border-radius: 0px;
   }
 
   &:hover::-webkit-scrollbar-thumb {
@@ -557,79 +558,11 @@ For commercial licensing, please contact support@quantumnous.com
   }
 }
 
-/* Micro-interactions — Vercel-style subtle hover/active feedback */
-@media (prefers-reduced-motion: no-preference) {
-  [data-slot='card']:not([data-card-hover='false']) {
-    transition:
-      transform 150ms ease,
-      box-shadow 150ms ease;
-  }
-
-  @media (min-width: 641px) {
-    [data-slot='card']:not([data-card-hover='false']):hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgb(0 0 0 / 0.06);
-    }
-
-    .dark [data-slot='card']:not([data-card-hover='false']):hover {
-      box-shadow: 0 4px 12px rgb(0 0 0 / 0.3);
-    }
-  }
-
-  button:not(:disabled):active,
-  [role='button']:not(:disabled):active {
-    transform: scale(0.98);
-  }
-
-  [data-slot='table'] tr {
-    transition: background-color 120ms ease;
-  }
-
-  /* Table row stagger-in animation */
-  [data-slot='table'] tbody tr {
-    animation: tableRowEnter 0.2s cubic-bezier(0.33, 1, 0.68, 1) both;
-  }
-  [data-slot='table'] tbody tr:nth-child(2) {
-    animation-delay: 25ms;
-  }
-  [data-slot='table'] tbody tr:nth-child(3) {
-    animation-delay: 50ms;
-  }
-  [data-slot='table'] tbody tr:nth-child(4) {
-    animation-delay: 75ms;
-  }
-  [data-slot='table'] tbody tr:nth-child(5) {
-    animation-delay: 100ms;
-  }
-  [data-slot='table'] tbody tr:nth-child(6) {
-    animation-delay: 125ms;
-  }
-  [data-slot='table'] tbody tr:nth-child(7) {
-    animation-delay: 150ms;
-  }
-  [data-slot='table'] tbody tr:nth-child(8) {
-    animation-delay: 175ms;
-  }
-  [data-slot='table'] tbody tr:nth-child(9) {
-    animation-delay: 200ms;
-  }
-  [data-slot='table'] tbody tr:nth-child(10) {
-    animation-delay: 225ms;
-  }
-  [data-slot='table'] tbody tr:nth-child(n + 11) {
-    animation-delay: 250ms;
-  }
-}
-
-@keyframes tableRowEnter {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Global interactions are intentionally static in the Mono language. Cards,
+ * tables, and controls communicate state through borders and background tokens
+ * instead of scale, shadows, or staggered row entrance animations. */
+[data-slot='table'] tr {
+  transition: none;
 }
 
 /* Tabular numbers for data-heavy contexts */
@@ -688,35 +621,12 @@ For commercial licensing, please contact support@quantumnous.com
   }
 }
 
-/* ── Auto group flowing border ── */
-@property --auto-group-flow-angle {
-  syntax: '<angle>';
-  inherits: false;
-  initial-value: 0deg;
-}
-
-@keyframes auto-group-flow-border-travel {
-  to {
-    --auto-group-flow-angle: 360deg;
-  }
-}
-
-/* Border-only effect: the conic gradient covers the whole layer, but the
- * two-layer mask (content-box XOR full box) keeps only a `padding`-wide
- * ring visible, so the highlight hugs the rounded perimeter. Animating
- * the gradient's start angle makes the bright segment travel around all
- * four edges and corners without touching the interior. */
+/* Static Mono treatment for the auto-group highlight. The original animated
+ * conic border conflicted with the no-motion visual language. */
 .auto-group-flow-border {
   padding: 1.5px;
   border-radius: inherit;
-  background: conic-gradient(
-    from var(--auto-group-flow-angle),
-    transparent 0deg,
-    transparent 240deg,
-    color-mix(in oklch, var(--primary) 45%, transparent) 300deg,
-    var(--primary) 342deg,
-    transparent 360deg
-  );
+  background: linear-gradient(var(--primary), var(--primary));
   mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -725,23 +635,19 @@ For commercial licensing, please contact support@quantumnous.com
     linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  animation: auto-group-flow-border-travel 3.2s linear infinite;
 }
 
 .auto-group-flow-border-subtle {
   padding: 1px;
-  background: conic-gradient(
-    from var(--auto-group-flow-angle),
-    transparent 0deg 300deg,
-    color-mix(in oklch, var(--primary) 30%, transparent) 318deg,
-    var(--primary) 348deg,
-    transparent 360deg
+  background: linear-gradient(
+    color-mix(in oklch, var(--primary) 55%, transparent),
+    color-mix(in oklch, var(--primary) 55%, transparent)
   );
-  animation-duration: 3s;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .auto-group-flow-border {
+  .auto-group-flow-border,
+  .auto-group-flow-border-subtle {
     display: none;
   }
 }

@@ -25,7 +25,7 @@ import { cn } from '@/lib/utils'
 export type GroupRatio = number | string | null | undefined
 
 export const AUTO_GROUP_FRAME_CLASS_NAME =
-  'border-primary/40 relative overflow-visible border shadow-sm shadow-primary/10'
+  'border-border relative overflow-visible border'
 
 type AutoGroupFlowBorderProps = {
   shouldReduceMotion: boolean
@@ -61,7 +61,7 @@ export function AutoGroupFrame(props: AutoGroupFrameProps) {
       data-auto-group-effect={props.effect}
       className={cn(
         AUTO_GROUP_FRAME_CLASS_NAME,
-        'inline-flex max-w-full shrink-0 rounded-4xl p-px',
+        'inline-flex max-w-full shrink-0 p-px',
         props.className
       )}
     >
@@ -90,7 +90,7 @@ export function GroupRatioBadge(props: GroupRatioBadgeProps) {
       label={typeof props.ratio === 'number' ? undefined : t('Auto')}
       className={cn(
         props.isAuto &&
-          'overflow-visible rounded-md border-primary/30 bg-primary/10 text-primary'
+          'overflow-visible rounded-md border-border bg-accent text-accent-foreground'
       )}
     >
       {props.isAuto && (

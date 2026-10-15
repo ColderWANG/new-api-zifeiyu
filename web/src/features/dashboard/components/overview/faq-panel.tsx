@@ -25,7 +25,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { IconBadge } from '@/components/ui/icon-badge'
 import { Markdown } from '@/components/ui/markdown'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useFAQ } from '@/features/dashboard/hooks/use-status-data'
@@ -41,9 +40,9 @@ export function FAQPanel() {
     <PanelWrapper
       title={
         <span className='flex items-center gap-2'>
-          <IconBadge tone='chart-4' size='sm'>
-            <HelpCircle />
-          </IconBadge>
+          <span className='flex size-7 shrink-0 items-center justify-center border border-black/15 bg-white text-black'>
+            <HelpCircle className='size-3.5' />
+          </span>
           {t('FAQ')}
         </span>
       }
@@ -63,7 +62,7 @@ export function FAQPanel() {
               <AccordionItem
                 key={key}
                 value={value}
-                className='border-border/60'
+                className='border-black/20'
               >
                 <AccordionTrigger className='text-start hover:no-underline'>
                   <Markdown className='text-sm leading-relaxed font-semibold'>
@@ -71,7 +70,7 @@ export function FAQPanel() {
                   </Markdown>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <Markdown className='text-muted-foreground/60 text-sm'>
+                  <Markdown className='text-sm text-black/55'>
                     {item.answer}
                   </Markdown>
                 </AccordionContent>

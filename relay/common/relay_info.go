@@ -647,6 +647,9 @@ func genBaseRelayInfo(c *gin.Context, request dto.Request) *RelayInfo {
 		info.RelayMode = c.GetInt("relay_mode")
 	}
 
+	// The image studio normalizes its URL before channel/plugin selection.
+	// FullPath is Gin's registered route, never a client-provided flag.
+	info.IsPlayground = strings.HasPrefix(c.FullPath(), "/pg/")
 	if strings.HasPrefix(c.Request.URL.Path, "/pg") {
 		info.IsPlayground = true
 		info.RequestURLPath = strings.TrimPrefix(info.RequestURLPath, "/pg")

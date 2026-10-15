@@ -29,22 +29,28 @@ type PasswordInputProps = Omit<
   'type'
 > & {
   ref?: React.Ref<HTMLInputElement>
+  inputClassName?: string
+  leftIcon?: React.ReactNode
 }
 
 export function PasswordInput({
   className,
   disabled,
   ref,
+  inputClassName,
+  leftIcon,
   ...props
 }: PasswordInputProps) {
   const [showPassword, setShowPassword] = React.useState(false)
 
   return (
-    <div className={cn('relative rounded-md', className)}>
+    <div className={cn('relative', className)}>
+      {leftIcon}
       <Input
         type={showPassword ? 'text' : 'password'}
         ref={ref}
         disabled={disabled}
+        className={inputClassName}
         {...props}
       />
       <Button
@@ -52,7 +58,7 @@ export function PasswordInput({
         size='icon'
         variant='ghost'
         disabled={disabled}
-        className='text-muted-foreground absolute end-1 top-1/2 h-6 w-6 -translate-y-1/2 rounded-md'
+        className='absolute end-2 top-1/2 h-7 w-7 -translate-y-1/2 text-black hover:bg-black hover:text-white'
         onClick={() => setShowPassword((prev) => !prev)}
         aria-label='Toggle password visibility'
       >

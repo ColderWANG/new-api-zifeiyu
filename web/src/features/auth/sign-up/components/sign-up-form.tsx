@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2 } from 'lucide-react'
+import { AtSign, KeyRound, Loader2, Lock, User } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -248,7 +248,7 @@ export function SignUpForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className={cn('grid gap-4', className)}
+        className={cn('space-y-5', className)}
         {...props}
       >
         {/* Username Field */}
@@ -256,12 +256,25 @@ export function SignUpForm({
           control={form.control}
           name='username'
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('Username')}</FormLabel>
-              <FormControl>
-                <Input placeholder={t('Enter your username')} {...field} />
-              </FormControl>
-              <FormMessage />
+            <FormItem className='space-y-1.5'>
+              <FormLabel className='mm-label text-black'>
+                {t('Username')}
+              </FormLabel>
+              <div className='relative'>
+                <User
+                  aria-hidden
+                  className='pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-black'
+                />
+                <FormControl>
+                  <Input
+                    placeholder={t('Enter your username')}
+                    autoComplete='username'
+                    className='h-11 rounded-none border-2 border-black bg-white pr-3 pl-11 text-base text-black transition-none placeholder:text-neutral-500 focus-visible:border-4 focus-visible:border-black focus-visible:ring-0'
+                    {...field}
+                  />
+                </FormControl>
+              </div>
+              <FormMessage className='text-xs' />
             </FormItem>
           )}
         />
@@ -271,15 +284,23 @@ export function SignUpForm({
           control={form.control}
           name='password'
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('Password')}</FormLabel>
-              <FormControl>
-                <PasswordInput
-                  placeholder={t('Enter password (8–128 characters)')}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
+            <FormItem className='space-y-1.5'>
+              <FormLabel className='mm-label text-black'>
+                {t('Password')}
+              </FormLabel>
+              <PasswordInput
+                placeholder={t('Enter password (8–128 characters)')}
+                autoComplete='new-password'
+                inputClassName='h-11 rounded-none border-2 border-black bg-white pl-11 pr-11 text-base text-black transition-none placeholder:text-neutral-500 focus-visible:border-4 focus-visible:border-black focus-visible:ring-0'
+                leftIcon={
+                  <Lock
+                    aria-hidden
+                    className='pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-black'
+                  />
+                }
+                {...field}
+              />
+              <FormMessage className='text-xs' />
             </FormItem>
           )}
         />
@@ -289,12 +310,23 @@ export function SignUpForm({
           control={form.control}
           name='confirmPassword'
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('Confirm password')}</FormLabel>
-              <FormControl>
-                <PasswordInput placeholder={t('Confirm password')} {...field} />
-              </FormControl>
-              <FormMessage />
+            <FormItem className='space-y-1.5'>
+              <FormLabel className='mm-label text-black'>
+                {t('Confirm password')}
+              </FormLabel>
+              <PasswordInput
+                placeholder={t('Confirm password')}
+                autoComplete='new-password'
+                inputClassName='h-11 rounded-none border-2 border-black bg-white pl-11 pr-11 text-base text-black transition-none placeholder:text-neutral-500 focus-visible:border-4 focus-visible:border-black focus-visible:ring-0'
+                leftIcon={
+                  <Lock
+                    aria-hidden
+                    className='pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-black'
+                  />
+                }
+                {...field}
+              />
+              <FormMessage className='text-xs' />
             </FormItem>
           )}
         />
@@ -307,45 +339,62 @@ export function SignUpForm({
               control={form.control}
               name='email'
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
+                <FormItem className='space-y-1.5'>
+                  <FormLabel className='mm-label text-black'>
                     {t('Email (required for verification)')}
                   </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t('name@example.com')}
-                      type='email'
-                      {...field}
+                  <div className='relative'>
+                    <AtSign
+                      aria-hidden
+                      className='pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-black'
                     />
-                  </FormControl>
-                  <FormMessage />
+                    <FormControl>
+                      <Input
+                        placeholder={t('name@example.com')}
+                        type='email'
+                        autoComplete='email'
+                        className='h-11 rounded-none border-2 border-black bg-white pr-3 pl-11 text-base text-black transition-none placeholder:text-neutral-500 focus-visible:border-4 focus-visible:border-black focus-visible:ring-0'
+                        {...field}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage className='text-xs' />
                 </FormItem>
               )}
             />
 
             {/* Verification Code Field */}
-            <div className='flex items-end gap-2'>
-              <div className='flex-1'>
+            <div className='space-y-1.5'>
+              <div className='relative'>
+                <KeyRound
+                  aria-hidden
+                  className='pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-black'
+                />
                 <Input
                   placeholder={t('Verification code')}
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value)}
+                  autoComplete='one-time-code'
+                  className='h-11 rounded-none border-2 border-black bg-white pr-3 pl-11 text-base text-black transition-none placeholder:text-neutral-500 focus-visible:border-4 focus-visible:border-black focus-visible:ring-0'
                 />
               </div>
-              <Button
-                variant='outline'
-                type='button'
-                disabled={
-                  isLoading ||
-                  isSendingCode ||
-                  isActive ||
-                  !emailValue ||
-                  !turnstileReady
-                }
-                onClick={handleSendVerificationCode}
-              >
-                {verificationCodeAction}
-              </Button>
+              <div className='flex justify-end'>
+                <Button
+                  variant='outline'
+                  type='button'
+                  disabled={
+                    isLoading ||
+                    isSendingCode ||
+                    isActive ||
+                    !emailValue ||
+                    !turnstileReady
+                  }
+                  onClick={handleSendVerificationCode}
+                  className='h-11 rounded-none border-2 border-black bg-white transition-none hover:bg-black hover:text-white'
+                >
+                  {verificationCodeAction}
+                </Button>
+              </div>
             </div>
           </>
         )}
@@ -371,7 +420,7 @@ export function SignUpForm({
         {/* Submit Button */}
         <Button
           type='submit'
-          className='mt-2 w-full justify-center gap-2'
+          className='h-12 w-full justify-center gap-2 rounded-none border-2 border-black bg-black font-mono text-xs tracking-[0.18em] text-white uppercase hover:bg-white hover:text-black'
           disabled={
             isLoading ||
             (requiresLegalConsent && !agreedToLegal) ||
@@ -388,7 +437,7 @@ export function SignUpForm({
             disabled={isLoading || (requiresLegalConsent && !agreedToLegal)}
             onWeChatLogin={hasWeChatLogin ? handleOpenWeChatDialog : undefined}
             isWeChatLoading={isWeChatSubmitting}
-            className='pt-2'
+            className='pt-1'
           />
         )}
       </form>

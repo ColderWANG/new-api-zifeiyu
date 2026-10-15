@@ -71,7 +71,7 @@ export function AnnouncementDetailModal({
               <RichContent
                 breaks
                 content={announcement.extra}
-                className='text-muted-foreground'
+                className='text-black/55'
               />
             </div>
           )}

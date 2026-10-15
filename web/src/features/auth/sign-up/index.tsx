@@ -20,6 +20,7 @@ import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 
 import { useStatus } from '@/hooks/use-status'
+import { useSystemConfig } from '@/hooks/use-system-config'
 
 import { AuthLayout } from '../auth-layout'
 import { TermsFooter } from '../components/terms-footer'
@@ -28,23 +29,29 @@ import { SignUpForm } from './components/sign-up-form'
 export function SignUp() {
   const { t } = useTranslation()
   const { status } = useStatus()
+  const { systemName } = useSystemConfig()
 
   return (
     <AuthLayout>
       <div className='w-full space-y-8'>
-        <div className='space-y-2'>
-          <h2 className='text-center text-2xl font-semibold tracking-tight sm:text-left'>
-            {t('Create an account')}
+        <div className='border-b-4 border-black pb-7'>
+          <div className='mm-label mb-4'>Register</div>
+          <h2 className='mm-display text-4xl uppercase sm:text-5xl'>
+            {t('Create Account')}
           </h2>
-          <p className='text-muted-foreground text-left text-sm sm:text-base'>
+          <p className='mt-4 max-w-md text-sm leading-relaxed text-neutral-600 sm:text-base'>
+            {t('Sign up to start using {{siteName}}', {
+              siteName: systemName,
+            })}
+          </p>
+          <p className='mt-5 text-sm text-neutral-600'>
             {t('Already have an account?')}{' '}
             <Link
               to='/sign-in'
-              className='hover:text-primary font-medium underline underline-offset-4'
+              className='font-semibold text-black underline decoration-2 underline-offset-4'
             >
               {t('Sign in')}
             </Link>
-            .
           </p>
         </div>
 

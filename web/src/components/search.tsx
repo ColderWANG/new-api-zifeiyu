@@ -7,7 +7,7 @@ published by the Free Software Foundation, either version 3 of the
 License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
+but WITHOUT ANY WARRANTY; without even implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU Affero General Public License for more details.
 
@@ -17,6 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { SearchIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useSearch } from '@/context/search-provider'
@@ -30,15 +31,34 @@ type SearchProps = {
   placeholder?: string
 }
 
+function getPreferredSearchModifier() {
+  if (typeof navigator === 'undefined') return 'Ctrl'
+  if (/Mac|iPhone|iPad/i.test(navigator.userAgent)) return '⌘'
+  return 'Ctrl'
+}
+
 export function Search({ className = '', placeholder }: SearchProps) {
   const { t } = useTranslation()
   const { setOpen } = useSearch()
   const resolvedPlaceholder = placeholder ?? t('Search')
+  const [modifier, setModifier] = useState(getPreferredSearchModifier)
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(pointer: coarse)')
+    const updateModifier = () => {
+      setModifier(mediaQuery.matches ? '⌘' : getPreferredSearchModifier())
+    }
+
+    updateModifier()
+    mediaQuery.addEventListener('change', updateModifier)
+    return () => mediaQuery.removeEventListener('change', updateModifier)
+  }, [])
+
   return (
     <Button
       variant='outline'
       className={cn(
-        'bg-muted/25 group text-muted-foreground hover:bg-accent relative h-8 w-full flex-1 justify-start rounded-md text-sm font-normal shadow-none sm:w-40 sm:pe-12 md:flex-none lg:w-52 xl:w-64',
+        'group relative h-9 w-9 flex-none justify-center rounded-md border-border bg-background text-foreground shadow-none hover:bg-accent hover:text-accent-foreground sm:w-36 sm:justify-start sm:px-9 lg:w-44',
         className
       )}
       onClick={() => setOpen(true)}
@@ -46,13 +66,14 @@ export function Search({ className = '', placeholder }: SearchProps) {
     >
       <SearchIcon
         aria-hidden='true'
-        className='absolute start-1.5 top-1/2 -translate-y-1/2'
-        size={16}
+        className='absolute start-2.5 top-1/2 size-4 -translate-y-1/2'
       />
-      <span className='ms-4'>{resolvedPlaceholder}</span>
-      <kbd className='bg-muted group-hover:bg-accent pointer-events-none absolute end-[0.3rem] top-[0.3rem] hidden h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none sm:flex'>
-        <span className='text-xs'>⌘</span>
-        {t('K')}
+      <span className='hidden truncate sm:inline'>{resolvedPlaceholder}</span>
+      <kbd className='border-border bg-muted/60 text-muted-foreground pointer-events-none absolute end-1.5 top-1/2 hidden h-6 -translate-y-1/2 items-center gap-1 rounded-sm border px-1.5 font-mono text-[10px] font-medium select-none sm:flex'>
+        {modifier}
+        <span aria-hidden='true' className='text-[11px] leading-none'>
+          K
+        </span>
       </kbd>
     </Button>
   )

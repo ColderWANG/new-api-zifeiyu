@@ -463,7 +463,7 @@ function GuideStepRow({
 }) {
   return (
     <div className='flex items-start gap-2.5 text-sm leading-6'>
-      <span className='bg-muted text-muted-foreground mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-medium'>
+      <span className='bg-muted text-muted-foreground mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-xs font-medium'>
         {chip}
       </span>
       <span className='text-muted-foreground min-w-0'>{children}</span>

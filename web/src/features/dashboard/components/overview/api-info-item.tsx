@@ -42,11 +42,11 @@ export function ApiInfoItemComponent(props: ApiInfoItemProps) {
   const status = props.status
 
   return (
-    <div className='group hover:bg-muted/40 flex items-center justify-between gap-2 px-3 py-2.5 transition-colors sm:gap-3 sm:px-5 sm:py-3'>
+    <div className='group flex items-center justify-between gap-2 px-3 py-2.5 transition-colors hover:bg-black/5 sm:gap-3 sm:px-5 sm:py-3'>
       <div className='flex min-w-0 flex-1 items-center gap-2 sm:gap-3'>
         <span
           className={cn(
-            'inline-block size-2 shrink-0 rounded-full',
+            'inline-block size-2 shrink-0 rounded-none',
             getBgColorClass(item.color)
           )}
         />
@@ -56,11 +56,11 @@ export function ApiInfoItemComponent(props: ApiInfoItemProps) {
             <span className='font-mono text-sm font-semibold'>
               {item.route}
             </span>
-            <span className='text-muted-foreground/60 hidden truncate text-xs md:inline'>
+            <span className='hidden truncate text-xs text-black/55 md:inline'>
               {item.description}
             </span>
           </div>
-          <span className='text-muted-foreground/40 truncate font-mono text-xs'>
+          <span className='truncate font-mono text-xs text-black/40'>
             {item.url}
           </span>
         </div>

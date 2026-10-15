@@ -20,8 +20,6 @@ import { useState, useEffect, useRef, type ReactNode } from 'react'
 
 import { cn } from '@/lib/utils'
 
-type AccentTone = 'emerald' | 'amber' | 'blue' | 'violet'
-
 interface ApiDemoConfig {
   id: string
   label: string
@@ -30,44 +28,8 @@ interface ApiDemoConfig {
   headers: string[]
   request: string[]
   response: string[]
-  responseHighlights: string[]
   tokens: number
   latency: number
-  accent: AccentTone
-}
-
-const ACCENT_CLASSES: Record<
-  AccentTone,
-  {
-    activeText: string
-    activeBorder: string
-    badge: string
-  }
-> = {
-  emerald: {
-    activeText: 'text-emerald-600 dark:text-emerald-400',
-    activeBorder: 'border-emerald-500 dark:border-emerald-400',
-    badge:
-      'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400',
-  },
-  amber: {
-    activeText: 'text-amber-600 dark:text-amber-400',
-    activeBorder: 'border-amber-500 dark:border-amber-400',
-    badge:
-      'bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400',
-  },
-  blue: {
-    activeText: 'text-blue-600 dark:text-blue-400',
-    activeBorder: 'border-blue-500 dark:border-blue-400',
-    badge:
-      'bg-blue-500/10 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400',
-  },
-  violet: {
-    activeText: 'text-violet-600 dark:text-violet-400',
-    activeBorder: 'border-violet-500 dark:border-violet-400',
-    badge:
-      'bg-violet-500/10 text-violet-600 dark:bg-violet-400/10 dark:text-violet-400',
-  },
 }
 
 const API_DEMOS: ApiDemoConfig[] = [
@@ -85,14 +47,12 @@ const API_DEMOS: ApiDemoConfig[] = [
     ],
     response: [
       '{',
-      '  "choices": [{ "message": { "content": <text> } }],',
+      '  "choices": [{ "content": <text> }],',
       '  "usage": { "total_tokens": <tokens> }',
       '}',
     ],
-    responseHighlights: ['<text>', '<tokens>'],
     tokens: 27,
     latency: 142,
-    accent: 'emerald',
   },
   {
     id: 'responses',
@@ -103,14 +63,12 @@ const API_DEMOS: ApiDemoConfig[] = [
     request: ['"model": "your-model",', '"input": "..."'],
     response: [
       '{',
-      '  "output": [{ "type": "output_text", "text": <text> }],',
+      '  "output": [{ "text": <text> }],',
       '  "usage": { "total_tokens": <tokens> }',
       '}',
     ],
-    responseHighlights: ['<text>', '<tokens>'],
     tokens: 31,
     latency: 168,
-    accent: 'amber',
   },
   {
     id: 'claude',
@@ -127,14 +85,12 @@ const API_DEMOS: ApiDemoConfig[] = [
     ],
     response: [
       '{',
-      '  "content": [{ "type": "text", "text": <text> }],',
+      '  "content": [{ "text": <text> }],',
       '  "usage": { "input_tokens": <in>, "output_tokens": <out> }',
       '}',
     ],
-    responseHighlights: ['<text>', '<in>', '<out>'],
     tokens: 29,
     latency: 156,
-    accent: 'blue',
   },
   {
     id: 'gemini',
@@ -150,14 +106,12 @@ const API_DEMOS: ApiDemoConfig[] = [
     ],
     response: [
       '{',
-      '  "candidates": [{ "content": { "parts": [{ "text": <text> }] } }],',
+      '  "candidates": [{ "text": <text> }],',
       '  "usageMetadata": { "totalTokenCount": <tokens> }',
       '}',
     ],
-    responseHighlights: ['<text>', '<tokens>'],
     tokens: 25,
     latency: 93,
-    accent: 'violet',
   },
 ]
 
@@ -204,68 +158,48 @@ export function HeroTerminalDemo(props: HeroTerminalDemoProps) {
   }
 
   const demo = API_DEMOS[activeIndex]
-  const accent = ACCENT_CLASSES[demo.accent]
 
   return (
-    <div className={cn('mx-auto w-full max-w-2xl', props.className)}>
-      <div
-        className={cn(
-          'overflow-hidden rounded-2xl border backdrop-blur-sm',
-          'border-border/60 bg-white/95 shadow-[0_20px_50px_-25px_rgba(15,23,42,0.18)]',
-          'dark:border-white/[0.06] dark:bg-[#0b0f17]/95 dark:shadow-[0_20px_60px_-25px_rgba(0,0,0,0.7)]'
-        )}
-      >
+    <div
+      className={cn(
+        'flex min-h-0 w-full max-w-none flex-1 flex-col',
+        props.className
+      )}
+    >
+      <div className='flex min-h-[32rem] w-full flex-1 flex-col border-t-2 border-black bg-white'>
         {/* Tab strip */}
-        <div
-          className={cn(
-            'flex items-center gap-1 border-b px-2 sm:gap-1.5 sm:px-3',
-            'border-border/50 dark:border-white/[0.05]'
-          )}
-        >
+        <div className='flex overflow-x-auto border-b border-black'>
           {API_DEMOS.map((item, index) => {
-            const tone = ACCENT_CLASSES[item.accent]
             const isActive = index === activeIndex
             return (
               <button
                 key={item.id}
+                type='button'
                 onClick={() => handleSelect(index)}
                 className={cn(
-                  'relative -mb-px flex items-center gap-1.5 border-b-2 px-2.5 py-2.5 text-[11px] font-medium tracking-wide transition-colors sm:px-3 sm:text-xs',
+                  '-mb-px min-w-20 shrink-0 border-r border-black px-4 py-3 font-mono text-[10px] tracking-[0.18em] uppercase transition-none',
                   isActive
-                    ? `${tone.activeBorder} ${tone.activeText}`
-                    : 'text-foreground/40 hover:text-foreground/70 border-transparent'
+                    ? 'bg-black text-white'
+                    : 'bg-white text-black hover:bg-neutral-100'
                 )}
               >
                 {item.label}
               </button>
             )
           })}
-          <div className='ml-auto flex items-center gap-2 pr-2 sm:pr-3'>
-            <span className='inline-block size-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.45)]' />
-            <span className='text-foreground/40 font-mono text-[10px] tracking-wider uppercase'>
-              200 ok
-            </span>
+          <div className='ml-auto hidden min-w-24 items-center justify-end border-l border-black px-4 py-3 sm:flex'>
+            <span className='mm-label'>200 OK</span>
           </div>
         </div>
 
         {/* Endpoint row */}
-        <div
-          className={cn(
-            'flex items-center gap-2.5 border-b px-5 py-3',
-            'border-border/40 dark:border-white/[0.04]'
-          )}
-        >
-          <span
-            className={cn(
-              'rounded-md px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wider',
-              accent.badge
-            )}
-          >
+        <div className='flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-black px-5 py-4'>
+          <span className='border border-black px-2 py-1 font-mono text-[10px] font-semibold tracking-[0.16em] uppercase'>
             {demo.method}
           </span>
           <code
             className={cn(
-              'text-foreground/75 truncate font-mono text-[12.5px] transition-opacity duration-200',
+              'min-w-0 flex-1 truncate font-mono text-xs transition-opacity duration-100',
               transitioning ? 'opacity-0' : 'opacity-100'
             )}
           >
@@ -273,45 +207,32 @@ export function HeroTerminalDemo(props: HeroTerminalDemoProps) {
           </code>
         </div>
 
-        {/* Body — fixed rows so neither block shifts when switching demos */}
-        <div className='grid h-[400px] grid-rows-[235px_minmax(0,1fr)] font-mono text-[12.5px] leading-[1.55]'>
-          {/* Request */}
-          <RequestBlock demo={demo} transitioning={transitioning} />
-
-          {/* Response */}
-          <ResponseBlock demo={demo} transitioning={transitioning} />
-        </div>
-
-        {/* Footer metrics */}
-        <div
-          className={cn(
-            'flex items-center justify-between border-t px-5 py-2.5',
-            'border-border/40 bg-muted/30 dark:border-white/[0.05] dark:bg-white/[0.02]'
-          )}
-        >
-          <div className='text-foreground/40 flex items-center gap-3 text-[10px] tabular-nums'>
-            <span className='flex items-center gap-1'>
-              <span className='font-mono'>{demo.latency}</span>
-              <span className='tracking-wider uppercase'>ms</span>
-            </span>
-            <span className='bg-foreground/15 size-1 rounded-full' />
-            <span className='flex items-center gap-1'>
-              <span className='font-mono'>{demo.tokens}</span>
-              <span className='tracking-wider uppercase'>tokens</span>
-            </span>
-            <span className='bg-foreground/15 size-1 rounded-full' />
-            <span className='flex items-center gap-1'>
-              <span className='tracking-wider uppercase'>cost</span>
-              <span className='font-mono'>
-                ${(demo.tokens * 0.00003).toFixed(5)}
-              </span>
-            </span>
+        <div className='flex min-h-0 flex-1 flex-col font-mono text-[11px] leading-relaxed sm:text-xs'>
+          <div className='min-h-0 flex-1'>
+            <RequestBlock demo={demo} transitioning={transitioning} />
+            <ResponseBlock demo={demo} transitioning={transitioning} />
           </div>
-          <span className='text-foreground/30 font-mono text-[10px] tracking-wider uppercase'>
-            stream · sse
-          </span>
+
+          <div className='mt-auto grid grid-cols-2 border-t-2 border-black bg-black text-white sm:grid-cols-4'>
+            <MetricCell label='ms' value={String(demo.latency)} />
+            <MetricCell label='tokens' value={String(demo.tokens)} />
+            <MetricCell
+              label='cost'
+              value={`$${(demo.tokens * 0.00003).toFixed(5)}`}
+            />
+            <MetricCell label='stream' value='sse' />
+          </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+function MetricCell(props: { label: string; value: string }) {
+  return (
+    <div className='border-r border-white/20 px-3 py-3 last:border-r-0 sm:px-4'>
+      <div className='mm-label text-white/55'>{props.label}</div>
+      <div className='mt-2 font-mono text-sm tabular-nums'>{props.value}</div>
     </div>
   )
 }
@@ -320,11 +241,11 @@ function RequestBlock(props: { demo: ApiDemoConfig; transitioning: boolean }) {
   const { demo, transitioning } = props
 
   return (
-    <div className='relative px-5 py-4'>
+    <div className='relative min-w-0 px-4 py-3.5 sm:px-5 sm:py-4'>
       <SectionLabel>Request</SectionLabel>
       <div
         className={cn(
-          'mt-2 transition-opacity duration-200',
+          'mt-2 transition-opacity duration-100',
           transitioning ? 'opacity-0' : 'opacity-100'
         )}
       >
@@ -343,6 +264,8 @@ function RequestBlock(props: { demo: ApiDemoConfig; transitioning: boolean }) {
           <Flag>-d</Flag> <StringText>&apos;{'{'}</StringText>
         </CodeLine>
         {demo.request.map((line, i) => (
+          // Static code lines can repeat and never reorder independently.
+          // eslint-disable-next-line react/no-array-index-key
           <CodeLine key={i} indent={4}>
             {renderJsonLine(line)}
           </CodeLine>
@@ -359,20 +282,17 @@ function ResponseBlock(props: { demo: ApiDemoConfig; transitioning: boolean }) {
   const { demo, transitioning } = props
 
   return (
-    <div
-      className={cn(
-        'relative border-t px-5 py-4',
-        'border-border/40 bg-muted/20 dark:border-white/[0.05] dark:bg-white/[0.015]'
-      )}
-    >
+    <div className='relative min-w-0 border-t border-black bg-neutral-50 px-4 py-3.5 sm:px-5 sm:py-4'>
       <SectionLabel>Response</SectionLabel>
       <div
         className={cn(
-          'mt-2 transition-opacity duration-200',
+          'mt-2 transition-opacity duration-100',
           transitioning ? 'opacity-0' : 'opacity-100'
         )}
       >
         {demo.response.map((line, i) => (
+          // Static code lines can repeat and never reorder independently.
+          // eslint-disable-next-line react/no-array-index-key
           <CodeLine key={i}>{renderResponseLine(line, demo)}</CodeLine>
         ))}
       </div>
@@ -381,11 +301,7 @@ function ResponseBlock(props: { demo: ApiDemoConfig; transitioning: boolean }) {
 }
 
 function SectionLabel(props: { children: ReactNode }) {
-  return (
-    <span className='text-foreground/30 font-sans text-[10px] font-semibold tracking-[0.18em] uppercase'>
-      {props.children}
-    </span>
-  )
+  return <span className='mm-label text-neutral-500'>{props.children}</span>
 }
 
 const STRING_RE = /"[^"]*"/g
@@ -405,36 +321,34 @@ function renderResponseLine(line: string, demo: ApiDemoConfig): ReactNode {
 
   if (matches.length === 0) return tokenize(line)
 
-  matches.forEach((match, idx) => {
+  matches.forEach((match) => {
     const start = match.index ?? 0
     if (start > cursor) {
       segments.push(
-        <span key={`pre-${idx}`}>{tokenize(line.slice(cursor, start))}</span>
+        <span key={`pre-${start}`}>{tokenize(line.slice(cursor, start))}</span>
       )
     }
     const placeholder = match[0]
     if (placeholder === '<text>') {
       segments.push(
-        <Accent key={`ph-${idx}`} accent={demo.accent}>
-          {`"${truncateResponse(demo)}"`}
-        </Accent>
+        <Accent key={`ph-${start}`}>{`"${truncateResponse(demo)}"`}</Accent>
       )
     } else if (placeholder === '<tokens>') {
-      segments.push(<NumberText key={`ph-${idx}`}>{demo.tokens}</NumberText>)
+      segments.push(<NumberText key={`ph-${start}`}>{demo.tokens}</NumberText>)
     } else if (placeholder === '<in>') {
       segments.push(
-        <NumberText key={`ph-${idx}`}>
+        <NumberText key={`ph-${start}`}>
           {Math.floor(demo.tokens * 0.4)}
         </NumberText>
       )
     } else if (placeholder === '<out>') {
       segments.push(
-        <NumberText key={`ph-${idx}`}>
+        <NumberText key={`ph-${start}`}>
           {Math.ceil(demo.tokens * 0.6)}
         </NumberText>
       )
     } else {
-      segments.push(<Muted key={`ph-${idx}`}>{placeholder}</Muted>)
+      segments.push(<Muted key={`ph-${start}`}>{placeholder}</Muted>)
     }
     cursor = start + placeholder.length
   })
@@ -462,20 +376,20 @@ function tokenize(input: string): ReactNode {
   let cursor = 0
   const matches = [...input.matchAll(STRING_RE)]
 
-  matches.forEach((match, idx) => {
+  matches.forEach((match) => {
     const start = match.index ?? 0
     if (start > cursor) {
       segments.push(
-        <Muted key={`m-${idx}`}>{input.slice(cursor, start)}</Muted>
+        <Muted key={`m-${start}`}>{input.slice(cursor, start)}</Muted>
       )
     }
     const text = match[0]
     const after = input.slice(start + text.length).trimStart()
     const isKey = after.startsWith(':')
     if (isKey) {
-      segments.push(<Key key={`k-${idx}`}>{text}</Key>)
+      segments.push(<Key key={`k-${start}`}>{text}</Key>)
     } else {
-      segments.push(<StringText key={`s-${idx}`}>{text}</StringText>)
+      segments.push(<StringText key={`s-${start}`}>{text}</StringText>)
     }
     cursor = start + text.length
   })
@@ -503,46 +417,33 @@ function CodeLine(props: { children: ReactNode; indent?: number }) {
 }
 
 function Command(props: { children: ReactNode }) {
-  return (
-    <span className='font-medium text-emerald-600 dark:text-emerald-400'>
-      {props.children}
-    </span>
-  )
+  return <span className='font-semibold'>{props.children}</span>
 }
 
 function Flag(props: { children: ReactNode }) {
   return (
-    <span className='text-blue-600 dark:text-blue-400'>{props.children}</span>
-  )
-}
-
-function Key(props: { children: ReactNode }) {
-  return (
-    <span className='text-sky-700 dark:text-sky-300'>{props.children}</span>
-  )
-}
-
-function StringText(props: { children: ReactNode }) {
-  return (
-    <span className='text-amber-700 dark:text-amber-300'>{props.children}</span>
-  )
-}
-
-function NumberText(props: { children: ReactNode }) {
-  return (
-    <span className='font-medium text-violet-600 dark:text-violet-300'>
+    <span className='underline decoration-2 underline-offset-4'>
       {props.children}
     </span>
   )
 }
 
-function Muted(props: { children: ReactNode }) {
-  return <span className='text-foreground/55'>{props.children}</span>
+function Key(props: { children: ReactNode }) {
+  return <span className='text-neutral-900'>{props.children}</span>
 }
 
-function Accent(props: { children: ReactNode; accent: AccentTone }) {
-  const tone = ACCENT_CLASSES[props.accent]
-  return (
-    <span className={cn('font-medium', tone.activeText)}>{props.children}</span>
-  )
+function StringText(props: { children: ReactNode }) {
+  return <span className='text-neutral-600 italic'>{props.children}</span>
+}
+
+function NumberText(props: { children: ReactNode }) {
+  return <span className='font-semibold'>{props.children}</span>
+}
+
+function Muted(props: { children: ReactNode }) {
+  return <span className='text-neutral-500'>{props.children}</span>
+}
+
+function Accent(props: { children: ReactNode }) {
+  return <span className='font-semibold'>{props.children}</span>
 }

@@ -88,10 +88,10 @@ function detectQuickRangeDays(
 const SectionDivider = ({ label }: { label: string }) => (
   <div className='relative'>
     <div className='absolute inset-0 flex items-center'>
-      <span className='w-full border-t' />
+      <span className='w-full border-t border-black/20' />
     </div>
-    <div className='relative flex justify-center text-xs uppercase'>
-      <span className='bg-background text-muted-foreground px-2'>{label}</span>
+    <div className='relative flex justify-center font-mono text-xs uppercase'>
+      <span className='bg-white px-2 text-neutral-600'>{label}</span>
     </div>
   </div>
 )
@@ -150,8 +150,9 @@ export function ModelsFilter(props: ModelsFilterProps) {
     value: Date | string | undefined
   ) => {
     setFilters((prev) => ({ ...prev, [field]: value }))
-    if (field === 'start_timestamp' || field === 'end_timestamp')
+    if (field === 'start_timestamp' || field === 'end_timestamp') {
       setSelectedRange(null)
+    }
   }
 
   const handleQuickRange = (days: number) => {
@@ -171,7 +172,11 @@ export function ModelsFilter(props: ModelsFilterProps) {
       open={open}
       onOpenChange={handleOpenChange}
       trigger={
-        <Button variant='outline' size='sm'>
+        <Button
+          variant='outline'
+          size='sm'
+          className='rounded-none border border-black bg-white font-mono text-xs font-medium text-black transition-none hover:bg-black hover:text-white'
+        >
           <Filter className='mr-2 h-4 w-4' />
           {t('Filter')}
         </Button>
@@ -181,16 +186,25 @@ export function ModelsFilter(props: ModelsFilterProps) {
         props.descriptionKey ??
           'Filter the model analytics view by time range and user.'
       )}
-      contentClassName='max-sm:h-dvh max-sm:w-screen max-sm:max-w-none max-sm:rounded-none max-sm:p-4 sm:max-w-lg'
+      contentClassName='max-sm:h-dvh max-sm:w-screen max-sm:max-w-none max-sm:rounded-none max-sm:p-4 sm:max-w-lg rounded-none border-2 border-black bg-white shadow-none'
       contentHeight='min(48vh, 460px)'
       footerClassName='grid grid-cols-2 gap-2 sm:flex'
       footer={
         <>
-          <Button onClick={handleReset} variant='outline' type='button'>
+          <Button
+            onClick={handleReset}
+            variant='outline'
+            type='button'
+            className='rounded-none border border-black bg-white font-mono text-xs text-black transition-none hover:bg-black hover:text-white'
+          >
             <RotateCcw className='mr-2 h-4 w-4' />
             {t('Reset')}
           </Button>
-          <Button onClick={handleApply} type='submit'>
+          <Button
+            onClick={handleApply}
+            type='submit'
+            className='rounded-none border border-black bg-black font-mono text-xs text-white transition-none hover:bg-white hover:text-black'
+          >
             <Search className='mr-2 h-4 w-4' />
             {t('Apply Filters')}
           </Button>
@@ -211,12 +225,13 @@ export function ModelsFilter(props: ModelsFilterProps) {
                   key={range.days}
                   type='button'
                   size='sm'
-                  variant={selectedRange === range.days ? 'default' : 'outline'}
+                  variant='outline'
                   onClick={() => handleQuickRange(range.days)}
                   className={cn(
-                    'flex-1',
-                    selectedRange === range.days &&
-                      'ring-ring ring-2 ring-offset-2'
+                    'flex-1 rounded-none border border-black text-xs font-mono transition-none',
+                    selectedRange === range.days
+                      ? 'bg-black text-white hover:bg-black hover:text-white'
+                      : 'bg-white text-black hover:bg-black hover:text-white'
                   )}
                 >
                   {t(range.label)}
@@ -257,12 +272,10 @@ export function ModelsFilter(props: ModelsFilterProps) {
           <div className='grid gap-2'>
             <Label htmlFor='time_granularity'>{t('Time Granularity')}</Label>
             <Select
-              items={[
-                ...TIME_GRANULARITY_OPTIONS.map((option) => ({
-                  value: option.value,
-                  label: t(option.label),
-                })),
-              ]}
+              items={TIME_GRANULARITY_OPTIONS.map((option) => ({
+                value: option.value,
+                label: t(option.label),
+              }))}
               value={filters.time_granularity}
               onValueChange={(value) =>
                 handleChange('time_granularity', value as TimeGranularity)

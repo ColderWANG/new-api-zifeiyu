@@ -21,7 +21,7 @@ import type {
   OnChangeFn,
   PaginationState,
 } from '@tanstack/react-table'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 type SearchRecord = Record<string, unknown>
 
@@ -31,7 +31,10 @@ const PAGE_SIZE_STORAGE_KEY = 'page-size'
 
 function getStoredPageSize(): number | undefined {
   try {
-    const n = parseInt(localStorage.getItem(PAGE_SIZE_STORAGE_KEY) ?? '', 10)
+    const n = Number.parseInt(
+      localStorage.getItem(PAGE_SIZE_STORAGE_KEY) ?? '',
+      10
+    )
     return n > 0 ? n : undefined // n > 0 also rejects NaN
   } catch {
     return undefined
@@ -131,15 +134,25 @@ export function useTableUrlState(
       const raw = (search as SearchRecord)[cfg.searchKey]
       const deserialize = cfg.deserialize ?? ((v: unknown) => v)
       if (cfg.type === 'string') {
-        const value = (deserialize(raw) as string) ?? ''
+        const value = deserialize(raw) as string | undefined
         if (typeof value === 'string' && value.trim() !== '') {
           collected.push({ id: cfg.columnId, value })
         }
       } else {
-        // default to array type
-        const value = (deserialize(raw) as unknown[]) ?? []
-        if (Array.isArray(value) && value.length > 0) {
-          collected.push({ id: cfg.columnId, value })
+        // TanStack Router passes a lone repeated parameter as a scalar. Keep
+        // array filters usable from both scalar and array URL representations.
+        const deserialized = deserialize(raw)
+        let value: unknown[] = []
+        if (Array.isArray(deserialized)) {
+          value = deserialized
+        } else if (deserialized != null && deserialized !== '') {
+          value = [deserialized]
+        }
+
+        // Single-select UIs may still report one-element arrays, while legacy
+        // URLs can carry multiple repeated values. Compress both to one item.
+        if (value.length > 0) {
+          collected.push({ id: cfg.columnId, value: value.slice(0, 1) })
         }
       }
     }
@@ -150,10 +163,19 @@ export function useTableUrlState(
     useState<ColumnFiltersState>(initialColumnFilters)
 
   // URL 为单一数据源：仅当 search（URL）变化时同步，避免依赖 initialColumnFilters 造成死循环（config 常为内联引用）
+  const serializedColumnFilters = JSON.stringify(initialColumnFilters)
+  const serializedColumnFiltersRef = useRef(serializedColumnFilters)
+
+  // URL is the source of truth, but a router render can still expose the
+  // previous search object after an optimistic table update. Only replace
+  // table state when the URL-derived filters actually changed; this prevents
+  // a stale search object from briefly rolling back a selection.
   useEffect(() => {
+    if (serializedColumnFiltersRef.current === serializedColumnFilters) return
+    serializedColumnFiltersRef.current = serializedColumnFilters
     setColumnFilters(initialColumnFilters)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search])
+  }, [serializedColumnFilters])
 
   const pagination: PaginationState = useMemo(() => {
     const rawPage = (search as SearchRecord)[pageKey]
@@ -221,10 +243,11 @@ export function useTableUrlState(
         patch[cfg.searchKey] =
           value.trim() !== '' ? serialize(value) : undefined
       } else {
-        const value = Array.isArray(found?.value)
-          ? (found!.value as unknown[])
-          : []
-        patch[cfg.searchKey] = value.length > 0 ? serialize(value) : undefined
+        const foundValue = found?.value
+        const value = Array.isArray(foundValue) ? (foundValue as unknown[]) : []
+        const singleValue = value.slice(0, 1)
+        patch[cfg.searchKey] =
+          singleValue.length > 0 ? serialize(singleValue) : undefined
       }
     }
 

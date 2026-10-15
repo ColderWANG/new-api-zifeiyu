@@ -1,22 +1,4 @@
-/*
-Copyright (C) 2023-2026 QuantumNous
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-For commercial licensing, please contact support@quantumnous.com
-*/
-import type { LucideIcon } from 'lucide-react'
+﻿import type { LucideIcon } from 'lucide-react'
 /*
 Copyright (C) 2023-2026 QuantumNous
 
@@ -43,27 +25,27 @@ import { stringToColor } from '@/lib/colors'
 import { cn } from '@/lib/utils'
 
 export const dotColorMap = {
-  success: 'bg-success',
-  warning: 'bg-warning',
-  danger: 'bg-destructive',
-  info: 'bg-info',
-  neutral: 'bg-neutral',
-  purple: 'bg-chart-4',
-  amber: 'bg-warning',
-  blue: 'bg-chart-1',
-  cyan: 'bg-chart-2',
-  green: 'bg-success',
-  grey: 'bg-neutral',
-  indigo: 'bg-chart-1',
-  'light-blue': 'bg-info',
-  'light-green': 'bg-emerald-400',
-  lime: 'bg-chart-3',
-  orange: 'bg-warning',
-  pink: 'bg-chart-5',
-  red: 'bg-destructive',
-  teal: 'bg-chart-2',
-  violet: 'bg-chart-4',
-  yellow: 'bg-warning',
+  success: 'bg-black dark:bg-white',
+  warning: 'bg-neutral-600 dark:bg-neutral-400',
+  danger: 'bg-black dark:bg-white',
+  info: 'bg-neutral-500 dark:bg-neutral-400',
+  neutral: 'bg-neutral-400 dark:bg-neutral-600',
+  purple: 'bg-neutral-700 dark:bg-neutral-300',
+  amber: 'bg-neutral-600 dark:bg-neutral-400',
+  blue: 'bg-neutral-800 dark:bg-neutral-200',
+  cyan: 'bg-neutral-600 dark:bg-neutral-400',
+  green: 'bg-black dark:bg-white',
+  grey: 'bg-neutral-400 dark:bg-neutral-500',
+  indigo: 'bg-neutral-800 dark:bg-neutral-200',
+  'light-blue': 'bg-neutral-500 dark:bg-neutral-400',
+  'light-green': 'bg-neutral-600 dark:bg-neutral-300',
+  lime: 'bg-neutral-600 dark:bg-neutral-400',
+  orange: 'bg-neutral-700 dark:bg-neutral-300',
+  pink: 'bg-neutral-700 dark:bg-neutral-300',
+  red: 'bg-black dark:bg-white',
+  teal: 'bg-neutral-600 dark:bg-neutral-400',
+  violet: 'bg-neutral-700 dark:bg-neutral-300',
+  yellow: 'bg-neutral-600 dark:bg-neutral-400',
 } as const
 
 export const textColorMap = {
@@ -93,9 +75,9 @@ export const textColorMap = {
 export type StatusVariant = keyof typeof dotColorMap
 
 /** Controls the visual style of the badge.
- * - `badge`    — default pill with background and padding (default)
- * - `text`     — plain text, no background or padding, only color
- * - `underline`— plain text with a bottom border underline
+ * - `badge`     - standard rectangular tag with border and padding (default)
+ * - `text`      - plain text, no background or padding
+ * - `underline` - plain text with a bottom border underline
  */
 export type StatusBadgeType = 'badge' | 'text' | 'underline'
 
@@ -105,14 +87,14 @@ export const StatusBadgeTypeContext =
   React.createContext<StatusBadgeType>('badge')
 
 const sizeMap = {
-  sm: 'h-5 gap-1 px-1.5 text-sm leading-none',
-  md: 'h-5 gap-1 px-1.5 text-sm leading-none',
-  lg: 'h-6 gap-1.5 px-2 text-sm leading-none',
+  sm: 'h-5 gap-1 px-1.5 text-xs leading-none',
+  md: 'h-5.5 gap-1 px-2 text-xs leading-none',
+  lg: 'h-6 gap-1.5 px-2.5 text-sm leading-none',
 } as const
 
 const textSizeMap = {
-  sm: 'gap-1 text-sm leading-none',
-  md: 'gap-1 text-sm leading-none',
+  sm: 'gap-1 text-xs leading-none',
+  md: 'gap-1 text-xs leading-none',
   lg: 'gap-1.5 text-sm leading-none',
 } as const
 
@@ -124,7 +106,7 @@ export interface StatusBadgeProps extends Omit<
   children?: React.ReactNode
   icon?: LucideIcon
   pulse?: boolean
-  /** Kept for compatibility. Badges no longer render leading dots. */
+  /** Kept for compatibility. */
   showDot?: boolean
   variant?: StatusVariant | null
   size?: 'sm' | 'md' | 'lg' | null
@@ -182,17 +164,21 @@ export function StatusBadge({
     <span
       data-slot='status-badge'
       className={cn(
-        'inline-flex w-fit max-w-full min-w-0 shrink items-center font-medium tracking-normal whitespace-nowrap transition-colors',
+        'inline-flex w-fit max-w-full min-w-0 shrink items-center font-medium tracking-normal whitespace-nowrap transition-none',
         isBadge
-          ? cn('rounded-4xl', sizeMap[size ?? 'sm'])
+          ? cn(
+              'rounded-none border border-black/25 bg-neutral-100/80 text-foreground dark:border-white/25 dark:bg-neutral-900/80',
+              sizeMap[size ?? 'sm']
+            )
           : cn(
               textSizeMap[size ?? 'sm'],
-              type === 'underline' && 'border-b border-current pb-px'
+              type === 'underline' &&
+                'border-b border-black dark:border-white pb-px'
             ),
         textColorMap[computedVariant],
         pulse && 'animate-pulse',
         copyable &&
-          'cursor-copy hover:brightness-95 active:scale-95 dark:hover:brightness-110',
+          'cursor-copy hover:border-black hover:bg-neutral-200/80 dark:hover:border-white dark:hover:bg-neutral-800/80 active:translate-y-px',
         className
       )}
       onClick={handleClick}
@@ -202,7 +188,7 @@ export function StatusBadge({
       {showDot && (
         <span
           className={cn(
-            'inline-block size-1.5 shrink-0 rounded-full',
+            'inline-block size-1.5 shrink-0 rounded-none',
             dotColorMap[computedVariant]
           )}
           aria-hidden='true'

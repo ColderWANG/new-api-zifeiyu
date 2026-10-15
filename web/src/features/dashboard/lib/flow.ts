@@ -98,7 +98,7 @@ const DEFAULT_FLOW_SANKEY_LABELS: FlowSankeyLabels = {
   share: 'Share',
 }
 
-const DEFAULT_FLOW_CHART_COLOR = '#1664FF'
+const DEFAULT_FLOW_CHART_COLOR = '#71717a'
 
 const FLOW_NODE_KINDS: readonly FlowNodeKind[] = [
   'user',
@@ -1210,9 +1210,11 @@ export function buildFlowSankeySpec(
       limit: 220,
       interactive: false,
       style: {
-        fill: '#475569',
-        fontSize: 11,
-        fontWeight: 600,
+        fill: '#3f3f46',
+        fontSize: 12,
+        fontWeight: 700,
+        fontFamily:
+          "var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
       },
     },
     node: {

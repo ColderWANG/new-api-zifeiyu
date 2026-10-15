@@ -16,8 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { ArrowRight01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
+import { ArrowRight } from 'lucide-react'
 import { Reorder } from 'motion/react'
 import { useMemo, type ComponentProps } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -100,7 +99,10 @@ export function AutoGroupOrderEditor(props: AutoGroupOrderEditorProps) {
       className={cn('flex flex-col gap-3', props.className)}
     >
       <div className='flex items-center justify-between gap-3'>
-        <p className='text-muted-foreground text-xs' aria-live='polite'>
+        <p
+          className='text-muted-foreground font-mono text-xs'
+          aria-live='polite'
+        >
           {isInheriting
             ? t('Using the complete global Auto order ({{count}} groups)', {
                 count: props.globalOptions.length,
@@ -118,6 +120,7 @@ export function AutoGroupOrderEditor(props: AutoGroupOrderEditorProps) {
           onClick={() => {
             props.onChange({ groups: [], mode: 'inherit' })
           }}
+          className='border-border rounded-none border'
         >
           {t('Restore global Auto')}
         </Button>
@@ -136,7 +139,7 @@ export function AutoGroupOrderEditor(props: AutoGroupOrderEditorProps) {
       />
 
       {isInheriting && props.globalOptions.length === 0 && (
-        <Empty className='min-h-28 border'>
+        <Empty className='border-border bg-popover min-h-28 rounded-none border'>
           <EmptyHeader>
             <EmptyTitle>{t('Inherit global Auto order')}</EmptyTitle>
             <EmptyDescription>
@@ -155,8 +158,7 @@ export function AutoGroupOrderEditor(props: AutoGroupOrderEditorProps) {
           {props.globalOptions.map((option, index) => (
             <li key={option.value} className='flex min-w-0 items-center gap-1'>
               {index > 0 && (
-                <HugeiconsIcon
-                  icon={ArrowRight01Icon}
+                <ArrowRight
                   strokeWidth={2}
                   aria-hidden='true'
                   data-slot='global-auto-order-connector'
@@ -166,12 +168,12 @@ export function AutoGroupOrderEditor(props: AutoGroupOrderEditorProps) {
               <span
                 data-slot='global-auto-order-chip'
                 title={option.desc}
-                className='bg-muted/30 flex min-w-0 items-center gap-1.5 rounded-md border px-2 py-1'
+                className='border-border bg-muted flex min-w-0 items-center gap-1.5 rounded-none border px-2 py-1'
               >
                 <span
                   data-slot='global-auto-order-index'
                   aria-hidden='true'
-                  className='bg-primary/10 text-primary flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold tabular-nums'
+                  className='bg-primary text-primary-foreground flex size-4 shrink-0 items-center justify-center rounded-none font-mono text-[10px] font-semibold tabular-nums'
                 >
                   {index + 1}
                 </span>
@@ -197,7 +199,7 @@ export function AutoGroupOrderEditor(props: AutoGroupOrderEditorProps) {
       )}
 
       {!isInheriting && props.value.length === 0 && (
-        <Empty className='min-h-24 border'>
+        <Empty className='border-border bg-popover min-h-24 rounded-none border'>
           <EmptyHeader>
             <EmptyTitle>{t('Auto group order')}</EmptyTitle>
             <EmptyDescription>

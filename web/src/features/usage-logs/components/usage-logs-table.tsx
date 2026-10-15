@@ -71,13 +71,13 @@ function getColumnVisibilityStorageKey(
 }
 
 function deserializeLogTypeFilter(value: unknown): unknown[] {
-  let values: unknown[] = []
+  // `0` is the legacy "all types" URL sentinel. Normalize it to no filter so
+  // requests omit type entirely instead of sending backend type=0.
+  if (value === LOG_TYPE_ALL_VALUE || value == null || value === '') return []
   if (Array.isArray(value)) {
-    values = value
-  } else if (value) {
-    values = [value]
+    return value.filter((item) => String(item) !== LOG_TYPE_ALL_VALUE)
   }
-  return values.filter((item) => String(item) !== LOG_TYPE_ALL_VALUE)
+  return [value]
 }
 
 interface UsageLogsTableProps {
@@ -135,7 +135,7 @@ export function UsageLogsTable({ logCategory }: UsageLogsTableProps) {
     globalFilter: { enabled: false },
     columnFilters: [
       {
-        columnId: 'created_at',
+        columnId: 'type',
         searchKey: 'type',
         type: 'array' as const,
         deserialize: deserializeLogTypeFilter,

@@ -70,7 +70,7 @@ export function TableSkeleton<TData>({
               <TableCell key={column.id} className='py-3'>
                 <Skeleton
                   className={cn(
-                    'h-4 rounded-sm',
+                    'h-4 rounded-none',
                     isSelectColumn ? 'size-4' : undefined
                   )}
                   style={

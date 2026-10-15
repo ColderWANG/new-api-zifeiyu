@@ -70,30 +70,32 @@ export function ApiKeysPrimaryButtons() {
         </PopoverTrigger>
         <PopoverContent
           align='end'
-          className='max-h-[min(28rem,var(--available-height))] w-96 max-w-[calc(100vw-2rem)] overflow-y-auto'
+          className='border-border bg-popover max-h-[min(28rem,var(--available-height))] w-96 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-none border p-4 shadow-none'
         >
-          <PopoverTitle>{t('API Addresses')}</PopoverTitle>
+          <PopoverTitle className='mb-3 text-sm font-semibold'>
+            {t('API Addresses')}
+          </PopoverTitle>
           {loading ? (
             <LoadingState inline size='sm' message={t('Loading...')} />
           ) : (
-            <ItemGroup>
+            <ItemGroup className='gap-2'>
               {addresses.map((address) => (
                 <Item
                   key={address.url}
                   role='listitem'
                   variant='muted'
                   size='xs'
-                  className='flex-nowrap items-start'
+                  className='border-border bg-muted flex-nowrap items-start rounded-none border p-2.5'
                 >
                   <ItemContent className='min-w-0 gap-1'>
-                    <ItemTitle className='line-clamp-none break-all'>
+                    <ItemTitle className='line-clamp-none text-xs font-medium break-all'>
                       {address.route}
                     </ItemTitle>
-                    <code className='text-xs break-all select-text'>
+                    <code className='text-muted-foreground font-mono text-xs break-all select-text'>
                       {address.url}
                     </code>
                     {address.description && (
-                      <ItemDescription className='line-clamp-none break-words'>
+                      <ItemDescription className='text-muted-foreground line-clamp-none text-[11px] break-words'>
                         {address.description}
                       </ItemDescription>
                     )}

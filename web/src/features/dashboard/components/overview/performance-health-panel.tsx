@@ -21,7 +21,7 @@ import { Gauge, HeartPulse, Timer } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { IconBadge, type IconBadgeTone } from '@/components/ui/icon-badge'
+import type { IconBadgeTone } from '@/components/ui/icon-badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getPerfMetricsSummary } from '@/features/performance-metrics/api'
 import {
@@ -61,13 +61,13 @@ export function PerformanceHealthPanel() {
   const hasData = models.length > 0
 
   return (
-    <section className='bg-card h-full overflow-hidden rounded-2xl border shadow-xs'>
-      <div className='flex items-center gap-2 border-b px-4 py-3 sm:px-5'>
-        <IconBadge tone='success' size='sm'>
-          <HeartPulse />
-        </IconBadge>
+    <section className='h-full border-b border-black/12 bg-white'>
+      <div className='flex items-center gap-2 border-b border-black/12 px-4 py-3 sm:px-5'>
+        <span className='flex size-7 shrink-0 items-center justify-center border border-black/15 bg-white text-black'>
+          <HeartPulse className='size-3.5' />
+        </span>
         <h3 className='text-sm font-semibold'>{t('Performance health')}</h3>
-        <span className='text-muted-foreground ml-auto text-xs'>
+        <span className='ml-auto font-mono text-[10px] tracking-[0.14em] text-black/55 uppercase'>
           {t('Performance metrics for the last 24 hours')}
         </span>
       </div>
@@ -103,20 +103,20 @@ export function PerformanceHealthPanel() {
         {loading ? (
           <div className='space-y-1'>
             {['success', 'latency', 'throughput'].map((key) => (
-              <Skeleton key={key} className='h-5 w-full rounded' />
+              <Skeleton key={key} className='h-5 w-full' />
             ))}
           </div>
         ) : (
           hasData && (
             <div>
-              <span className='text-muted-foreground mb-1 block text-[11px] font-medium'>
+              <span className='mb-1 block text-[10px] font-semibold tracking-[0.14em] text-black/55 uppercase'>
                 {t('Top models by traffic')}
               </span>
               <div className='grid grid-cols-1 gap-x-4 sm:grid-cols-2'>
                 {topModels.map((model) => (
                   <div
                     key={model.model_name}
-                    className='flex items-center justify-between gap-2 rounded px-1.5 py-1'
+                    className='flex items-center justify-between gap-2 px-1.5 py-1'
                   >
                     <span className='min-w-0 flex-1 truncate font-mono text-[11px]'>
                       {model.model_name}
@@ -124,7 +124,7 @@ export function PerformanceHealthPanel() {
                     <span className='inline-flex shrink-0 items-center gap-1'>
                       <span
                         className={cn(
-                          'size-1.5 rounded-full',
+                          'size-1.5 rounded-none',
                           getSuccessRateDotClass(model.success_rate)
                         )}
                         aria-hidden='true'
@@ -159,11 +159,11 @@ function MetricCell(props: {
 }) {
   const Icon = props.icon
   return (
-    <div className='bg-muted/40 rounded-xl px-3 py-2.5'>
-      <div className='text-muted-foreground flex items-center gap-1.5 text-[11px] font-medium'>
-        <IconBadge tone={props.tone} size='xs'>
-          <Icon />
-        </IconBadge>
+    <div className='border border-black/10 bg-white px-3 py-2.5'>
+      <div className='flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.14em] text-black/55 uppercase'>
+        <span className='flex size-5 shrink-0 items-center justify-center border border-black/12 bg-neutral-100 text-black'>
+          <Icon className='size-3' />
+        </span>
         <span className='truncate'>{props.label}</span>
       </div>
       {props.loading ? (
@@ -171,7 +171,7 @@ function MetricCell(props: {
       ) : (
         <div
           className={cn(
-            'mt-1.5 font-mono text-sm font-semibold tabular-nums',
+            'mt-1.5 font-mono text-sm font-semibold tabular-nums text-black',
             props.valueClassName
           )}
         >

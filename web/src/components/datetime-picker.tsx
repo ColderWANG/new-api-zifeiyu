@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { ChevronDownIcon } from 'lucide-react'
+import { ChevronDown, X } from 'lucide-react'
 import * as React from 'react'
 import { enUS, fr, ja, ru, vi, zhCN, zhTW } from 'react-day-picker/locale'
 import { useTranslation } from 'react-i18next'
@@ -121,16 +121,19 @@ export function DateTimePicker({
             <Button
               variant='outline'
               className={cn(
-                'flex-1 justify-between font-normal',
-                !date && 'text-muted-foreground'
+                'flex-1 justify-between font-mono text-xs rounded-none border border-black bg-white text-black hover:bg-black hover:text-white transition-none',
+                !date && 'text-neutral-500'
               )}
             />
           }
         >
           {date ? dayjs(date).format('YYYY-MM-DD') : placeholderText}
-          <ChevronDownIcon className='h-4 w-4 opacity-50' />
+          <ChevronDown className='h-4 w-4 opacity-70' />
         </PopoverTrigger>
-        <PopoverContent className='w-auto overflow-hidden p-0' align='start'>
+        <PopoverContent
+          className='w-auto overflow-hidden rounded-none border-2 border-black bg-white p-0 shadow-none'
+          align='start'
+        >
           <Calendar
             mode='single'
             selected={date}
@@ -150,7 +153,7 @@ export function DateTimePicker({
         value={time}
         aria-label={t('Time')}
         onChange={handleTimeChange}
-        className='w-32 appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none'
+        className='w-32 appearance-none rounded-none border border-black bg-white font-mono text-xs text-black [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none'
         disabled={!date}
       />
       {date && (
@@ -159,10 +162,10 @@ export function DateTimePicker({
           variant='outline'
           size='icon'
           onClick={handleClear}
-          className='shrink-0'
+          className='shrink-0 rounded-none border border-black bg-white text-black transition-none hover:bg-black hover:text-white'
           aria-label='Clear'
         >
-          <span aria-hidden='true'>✕</span>
+          <X className='size-3.5' />
         </Button>
       )}
     </div>

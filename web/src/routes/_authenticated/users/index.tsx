@@ -20,22 +20,21 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import z from 'zod'
 
 import { Users } from '@/features/users'
+import {
+  USER_ROLE_SEARCH_VALUES,
+  USER_STATUS_SEARCH_VALUES,
+} from '@/features/users/constants'
 import { ROLE } from '@/lib/roles'
+import { urlArray, urlSingle } from '@/lib/url-array-schema'
 import { useAuthStore } from '@/stores/auth-store'
 
-const usersSearchSchema = z.object({
+export const usersSearchSchema = z.object({
   page: z.number().optional().catch(1),
   pageSize: z.number().optional().catch(undefined),
   filter: z.string().optional().catch(''),
-  status: z
-    .array(z.enum(['-1', '1', '2']))
-    .optional()
-    .catch([]),
-  role: z
-    .array(z.enum(['1', '10', '100']))
-    .optional()
-    .catch([]),
-  group: z.array(z.string()).optional().catch([]),
+  status: urlSingle(z.enum(USER_STATUS_SEARCH_VALUES)),
+  role: urlSingle(z.enum(USER_ROLE_SEARCH_VALUES)),
+  group: urlArray(z.string()),
 })
 
 export const Route = createFileRoute('/_authenticated/users/')({

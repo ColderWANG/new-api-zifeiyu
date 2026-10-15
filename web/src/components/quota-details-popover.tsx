@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright (C) 2023-2026 QuantumNous
 
 This program is free software: you can redistribute it and/or modify
@@ -48,7 +48,7 @@ export function QuotaDetailsPopover(props: QuotaDetailsPopoverProps) {
               variant='ghost'
               aria-label={props.triggerLabel}
               className={cn(
-                'h-auto w-full min-w-0 justify-start px-0 py-0.5 text-left font-normal hover:bg-transparent aria-expanded:bg-transparent',
+                'h-auto w-full min-w-0 justify-start rounded-none px-0 py-0.5 text-left font-normal hover:bg-transparent aria-expanded:bg-transparent',
                 props.triggerClassName
               )}
             />
@@ -60,19 +60,23 @@ export function QuotaDetailsPopover(props: QuotaDetailsPopoverProps) {
       </div>
       <PopoverContent
         align='start'
-        className='w-72 max-w-[calc(100vw-2rem)] gap-3 p-3'
+        className='w-72 max-w-[calc(100vw-2rem)] gap-3 rounded-none border-2 border-black bg-white p-3.5 shadow-none dark:border-white dark:bg-black'
       >
-        <PopoverTitle>{props.title}</PopoverTitle>
-        <dl className='grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 text-sm tabular-nums'>
+        <PopoverTitle className='mb-2 text-xs font-semibold tracking-wider uppercase'>
+          {props.title}
+        </PopoverTitle>
+        <dl className='grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 text-xs'>
           {props.details.map((detail) => (
             <Fragment key={detail.label}>
               <dt className='text-muted-foreground'>{detail.label}</dt>
-              <dd className='text-right break-all'>{detail.value}</dd>
+              <dd className='text-right font-mono font-medium break-all tabular-nums'>
+                {detail.value}
+              </dd>
             </Fragment>
           ))}
         </dl>
         {props.description && (
-          <p className='text-muted-foreground text-xs leading-relaxed'>
+          <p className='text-muted-foreground mt-2 border-t border-black/10 pt-2 text-xs leading-relaxed dark:border-white/10'>
             {props.description}
           </p>
         )}

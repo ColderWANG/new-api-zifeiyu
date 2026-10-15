@@ -20,16 +20,24 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import z from 'zod'
 
 import { Channels } from '@/features/channels'
+import {
+  CHANNEL_FILTER_ALL_VALUE,
+  CHANNEL_STATUS_SEARCH_VALUES,
+} from '@/features/channels/constants'
 import { ROLE } from '@/lib/roles'
+import { urlSingle } from '@/lib/url-array-schema'
 import { useAuthStore } from '@/stores/auth-store'
 
-const channelsSearchSchema = z.object({
+export const channelsSearchSchema = z.object({
   page: z.number().optional().catch(1),
   pageSize: z.number().optional().catch(undefined),
   filter: z.string().optional().catch(''),
-  status: z.array(z.string()).optional().catch([]),
-  type: z.array(z.string()).optional().catch([]),
-  group: z.array(z.string()).optional().catch([]),
+  status: urlSingle(
+    z.enum(CHANNEL_STATUS_SEARCH_VALUES),
+    CHANNEL_FILTER_ALL_VALUE
+  ),
+  type: urlSingle(z.string().regex(/^\d+$/)),
+  group: urlSingle(z.string().min(1)),
   model: z.string().optional().catch(''),
 })
 

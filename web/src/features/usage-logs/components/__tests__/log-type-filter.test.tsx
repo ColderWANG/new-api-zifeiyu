@@ -119,12 +119,12 @@ it('marks only retired log types as deprecated while keeping historical filters 
   )
   await userEvent.click(screen.getByRole('button', { name: 'Search' }))
   await waitFor(() =>
-    expect(router.state.location.search).toMatchObject({ type: ['3'], page: 1 })
+    expect(router.state.location.search).toMatchObject({ type: '3', page: 1 })
   )
   await userEvent.click(screen.getByRole('combobox', { name: 'Type' }))
   await userEvent.click(screen.getByRole('option', { name: /^Login/ }))
   await userEvent.click(screen.getByRole('button', { name: 'Search' }))
   await waitFor(() =>
-    expect(router.state.location.search).toMatchObject({ type: ['7'], page: 1 })
+    expect(router.state.location.search).toMatchObject({ type: '7', page: 1 })
   )
 })

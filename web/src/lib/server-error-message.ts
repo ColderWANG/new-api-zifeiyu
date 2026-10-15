@@ -132,6 +132,23 @@ export function getServerErrorStatus(value: unknown): number | undefined {
   return undefined
 }
 
+export function getServerErrorRetryAfterSeconds(
+  value: unknown
+): number | undefined {
+  for (const source of getServerErrorSources(value)) {
+    const headers = isRecord(source.response)
+      ? source.response.headers
+      : source.headers
+    if (!isRecord(headers)) continue
+    const retryAfter = headers['retry-after'] ?? headers['Retry-After']
+    if (typeof retryAfter === 'string' || typeof retryAfter === 'number') {
+      const seconds = Number(retryAfter)
+      if (Number.isFinite(seconds) && seconds > 0) return Math.ceil(seconds)
+    }
+  }
+  return undefined
+}
+
 export function isServerErrorCancelled(value: unknown): boolean {
   return getServerErrorSources(value).some(
     (source) =>

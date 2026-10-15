@@ -16,8 +16,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { dataScheme as vchartDefaultDataScheme } from '@visactor/vchart/esm/theme/color-scheme/builtin/default'
-
 import { MAX_CHART_TREND_POINTS } from '@/features/dashboard/constants'
 import type {
   QuotaDataItem,
@@ -39,15 +37,61 @@ type TooltipLineItem = {
   shapeSize?: number
 }
 
-export function getDashboardChartColors(domainLength: number): string[] {
-  const scheme =
-    vchartDefaultDataScheme.find(
-      (item) => !item.maxDomainLength || domainLength <= item.maxDomainLength
-    ) ?? vchartDefaultDataScheme.at(-1)
+const LIGHT_SOFT_CHART_COLORS = [
+  '#a8c7e8',
+  '#e8a8b8',
+  '#a8d8cf',
+  '#c7b8e8',
+  '#e8d3a8',
+  '#b7c9e0',
+  '#e0b8c4',
+  '#b6dfd0',
+  '#d0bede',
+  '#e5d9b8',
+]
 
-  return (scheme?.scheme ?? []).filter(
-    (color): color is string => typeof color === 'string'
-  )
+const DARK_SOFT_CHART_COLORS = [
+  '#8fbde5',
+  '#e58fa8',
+  '#7fd0c2',
+  '#b39de0',
+  '#e0c184',
+  '#a1b8d9',
+  '#d697a9',
+  '#8ccab9',
+  '#bc9fd2',
+  '#d8c489',
+]
+
+export type DashboardChartColorScheme = 'light' | 'dark'
+
+const CHART_CORNER_RADIUS = 2
+const CHART_INTERACTION_LINE_WIDTH = 1.5
+const CHART_INTERACTION_STROKE: Record<DashboardChartColorScheme, string> = {
+  light: '#ffffff',
+  dark: '#111114',
+}
+
+export function getDashboardChartColors(
+  domainLength: number,
+  scheme: DashboardChartColorScheme = 'light'
+): string[] {
+  const palette =
+    scheme === 'dark' ? DARK_SOFT_CHART_COLORS : LIGHT_SOFT_CHART_COLORS
+  if (domainLength <= 0) return [palette[0]]
+  if (domainLength <= palette.length) return palette.slice(0, domainLength)
+
+  const result: string[] = []
+  for (let i = 0; i < domainLength; i++) {
+    result.push(palette[i % palette.length])
+  }
+  return result
+}
+
+export function getDashboardChartInteractionStroke(
+  scheme: DashboardChartColorScheme
+): string {
+  return CHART_INTERACTION_STROKE[scheme]
 }
 
 function renderQuotaCompat(rawQuota: number, digits = 4): string {
@@ -71,10 +115,12 @@ export function processChartData(
   data: QuotaDataItem[],
   timeGranularity: TimeGranularity = 'day',
   t?: TFunction,
-  chartCornerRadius?: number
+  chartCornerRadius = CHART_CORNER_RADIUS,
+  colorScheme: DashboardChartColorScheme = 'light'
 ): ProcessedChartData {
   const tt: TFunction = t ?? ((x) => x)
   const otherLabel = tt('Other')
+  const chartInteractionStroke = getDashboardChartInteractionStroke(colorScheme)
 
   const formatInt = (value: number) =>
     Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(value)
@@ -270,10 +316,15 @@ export function processChartData(
     .map(([time]) => time)
   const sortedModels = [...allModels].sort()
   const modelColorDomain = [...new Set([...sortedModels, otherLabel])]
-  const modelColorRange = getDashboardChartColors(modelColorDomain.length)
+  const modelColorRange = getDashboardChartColors(
+    modelColorDomain.length,
+    colorScheme
+  )
   const otherColor = modelColorRange[modelColorDomain.indexOf(otherLabel)]
   const otherTooltipColor =
-    typeof otherColor === 'string' ? otherColor : '#FF8A00'
+    typeof otherColor === 'string'
+      ? otherColor
+      : getDashboardChartColors(2, colorScheme)[1]
   const modelColor = {
     type: 'ordinal',
     domain: modelColorDomain,
@@ -465,11 +516,18 @@ export function processChartData(
       valueField: 'value',
       categoryField: 'type',
       pie: {
-        style:
-          chartCornerRadius == null ? {} : { cornerRadius: chartCornerRadius },
+        style: { cornerRadius: chartCornerRadius },
         state: {
-          hover: { outerRadius: 0.85, stroke: '#000', lineWidth: 1 },
-          selected: { outerRadius: 0.85, stroke: '#000', lineWidth: 1 },
+          hover: {
+            outerRadius: 0.85,
+            stroke: chartInteractionStroke,
+            lineWidth: CHART_INTERACTION_LINE_WIDTH,
+          },
+          selected: {
+            outerRadius: 0.85,
+            stroke: chartInteractionStroke,
+            lineWidth: CHART_INTERACTION_LINE_WIDTH,
+          },
         },
       },
       title: {
@@ -503,8 +561,14 @@ export function processChartData(
       legends: { visible: true, selectMode: 'single' },
       color: modelColor,
       bar: {
+        style: {
+          cornerRadius: CHART_CORNER_RADIUS,
+        },
         state: {
-          hover: { stroke: '#000', lineWidth: 1 },
+          hover: {
+            stroke: chartInteractionStroke,
+            lineWidth: CHART_INTERACTION_LINE_WIDTH,
+          },
         },
       },
       tooltip: {
@@ -670,8 +734,14 @@ export function processChartData(
         text: tt('Call Count Ranking'),
       },
       bar: {
+        style: {
+          cornerRadius: CHART_CORNER_RADIUS,
+        },
         state: {
-          hover: { stroke: '#000', lineWidth: 1 },
+          hover: {
+            stroke: chartInteractionStroke,
+            lineWidth: CHART_INTERACTION_LINE_WIDTH,
+          },
         },
       },
       tooltip: {
@@ -693,28 +763,18 @@ export function processChartData(
   }
 }
 
-const USER_COLORS = [
-  '#5B8FF9',
-  '#5AD8A6',
-  '#F6BD16',
-  '#E8684A',
-  '#6DC8EC',
-  '#9270CA',
-  '#FF9D4D',
-  '#269A99',
-  '#FF99C3',
-  '#5D7092',
-]
-
 export function processUserChartData(
   data: QuotaDataItem[],
   timeGranularity: TimeGranularity = 'day',
   t?: TFunction,
-  limit = 10
+  limit = 10,
+  colorScheme: DashboardChartColorScheme = 'light'
 ): ProcessedUserChartData {
   const tt: TFunction = t ?? ((x) => x)
   const { config } = getCurrencyDisplay()
   const quotaPerUnit = config.quotaPerUnit
+  const chartInteractionStroke = getDashboardChartInteractionStroke(colorScheme)
+  const userPaletteLength = Number.isFinite(limit) ? Math.max(limit, 1) : 1
 
   const formatVal = (raw: number) => renderQuotaCompat(raw, 2)
 
@@ -732,7 +792,10 @@ export function processUserChartData(
         subtext: tt('No data available'),
       },
       legends: { visible: false },
-      color: { type: 'ordinal', range: USER_COLORS },
+      color: {
+        type: 'ordinal',
+        range: getDashboardChartColors(userPaletteLength, colorScheme),
+      },
       background: { fill: 'transparent' },
     },
     spec_user_trend: {
@@ -747,7 +810,10 @@ export function processUserChartData(
         subtext: tt('No data available'),
       },
       legends: { visible: true, selectMode: 'single' },
-      color: { type: 'ordinal', range: USER_COLORS },
+      color: {
+        type: 'ordinal',
+        range: getDashboardChartColors(userPaletteLength, colorScheme),
+      },
       point: { visible: false },
       background: { fill: 'transparent' },
     },
@@ -773,9 +839,10 @@ export function processUserChartData(
     Usage: Number((quota / quotaPerUnit).toFixed(4)),
   }))
 
+  const userColors = getDashboardChartColors(topUsers.length, colorScheme)
   const userColorMap = topUsers.reduce<Record<string, string>>(
     (acc, user, i) => {
-      acc[user] = USER_COLORS[i % USER_COLORS.length]
+      acc[user] = userColors[i % userColors.length]
       return acc
     },
     {}
@@ -835,7 +902,13 @@ export function processUserChartData(
       },
       legends: { visible: false },
       bar: {
-        state: { hover: { stroke: '#000', lineWidth: 1 } },
+        style: { cornerRadius: CHART_CORNER_RADIUS },
+        state: {
+          hover: {
+            stroke: chartInteractionStroke,
+            lineWidth: CHART_INTERACTION_LINE_WIDTH,
+          },
+        },
       },
       label: {
         visible: true,

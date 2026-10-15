@@ -18,13 +18,21 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 
-import { Sidebar, SidebarContent, SidebarRail } from '@/components/ui/sidebar'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarRail,
+  SidebarTrigger,
+  useSidebar,
+} from '@/components/ui/sidebar'
 import { useLayout } from '@/context/layout-provider'
 import { useSidebarView } from '@/hooks/use-sidebar-view'
 import { MOTION_TRANSITION, MOTION_VARIANTS } from '@/lib/motion'
 
 import { NavGroup } from './nav-group'
 import { SidebarViewHeader } from './sidebar-view-header'
+import { SystemBrand } from './system-brand'
 
 /**
  * Application sidebar.
@@ -47,12 +55,33 @@ export function AppSidebar() {
   const { collapsible, variant } = useLayout()
   const { key, view, navGroups } = useSidebarView()
   const shouldReduce = useReducedMotion()
+  const { isMobile } = useSidebar()
 
   return (
     <Sidebar collapsible={collapsible} variant={variant}>
+      <SidebarHeader className='border-sidebar-border border-b p-2'>
+        {isMobile ? (
+          <div className='flex min-h-10 items-center justify-between gap-2'>
+            <div className='min-w-0'>
+              <SystemBrand variant='sidebar' />
+            </div>
+            <SidebarTrigger variant='ghost' className='shrink-0' />
+          </div>
+        ) : (
+          <div className='grid min-h-10 grid-cols-[minmax(0,1fr)_auto] items-center gap-1 group-data-[collapsible=icon]:grid-cols-1 group-data-[collapsible=icon]:justify-items-center'>
+            <div className='min-w-0'>
+              <SystemBrand variant='sidebar' />
+            </div>
+            <SidebarTrigger
+              variant='ghost'
+              className='shrink-0 group-data-[collapsible=icon]:col-start-1 group-data-[collapsible=icon]:row-start-2'
+            />
+          </div>
+        )}
+      </SidebarHeader>
       {view && <SidebarViewHeader view={view} />}
 
-      <SidebarContent className='py-2'>
+      <SidebarContent className='gap-1 py-2'>
         <AnimatePresence mode='wait' initial={false}>
           <motion.div
             key={key}

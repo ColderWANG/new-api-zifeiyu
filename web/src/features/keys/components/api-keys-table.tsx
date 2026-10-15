@@ -81,17 +81,17 @@ function ApiKeysMobileSkeleton() {
       {API_KEYS_MOBILE_SKELETON_IDS.map((id) => (
         <div
           key={id}
-          className='border-border/60 bg-card space-y-2 rounded-xl border p-3.5'
+          className='border-border bg-card space-y-2 rounded-none border p-3.5'
         >
           <div className='flex items-center justify-between'>
-            <Skeleton className='h-4 w-32' />
-            <Skeleton className='h-5 w-16 rounded-md' />
+            <Skeleton className='h-4 w-32 rounded-none' />
+            <Skeleton className='h-5 w-16 rounded-none' />
           </div>
           <div className='flex items-center justify-between gap-3'>
-            <Skeleton className='h-7 w-44' />
-            <Skeleton className='h-8 w-16' />
+            <Skeleton className='h-7 w-44 rounded-none' />
+            <Skeleton className='h-8 w-16 rounded-none' />
           </div>
-          <Skeleton className='h-3 w-28' />
+          <Skeleton className='h-3 w-28 rounded-none' />
         </div>
       ))}
     </div>
@@ -114,7 +114,7 @@ function ApiKeysMobileList({
 
   if (!rows.length) {
     return (
-      <div className='rounded-lg border p-8'>
+      <div className='border-border bg-card rounded-none border p-8'>
         <Empty className='border-none p-0'>
           <EmptyHeader>
             <EmptyMedia variant='icon'>
@@ -148,7 +148,7 @@ function ApiKeysMobileList({
           <div
             key={row.id}
             className={cn(
-              'border-border/60 bg-card min-w-0 space-y-2 rounded-xl border p-3.5 text-xs leading-4',
+              'min-w-0 space-y-2 rounded-none border border-border bg-popover p-3.5 text-xs leading-4',
               isDisabledApiKeyRow(apiKey) && DISABLED_ROW_MOBILE
             )}
           >
@@ -191,7 +191,7 @@ function ApiKeysMobileList({
               <IpRestrictionsCell apiKey={apiKey} detailsTrigger='click' />
             </div>
 
-            <div className='grid grid-cols-3 items-start gap-3 border-t pt-2'>
+            <div className='border-border grid grid-cols-3 items-start gap-3 border-t pt-2'>
               <div className='col-span-2 min-w-0'>
                 <ApiKeyActivityCell
                   apiKey={apiKey}
@@ -257,7 +257,14 @@ export function ApiKeysTable() {
     columnId: '_tokenSearch',
     onColumnFiltersChange,
   })
-  const shouldSearch = Boolean(globalFilter?.trim() || tokenFilter.trim())
+  const statusFilter =
+    (columnFilters.find((filter) => filter.id === 'status')?.value as
+      | string[]
+      | undefined) ?? []
+  const statusFilterValue = statusFilter[0] ?? ''
+  const shouldSearch = Boolean(
+    globalFilter?.trim() || tokenFilter.trim() || statusFilterValue
+  )
 
   // Fetch data with React Query
   // eslint-disable-next-line @tanstack/query/exhaustive-deps
@@ -268,6 +275,7 @@ export function ApiKeysTable() {
       pagination.pageSize,
       globalFilter,
       tokenFilter,
+      statusFilterValue,
       refreshTrigger,
     ],
     queryFn: async () => {
@@ -275,6 +283,7 @@ export function ApiKeysTable() {
         ? await searchApiKeys({
             keyword: globalFilter,
             token: tokenFilter,
+            status: statusFilterValue,
             p: pagination.pageIndex + 1,
             size: pagination.pageSize,
           })
@@ -316,6 +325,7 @@ export function ApiKeysTable() {
     onPaginationChange,
     onGlobalFilterChange,
     onColumnFiltersChange,
+    manualFiltering: true,
     manualPagination: true,
     totalCount: data?.total || 0,
     ensurePageInRange,

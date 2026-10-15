@@ -494,6 +494,81 @@ func TestSearchTokensMasksKeyInResponse(t *testing.T) {
 	}
 }
 
+func TestSearchTokensFiltersByStatus(t *testing.T) {
+	for _, database := range []struct {
+		name, env string
+		typ       common.DatabaseType
+	}{
+		{"sqlite", "", common.DatabaseTypeSQLite},
+		{"mysql", "AUDIT_MYSQL_DSN", common.DatabaseTypeMySQL},
+		{"postgres", "AUDIT_POSTGRES_DSN", common.DatabaseTypePostgreSQL},
+	} {
+		t.Run(database.name, func(t *testing.T) {
+			dsn := os.Getenv(database.env)
+			if database.env != "" && dsn == "" {
+				t.Skip(database.env + " is not configured")
+			}
+			previousDB, previousLogDB := model.DB, model.LOG_DB
+			previousMain, previousLog := common.MainDatabaseType(), common.LogDatabaseType()
+			previousRedis := common.RedisEnabled
+			t.Cleanup(func() {
+				model.DB, model.LOG_DB = previousDB, previousLogDB
+				common.SetDatabaseTypes(previousMain, previousLog)
+				common.RedisEnabled = previousRedis
+			})
+			var db *gorm.DB
+			if database.name == "sqlite" {
+				db = setupTokenControllerTestDB(t)
+			} else {
+				db, _ = newAuditTestDatabase(t, database.name, dsn)
+				model.DB, model.LOG_DB = db, db
+				common.SetDatabaseTypes(database.typ, database.typ)
+				common.RedisEnabled = false
+				migrateTokenControllerTestDB(t, db)
+			}
+			versionSQL := "SELECT version()"
+			if database.name == "sqlite" {
+				versionSQL = "SELECT sqlite_version()"
+			}
+			var version string
+			require.NoError(t, db.Raw(versionSQL).Scan(&version).Error)
+			t.Logf("database version: %s", version)
+			verifyTokenStatusFilter(t, db)
+		})
+	}
+}
+
+func verifyTokenStatusFilter(t *testing.T, db *gorm.DB) {
+	t.Helper()
+	enabled := seedToken(t, db, 1, "enabled-token", "ijkl1234mnop5678")
+	disabled := seedToken(t, db, 1, "disabled-token", "qrst1234uvwx5679")
+	disabled.Status = common.TokenStatusDisabled
+	if err := db.Save(disabled).Error; err != nil {
+		t.Fatalf("failed to disable token: %v", err)
+	}
+
+	ctx, recorder := newAuthenticatedContext(t, http.MethodGet, "/api/token/search?status=2&p=1&size=10", nil, 1)
+	SearchTokens(ctx)
+
+	response := decodeAPIResponse(t, recorder)
+	if !response.Success {
+		t.Fatalf("expected success response, got message: %s", response.Message)
+	}
+
+	var page tokenPageResponse
+	if err := common.Unmarshal(response.Data, &page); err != nil {
+		t.Fatalf("failed to decode search response: %v", err)
+	}
+	if len(page.Items) != 1 || page.Items[0].ID != disabled.Id || page.Items[0].ID == enabled.Id {
+		t.Fatalf("expected only disabled token %d, got %#v", disabled.Id, page.Items)
+	}
+	for _, item := range page.Items {
+		if item.Status != common.TokenStatusDisabled {
+			t.Fatalf("expected disabled status, got %d", item.Status)
+		}
+	}
+}
+
 func TestGetTokenMasksKeyInResponse(t *testing.T) {
 	db := setupTokenControllerTestDB(t)
 	token := seedToken(t, db, 1, "detail-token", "qrst1234uvwx5678")

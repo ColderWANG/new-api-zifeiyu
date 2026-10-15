@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright (C) 2023-2026 QuantumNous
 
 This program is free software: you can redistribute it and/or modify
@@ -32,7 +32,7 @@ function Progress({
     <ProgressPrimitive.Root
       value={value}
       data-slot='progress'
-      className={cn('flex flex-wrap gap-3', className)}
+      className={cn('flex flex-wrap gap-2', className)}
       {...props}
     >
       {children}
@@ -47,7 +47,7 @@ function ProgressTrack({ className, ...props }: ProgressPrimitive.Track.Props) {
   return (
     <ProgressPrimitive.Track
       className={cn(
-        'bg-muted relative flex h-1 w-full items-center overflow-x-hidden rounded-full',
+        'bg-neutral-200 dark:bg-neutral-800 relative flex h-2 w-full items-center overflow-x-hidden rounded-none border border-black dark:border-white',
         className
       )}
       data-slot='progress-track'
@@ -63,7 +63,10 @@ function ProgressIndicator({
   return (
     <ProgressPrimitive.Indicator
       data-slot='progress-indicator'
-      className={cn('bg-primary h-full transition-all', className)}
+      className={cn(
+        'bg-black dark:bg-white h-full rounded-none transition-none',
+        className
+      )}
       {...props}
     />
   )
@@ -72,7 +75,7 @@ function ProgressIndicator({
 function ProgressLabel({ className, ...props }: ProgressPrimitive.Label.Props) {
   return (
     <ProgressPrimitive.Label
-      className={cn('text-sm font-medium', className)}
+      className={cn('text-xs font-mono font-medium', className)}
       data-slot='progress-label'
       {...props}
     />
@@ -83,7 +86,7 @@ function ProgressValue({ className, ...props }: ProgressPrimitive.Value.Props) {
   return (
     <ProgressPrimitive.Value
       className={cn(
-        'text-muted-foreground ml-auto text-sm tabular-nums',
+        'text-foreground ml-auto text-xs font-mono tabular-nums',
         className
       )}
       data-slot='progress-value'

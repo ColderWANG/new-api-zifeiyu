@@ -22,7 +22,6 @@ import { Users, Loader2 } from 'lucide-react'
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { IconBadge } from '@/components/ui/icon-badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useTheme } from '@/context/theme-provider'
@@ -151,9 +150,10 @@ export function UserCharts(props: UserChartsProps) {
         isLoading ? [] : (userData ?? []),
         timeGranularity,
         t,
-        topUserLimit
+        topUserLimit,
+        resolvedTheme === 'dark' ? 'dark' : 'light'
       ),
-    [userData, isLoading, timeGranularity, t, topUserLimit]
+    [userData, isLoading, timeGranularity, t, topUserLimit, resolvedTheme]
   )
 
   return (
@@ -164,12 +164,12 @@ export function UserCharts(props: UserChartsProps) {
           onValueChange={(value) => handleRangeChange(Number(value))}
           className='shrink-0'
         >
-          <TabsList>
+          <TabsList className='border-border bg-background h-7 rounded-none border p-0.5 sm:h-8'>
             {TIME_RANGE_PRESETS.map((preset) => (
               <TabsTrigger
                 key={preset.days}
                 value={String(preset.days)}
-                className='px-2.5 text-xs'
+                className='data-[state=active]:bg-foreground data-[state=active]:text-background hover:bg-muted hover:text-foreground rounded-none px-2.5 font-mono text-xs font-medium transition-none data-[state=active]:shadow-none'
               >
                 {t(preset.label)}
               </TabsTrigger>
@@ -184,12 +184,12 @@ export function UserCharts(props: UserChartsProps) {
           }
           className='shrink-0'
         >
-          <TabsList>
+          <TabsList className='border-border bg-background h-7 rounded-none border p-0.5 sm:h-8'>
             {TIME_GRANULARITY_OPTIONS.map((opt) => (
               <TabsTrigger
                 key={opt.value}
                 value={opt.value}
-                className='px-2.5 text-xs'
+                className='data-[state=active]:bg-foreground data-[state=active]:text-background hover:bg-muted hover:text-foreground rounded-none px-2.5 font-mono text-xs font-medium transition-none data-[state=active]:shadow-none'
               >
                 {t(opt.label)}
               </TabsTrigger>
@@ -202,15 +202,15 @@ export function UserCharts(props: UserChartsProps) {
           onValueChange={(value) => handleTopUserLimitChange(Number(value))}
           className='shrink-0'
         >
-          <TabsList>
-            <span className='text-muted-foreground px-2 text-xs font-medium whitespace-nowrap'>
+          <TabsList className='border-border bg-background h-7 rounded-none border p-0.5 sm:h-8'>
+            <span className='px-2 font-mono text-xs font-medium tracking-wide whitespace-nowrap text-neutral-500 uppercase'>
               {t('Top Users')}
             </span>
             {TOP_USER_LIMIT_OPTIONS.map((limit) => (
               <TabsTrigger
                 key={limit}
                 value={String(limit)}
-                className='px-2.5 text-xs'
+                className='data-[state=active]:bg-foreground data-[state=active]:text-background hover:bg-muted hover:text-foreground rounded-none px-2.5 font-mono text-xs font-medium transition-none data-[state=active]:shadow-none'
               >
                 {t('Top {{count}}', { count: limit })}
               </TabsTrigger>
@@ -230,18 +230,20 @@ export function UserCharts(props: UserChartsProps) {
           return (
             <div
               key={chart.value}
-              className='overflow-hidden rounded-lg border'
+              className='border-border bg-card overflow-hidden rounded-none border'
             >
-              <div className='flex w-full items-center gap-2 border-b px-3 py-2 sm:px-5 sm:py-3'>
-                <IconBadge tone='info' size='sm'>
+              <div className='border-border bg-card flex w-full items-center gap-2 border-b px-3 py-2 sm:px-5 sm:py-3'>
+                <div className='border-border bg-background text-foreground flex size-7 shrink-0 items-center justify-center rounded-none border [&>svg]:size-3.5'>
                   <Users />
-                </IconBadge>
-                <div className='text-sm font-semibold'>{t(chart.labelKey)}</div>
+                </div>
+                <div className='text-foreground font-mono text-sm font-bold tracking-wider uppercase'>
+                  {t(chart.labelKey)}
+                </div>
               </div>
 
               <div className='h-[300px] p-1.5 sm:h-96 sm:p-2'>
                 {isLoading ? (
-                  <Skeleton className='h-full w-full' />
+                  <Skeleton className='bg-muted h-full w-full rounded-none' />
                 ) : (
                   themeReady &&
                   spec && (

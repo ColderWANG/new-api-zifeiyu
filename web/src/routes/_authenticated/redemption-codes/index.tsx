@@ -22,13 +22,14 @@ import z from 'zod'
 import { Redemptions } from '@/features/redemption-codes'
 import { REDEMPTION_FILTER_VALUES } from '@/features/redemption-codes/constants'
 import { ROLE } from '@/lib/roles'
+import { urlSingle } from '@/lib/url-array-schema'
 import { useAuthStore } from '@/stores/auth-store'
 
 const redemptionsSearchSchema = z.object({
   page: z.number().optional().catch(1),
   pageSize: z.number().optional().catch(10),
   filter: z.string().optional().catch(''),
-  status: z.array(z.enum(REDEMPTION_FILTER_VALUES)).optional().catch([]),
+  status: urlSingle(z.enum(REDEMPTION_FILTER_VALUES)),
 })
 
 export const Route = createFileRoute('/_authenticated/redemption-codes/')({

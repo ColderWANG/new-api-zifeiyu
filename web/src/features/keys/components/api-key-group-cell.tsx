@@ -51,7 +51,7 @@ export function ApiKeyGroupCell(props: ApiKeyGroupCellProps) {
         className={isMobile ? 'w-full' : 'max-w-50'}
         tabIndex={0}
         tooltipContent={group || t('Follow user group')}
-        tooltipClassName='break-all'
+        tooltipClassName='break-all rounded-none border border-border bg-popover shadow-none p-2 font-mono'
       >
         <GroupBadge
           group={group}
@@ -91,7 +91,7 @@ export function ApiKeyGroupCell(props: ApiKeyGroupCellProps) {
           shouldReduceMotion={props.shouldReduceMotion}
         />
       </TooltipTrigger>
-      <TooltipContent>
+      <TooltipContent className='border-border bg-popover rounded-none border p-2 shadow-none'>
         <span className='text-xs'>
           {t(
             'Automatically selects the best available group with circuit breaker mechanism'

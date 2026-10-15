@@ -1,0 +1,231 @@
+/*
+Copyright (C) 2023-2026 QuantumNous
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For commercial licensing, please contact support@quantumnous.com
+*/
+
+.image-studio {
+  --studio-ink: #000;
+  --studio-paper: #fff;
+  --studio-surface: #f5f5f5;
+  --studio-line: #e5e5e5;
+  --studio-muted: #525252;
+  width: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+  padding: 32px clamp(20px, 3vw, 48px) 40px;
+  color: var(--studio-ink);
+  background: var(--studio-paper);
+}
+
+.studio-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  padding-bottom: 28px;
+  border-bottom: 2px solid var(--studio-ink);
+}
+
+.studio-preview-badge {
+  flex-shrink: 0;
+  border: 1px solid var(--studio-line);
+  padding: 7px 10px;
+  font-size: 11px;
+  color: var(--studio-muted);
+  letter-spacing: 0.04em;
+}
+
+.studio-workspace {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  gap: clamp(28px, 3vw, 48px);
+  padding-top: 24px;
+}
+
+.studio-controls {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+.studio-caption {
+  font-size: 11px;
+  color: var(--studio-muted);
+}
+.studio-model-select [data-slot='input-group'] {
+  min-height: 44px;
+  border: 1px solid var(--studio-line);
+  box-shadow: none;
+}
+.studio-prompt {
+  field-sizing: fixed;
+}
+.studio-modes [aria-pressed='true'] {
+  color: var(--studio-ink);
+  background: var(--studio-paper);
+  border-bottom: 2px solid var(--studio-ink);
+}
+.studio-modes [aria-pressed='false'] {
+  color: var(--studio-muted);
+}
+.studio-ratios [aria-pressed='true'] {
+  color: var(--studio-ink);
+  background: var(--studio-surface);
+  border-color: var(--studio-ink);
+}
+.image-studio button:focus-visible {
+  outline: 2px solid var(--studio-ink);
+  outline-offset: 3px;
+}
+
+.studio-canvas {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 480px;
+  margin-top: 16px;
+  padding: 74px 40px;
+  background-color: var(--studio-surface);
+  background-image: radial-gradient(#d9d9d9 0.65px, transparent 0.65px);
+  background-size: 16px 16px;
+}
+
+.studio-canvas-caption,
+.studio-canvas-bottom {
+  position: absolute;
+  inset-inline: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--studio-muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.studio-canvas-caption {
+  top: 18px;
+}
+.studio-canvas-bottom {
+  bottom: 14px;
+  min-height: 32px;
+}
+
+.studio-paper {
+  position: relative;
+  width: min(100%, 480px, calc(320px * var(--studio-ratio)));
+  aspect-ratio: var(--studio-ratio);
+  background: var(--studio-paper);
+  border: 1px solid var(--studio-line);
+}
+.studio-paper-content {
+  display: flex;
+  min-height: 100%;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 24px;
+  text-align: center;
+}
+.studio-crop {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--studio-ink);
+  pointer-events: none;
+}
+.studio-crop-tl {
+  top: -7px;
+  left: -7px;
+  border-top: 1px solid;
+  border-left: 1px solid;
+}
+.studio-crop-tr {
+  top: -7px;
+  right: -7px;
+  border-top: 1px solid;
+  border-right: 1px solid;
+}
+.studio-crop-bl {
+  bottom: -7px;
+  left: -7px;
+  border-bottom: 1px solid;
+  border-left: 1px solid;
+}
+.studio-crop-br {
+  bottom: -7px;
+  right: -7px;
+  border-bottom: 1px solid;
+  border-right: 1px solid;
+}
+
+@media (min-width: 1440px) {
+  .studio-canvas {
+    min-height: 550px;
+  }
+}
+@media (max-width: 1100px) {
+  .studio-workspace {
+    grid-template-columns: minmax(260px, 310px) minmax(0, 1fr);
+    gap: 24px;
+  }
+  .studio-canvas {
+    padding-inline: 24px;
+  }
+  .studio-paper-content {
+    padding: 16px;
+  }
+}
+@media (max-width: 900px) {
+  .studio-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+  .studio-canvas {
+    min-height: 400px;
+  }
+  .studio-heading {
+    align-items: flex-start;
+  }
+}
+@media (max-width: 480px) {
+  .image-studio {
+    padding: 24px 16px 32px;
+  }
+  .studio-heading {
+    gap: 12px;
+  }
+  .studio-preview-badge {
+    font-size: 10px;
+    padding: 5px 7px;
+  }
+  .studio-canvas {
+    min-height: 370px;
+    padding: 60px 24px 74px;
+  }
+  .studio-paper-content h3 {
+    font-size: 22px;
+  }
+  .studio-paper-content {
+    padding: 12px;
+  }
+  .studio-paper-content svg {
+    margin-bottom: 10px;
+    width: 24px;
+    height: 24px;
+  }
+}

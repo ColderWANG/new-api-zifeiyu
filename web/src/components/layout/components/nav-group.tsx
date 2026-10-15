@@ -65,10 +65,8 @@ export function NavGroup({ title, items }: NavGroupProps) {
   const href = useLocation({ select: (location) => location.href })
 
   return (
-    <SidebarGroup className='px-2 py-1'>
-      <SidebarGroupLabel className='text-muted-foreground/70 px-2 text-[11px] font-medium tracking-wider uppercase'>
-        {title}
-      </SidebarGroupLabel>
+    <SidebarGroup className='border-sidebar-border border-b py-2 last:border-b-0'>
+      <SidebarGroupLabel className='px-2'>{title}</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
           const key = `${item.title}-${item.url || item.type}`
@@ -154,12 +152,12 @@ function SidebarMenuCollapsible({
   href: string
 }) {
   const { isMobile, setOpenMobile } = useSidebar()
-  // 检查当前路径是否匹配子菜单项
+  // Check whether the current path matches a child menu item.
   const isSubItemActive = checkIsActive(href, item)
-  // 使用受控状态，初始值基于当前路径是否匹配
+  // Use controlled state, initialized from the current path match.
   const [isOpen, setIsOpen] = useState(() => isSubItemActive)
 
-  // 当路径变化时，如果匹配子菜单项，自动展开父级菜单
+  // When the route changes and matches a child, expand its parent menu.
   useEffect(() => {
     if (isSubItemActive) {
       // eslint-disable-next-line react-hooks/set-state-in-effect

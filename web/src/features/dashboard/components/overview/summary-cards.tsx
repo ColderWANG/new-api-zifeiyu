@@ -124,15 +124,15 @@ const HEALTH_CONFIG: Record<
   { dotClass: string; labelKey: string }
 > = {
   healthy: {
-    dotClass: 'bg-success',
+    dotClass: 'bg-black',
     labelKey: 'Healthy',
   },
   caution: {
-    dotClass: 'bg-warning',
+    dotClass: 'bg-black/40',
     labelKey: 'Low balance',
   },
   critical: {
-    dotClass: 'bg-destructive',
+    dotClass: 'border border-black bg-white',
     labelKey: 'Balance depleted',
   },
 }
@@ -253,24 +253,26 @@ export function SummaryCards() {
   })
 
   return (
-    <div className='bg-card overflow-hidden rounded-2xl border shadow-xs'>
-      <div className='grid xl:grid-cols-[minmax(0,1fr)_19rem]'>
-        <div className='flex flex-col gap-2.5 p-3 sm:gap-3 sm:p-5'>
-          <div className='flex flex-wrap items-start justify-between gap-3'>
-            <div className='flex flex-col gap-1'>
-              <h3 className='text-sm font-semibold sm:text-base'>
+    <section className='border-b border-black/12 bg-white'>
+      <div className='grid lg:grid-cols-[minmax(0,1fr)_22rem]'>
+        <div className='flex flex-col gap-5 p-5 sm:p-6'>
+          <div className='flex flex-wrap items-end justify-between gap-4'>
+            <div>
+              <div className='mm-label'>{t('Usage at a glance')}</div>
+              <h3 className='mm-display mt-3 text-3xl uppercase sm:text-4xl'>
                 {t('Usage at a glance')}
               </h3>
-              <p className='text-muted-foreground text-xs sm:text-sm'>
+              <p aria-hidden className='mt-2 text-sm text-neutral-600'>
                 {t('Monitor balance, usage, and request volume')}
               </p>
             </div>
           </div>
-          <StaggerContainer className='grid grid-cols-3 gap-1.5 sm:gap-3'>
+
+          <StaggerContainer className='grid grid-cols-1 sm:grid-cols-3'>
             {items.map((it) => (
               <StaggerItem
                 key={it.key}
-                className='bg-background/60 rounded-lg border px-2 py-1.5 sm:rounded-xl sm:p-3'
+                className='group bg-white p-5 transition-colors duration-100 hover:bg-neutral-50 sm:not-last:border-r sm:not-last:border-black/10'
               >
                 <StatCard
                   title={it.title}
@@ -288,47 +290,54 @@ export function SummaryCards() {
           </StaggerContainer>
         </div>
 
-        <div className='flex flex-col justify-between gap-3 border-t bg-[linear-gradient(135deg,color-mix(in_oklch,var(--overview-accent-2)_12%,var(--background))_0%,color-mix(in_oklch,oklch(0.82_0.04_155)_8%,var(--background))_48%,color-mix(in_oklch,var(--overview-accent-1)_7%,var(--background))_100%)] p-3 sm:gap-4 sm:p-5 xl:border-t-0 xl:border-l'>
-          <div className='flex flex-col gap-2 sm:gap-3'>
+        <aside className='flex flex-col justify-between gap-5 bg-white p-5 sm:p-6 lg:border-l lg:border-black/10'>
+          <div className='flex flex-col gap-5'>
             <div className='flex items-center justify-between'>
-              <span className='text-muted-foreground text-xs font-medium'>
+              <span className='mm-label text-neutral-600'>
                 {t('Credit remaining')}
               </span>
-              <span className='flex items-center gap-1.5'>
+              <span className='flex items-center gap-1.5 text-[11px] font-medium text-neutral-600'>
                 <span
-                  className={cn('size-1.5 rounded-full', healthCfg.dotClass)}
+                  className={cn('size-1.5 bg-current', healthCfg.dotClass)}
                   aria-hidden='true'
                 />
-                <span className='text-muted-foreground text-[11px] font-medium'>
-                  {t(healthCfg.labelKey)}
-                </span>
+                {t(healthCfg.labelKey)}
               </span>
             </div>
 
-            <div className='font-mono text-xl font-semibold tracking-tight sm:text-2xl'>
+            <div className='font-mono text-[2.75rem] leading-none font-bold tracking-tight text-black tabular-nums'>
               {formatQuota(remainQuota)}
             </div>
 
-            <div className='grid grid-cols-2 gap-2'>
-              <div className='bg-background/60 rounded-lg px-2.5 py-2'>
-                <div className='text-muted-foreground flex items-center gap-1 text-[11px] leading-none font-medium'>
-                  <Flame className='size-3 shrink-0' aria-hidden='true' />
+            <Button
+              variant='outline'
+              className='h-10 rounded-none border border-black bg-white px-5 font-mono text-xs tracking-[0.14em] text-black uppercase transition-none hover:bg-black hover:text-white'
+              render={<Link to='/wallet' />}
+            >
+              {t('Wallet')}
+              <ArrowRight data-icon='inline-end' />
+            </Button>
+
+            <div className='grid gap-0 border border-white/25 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2'>
+              <div className='border-black/10 bg-white px-4 py-3'>
+                <div className='flex items-center gap-1.5 text-[11px] font-medium text-neutral-600'>
+                  <Flame className='size-3.5 shrink-0' aria-hidden='true' />
                   <span className='truncate'>{t('Last 24h usage')}</span>
                 </div>
-                <div className='text-foreground mt-1.5 truncate text-xs font-semibold tabular-nums'>
+                <div className='mt-2 truncate text-sm font-semibold text-black tabular-nums'>
                   {formatQuota(recentUsage)}
                 </div>
               </div>
-              <div className='bg-background/60 rounded-lg px-2.5 py-2'>
-                <div className='text-muted-foreground flex items-center gap-1 text-[11px] leading-none font-medium'>
+              <div className='border-black/10 bg-white px-4 py-3'>
+                <div className='flex items-center gap-1.5 text-[11px] font-medium text-neutral-600'>
                   {runwayDays !== null && runwayDays < 3 ? (
                     <TrendingDown
-                      className='size-3 shrink-0'
+                      className='size-3.5 shrink-0'
                       aria-hidden='true'
                     />
                   ) : (
                     <ShieldCheck
-                      className='size-3 shrink-0'
+                      className='size-3.5 shrink-0'
                       aria-hidden='true'
                     />
                   )}
@@ -336,9 +345,9 @@ export function SummaryCards() {
                 </div>
                 <div
                   className={cn(
-                    'mt-1.5 truncate text-xs font-semibold tabular-nums',
-                    healthLevel === 'critical' && 'text-destructive',
-                    healthLevel === 'caution' && 'text-warning'
+                    'mt-2 truncate text-sm font-semibold text-black tabular-nums',
+                    healthLevel === 'critical' && 'text-black',
+                    healthLevel === 'caution' && 'text-black'
                   )}
                 >
                   {runwayDisplay}
@@ -346,13 +355,8 @@ export function SummaryCards() {
               </div>
             </div>
           </div>
-
-          <Button className='justify-between' render={<Link to='/wallet' />}>
-            <span>{t('Wallet')}</span>
-            <ArrowRight data-icon='inline-end' />
-          </Button>
-        </div>
+        </aside>
       </div>
-    </div>
+    </section>
   )
 }

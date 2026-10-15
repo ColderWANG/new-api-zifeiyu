@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright (C) 2023-2026 QuantumNous
 
 This program is free software: you can redistribute it and/or modify
@@ -46,7 +46,7 @@ export function DataTableMobileFilterPanel(
       open={open}
       onOpenChange={setOpen}
       className={cn(
-        'bg-card/50 flex min-w-0 flex-col rounded-lg border p-2.5',
+        'bg-background flex min-w-0 flex-col rounded-none border-2 border-black p-2.5 dark:border-white',
         open && (props.compact ? 'gap-2.5' : 'gap-2'),
         props.className
       )}
@@ -66,7 +66,7 @@ export function DataTableMobileFilterPanel(
               variant='ghost'
               size='icon'
               className={cn(
-                'text-muted-foreground hover:text-foreground',
+                'text-muted-foreground hover:text-foreground rounded-none',
                 props.compact ? 'size-9' : 'mr-auto size-7'
               )}
             />
@@ -75,7 +75,7 @@ export function DataTableMobileFilterPanel(
           <ChevronDown
             aria-hidden='true'
             className={cn(
-              'transition-transform duration-200',
+              'transition-transform duration-150',
               props.compact ? 'size-4' : 'size-3.5',
               open && 'rotate-180'
             )}
@@ -87,7 +87,7 @@ export function DataTableMobileFilterPanel(
           className={cn(
             'flex items-center justify-end gap-1.5',
             props.compact &&
-              'min-w-0 flex-wrap [&>button]:h-auto [&>button]:min-h-9 [&>button]:max-w-full [&>button]:[overflow-wrap:anywhere] [&>button]:whitespace-normal'
+              'min-w-0 flex-wrap [&>button]:h-auto [&>button]:min-h-9 [&>button]:max-w-full [&>button]:[overflow-wrap:anywhere] [&>button]:whitespace-normal [&>button]:rounded-none'
           )}
         >
           {props.actions}

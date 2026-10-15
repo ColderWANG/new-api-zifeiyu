@@ -756,8 +756,8 @@ it('filters actual visibility independently of policy and restores filters throu
     })
   )
   expect(router.state.location.search).toMatchObject({
-    status: ['enabled'],
-    square_state: ['partial'],
+    status: 'enabled',
+    square_state: 'partial',
   })
   await user.keyboard('{Escape}')
   await act(async () => {
@@ -771,7 +771,7 @@ it('filters actual visibility independently of policy and restores filters throu
   })
   await waitFor(() =>
     expect(router.state.location.search).toMatchObject({
-      square_state: ['partial'],
+      square_state: 'partial',
     })
   )
   await user.click(
@@ -781,7 +781,7 @@ it('filters actual visibility independently of policy and restores filters throu
   await waitFor(() =>
     expect(router.state.location.search).not.toHaveProperty('square_state')
   )
-  expect(router.state.location.search).toMatchObject({ status: ['enabled'] })
+  expect(router.state.location.search).toMatchObject({ status: 'enabled' })
 })
 
 it('keeps all columns while collapsing tags and connection counts', async () => {

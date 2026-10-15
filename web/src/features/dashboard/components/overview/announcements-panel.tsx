@@ -20,7 +20,6 @@ import { Megaphone } from 'lucide-react'
 import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { IconBadge } from '@/components/ui/icon-badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useAnnouncements } from '@/features/dashboard/hooks/use-status-data'
 import { getPreviewText } from '@/features/dashboard/lib'
@@ -38,7 +37,7 @@ const AnnouncementStatusDot = memo(function AnnouncementStatusDot(props: {
   return (
     <span
       className={cn(
-        'mt-1.5 inline-block size-2 shrink-0 rounded-full',
+        'mt-1.5 inline-block size-2 shrink-0 rounded-none',
         getAnnouncementColorClass(props.type)
       )}
     />
@@ -61,9 +60,9 @@ export function AnnouncementsPanel() {
     <PanelWrapper
       title={
         <span className='flex items-center gap-2'>
-          <IconBadge tone='warning' size='sm'>
-            <Megaphone />
-          </IconBadge>
+          <span className='flex size-7 shrink-0 items-center justify-center border border-black/15 bg-white text-black'>
+            <Megaphone className='size-3.5' />
+          </span>
           {t('Announcements')}
         </span>
       }
@@ -84,8 +83,8 @@ export function AnnouncementsPanel() {
                 type='button'
                 onClick={() => handleAnnouncementClick(item)}
                 className={cn(
-                  'group hover:bg-muted/40 w-full px-3 py-3 text-left transition-colors sm:px-5 sm:py-3.5',
-                  idx < list.length - 1 && 'border-border/60 border-b'
+                  'group hover:bg-black/5 w-full px-3 py-3 text-left transition-colors sm:px-5 sm:py-3.5',
+                  idx < list.length - 1 && 'border-black/10 border-b'
                 )}
               >
                 <div className='flex items-start gap-2.5'>
@@ -96,11 +95,11 @@ export function AnnouncementsPanel() {
                     </p>
                     <div className='flex items-center justify-between'>
                       {item.publishDate && (
-                        <time className='text-muted-foreground/60 text-xs'>
+                        <time className='text-xs text-black/55'>
                           {formatDateTimeObject(new Date(item.publishDate))}
                         </time>
                       )}
-                      <span className='text-muted-foreground/40 text-xs opacity-0 transition-opacity group-hover:opacity-100'>
+                      <span className='text-xs text-black/40 opacity-0 transition-opacity group-hover:opacity-100'>
                         {t('Click for details')}
                       </span>
                     </div>

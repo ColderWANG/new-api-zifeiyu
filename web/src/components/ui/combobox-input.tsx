@@ -296,7 +296,7 @@ export function ComboboxInput({
               width: dropdown.width,
             }}
             className={cn(
-              'bg-popover text-popover-foreground z-100 rounded-md border shadow-md',
+              'bg-white text-black z-100 rounded-none border-2 border-black shadow-none',
               popupClassName
             )}
           >
@@ -315,10 +315,9 @@ export function ComboboxInput({
                     aria-selected={value === option.value}
                     data-highlighted={index === highlightedIndex}
                     className={cn(
-                      'relative flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm select-none',
-                      index === highlightedIndex &&
-                        'bg-accent text-accent-foreground',
-                      value === option.value && 'font-medium'
+                      'relative flex cursor-pointer items-center gap-2 rounded-none px-2 py-1.5 text-xs font-mono text-black select-none transition-none',
+                      index === highlightedIndex && 'bg-black text-white',
+                      value === option.value && 'font-bold'
                     )}
                     onMouseEnter={() => setHighlightedIndex(index)}
                     onMouseDown={(e) => {

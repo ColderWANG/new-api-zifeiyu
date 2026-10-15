@@ -34,6 +34,10 @@ import {
   createServerError,
   requireServerSuccess,
 } from '@/lib/server-error-message'
+import {
+  normalizeSingleSearchValue,
+  toSingleSearchValue,
+} from '@/lib/url-array-schema'
 
 import { getGroups, getUsers, searchUsers } from '../api'
 import {
@@ -83,8 +87,20 @@ export function UsersTable() {
     pagination: { defaultPage: 1, defaultPageSize: isMobile ? 10 : 20 },
     globalFilter: { enabled: true, key: 'filter' },
     columnFilters: [
-      { columnId: 'status', searchKey: 'status', type: 'array' },
-      { columnId: 'role', searchKey: 'role', type: 'array' },
+      {
+        columnId: 'status',
+        searchKey: 'status',
+        type: 'array',
+        deserialize: (value) => normalizeSingleSearchValue<string>(value),
+        serialize: toSingleSearchValue,
+      },
+      {
+        columnId: 'role',
+        searchKey: 'role',
+        type: 'array',
+        deserialize: (value) => normalizeSingleSearchValue<string>(value),
+        serialize: toSingleSearchValue,
+      },
       { columnId: 'group', searchKey: 'group', type: 'array' },
     ],
   })

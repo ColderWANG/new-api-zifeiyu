@@ -76,11 +76,11 @@ function isLogTypeValue(value: string): value is LogTypeValue {
 }
 
 function getLogTypeValue(value: unknown): LogTypeValue {
-  return Array.isArray(value) &&
-    value.length === 1 &&
-    typeof value[0] === 'string' &&
-    isLogTypeValue(value[0])
-    ? value[0]
+  const raw = Array.isArray(value) ? value[0] : value
+  return typeof raw === 'string' &&
+    isLogTypeValue(raw) &&
+    raw !== LOG_TYPE_ALL_VALUE
+    ? raw
     : LOG_TYPE_ALL_VALUE
 }
 
@@ -219,7 +219,7 @@ export function CommonLogsFilterBar<TData>(
         params: { section: 'common' },
         search: {
           ...filterParams,
-          type: [logType],
+          type: logType === LOG_TYPE_ALL_VALUE ? undefined : logType,
           page: 1,
         },
       })
@@ -233,7 +233,7 @@ export function CommonLogsFilterBar<TData>(
     const { start, end } = getDefaultTimeRange()
     const resetFilters: CommonLogFilters = { startTime: start, endTime: end }
     const resetSearch = {
-      type: [LOG_TYPE_ALL_VALUE],
+      type: undefined,
       startTime: start.getTime(),
       endTime: end.getTime(),
     }

@@ -80,22 +80,26 @@ export function ApiKeyCell({ apiKey }: { apiKey: ApiKey }) {
     copyIcon = <Loader2 className='size-3.5 animate-spin' />
     copyTooltip = t('Loading...')
   } else if (isCopied) {
-    copyIcon = <Check className='size-3.5 text-green-600' />
+    copyIcon = <Check className='text-foreground size-3.5' />
     copyTooltip = t('Copied!')
   }
 
   return (
-    <div className='flex max-w-full min-w-0 items-center'>
+    <div className='flex max-w-full min-w-0 items-center gap-1'>
       <Popover open={popoverOpen} onOpenChange={handlePopoverOpen}>
-        <PopoverTrigger render={<MaskedValueTrigger />}>
-          <span className='truncate'>{maskedKey}</span>
+        <PopoverTrigger
+          render={<MaskedValueTrigger className='rounded-none' />}
+        >
+          <span className='truncate font-mono'>{maskedKey}</span>
         </PopoverTrigger>
         <PopoverContent
-          className='w-auto max-w-[min(90vw,28rem)]'
+          className='border-border bg-popover w-auto max-w-[min(90vw,28rem)] rounded-none border p-3 shadow-none'
           align='start'
         >
           <div className='space-y-2'>
-            <p className='text-muted-foreground text-xs'>{t('Full API Key')}</p>
+            <p className='text-muted-foreground font-mono text-xs tracking-wider uppercase'>
+              {t('Full API Key')}
+            </p>
             {isLoading ? (
               <div className='flex items-center gap-2 py-2'>
                 <Loader2 className='size-3.5 animate-spin' />
@@ -109,7 +113,7 @@ export function ApiKeyCell({ apiKey }: { apiKey: ApiKey }) {
                 value={resolvedFullKey || maskedKey}
                 autoFocus
                 onFocus={(e) => e.target.select()}
-                className='bg-muted/50 w-full min-w-[280px] rounded-md border px-3 py-2 font-mono text-xs outline-none'
+                className='bg-muted border-border w-full min-w-[280px] rounded-none border px-3 py-2 font-mono text-xs outline-none'
               />
             )}
           </div>
@@ -121,7 +125,7 @@ export function ApiKeyCell({ apiKey }: { apiKey: ApiKey }) {
             <Button
               variant='ghost'
               size='icon'
-              className='size-7 shrink-0'
+              className='hover:bg-accent hover:text-accent-foreground size-7 shrink-0 rounded-none'
               onClick={handleCopy}
               disabled={isLoading}
             />
@@ -185,7 +189,7 @@ function ApiKeyRestrictionCell(props: {
   if (!props.items.length) {
     if (props.detailsTrigger === 'click') {
       return (
-        <span className='inline-flex items-center gap-1.5 text-xs'>
+        <span className='inline-flex items-center gap-1.5 font-mono text-xs'>
           <span className='text-muted-foreground'>{props.title}</span>
           <span>{props.emptyLabel}</span>
         </span>
@@ -220,14 +224,19 @@ function ApiKeyRestrictionCell(props: {
               variant='ghost'
               size='sm'
               aria-label={`${props.title}: ${props.label}`}
-              className='h-7 max-w-full justify-start px-0 text-xs font-normal underline decoration-dotted underline-offset-4'
+              className='o-7 max-w-full justify-start rounded-none px-0 text-xs font-normal underline decoration-dotted underline-offset-4'
             />
           }
         >
           {props.label}
         </PopoverTrigger>
-        <PopoverContent align='start' className='max-w-[calc(100vw-2rem)]'>
-          <PopoverTitle>{props.title}</PopoverTitle>
+        <PopoverContent
+          align='start'
+          className='border-border bg-popover max-w-[calc(100vw-2rem)] rounded-none border p-3 shadow-none'
+        >
+          <PopoverTitle className='mb-2 text-xs font-semibold'>
+            {props.title}
+          </PopoverTitle>
           {details}
         </PopoverContent>
       </Popover>
@@ -239,7 +248,10 @@ function ApiKeyRestrictionCell(props: {
       <TooltipTrigger render={<BadgeCell />}>
         <StatusBadge label={props.label} variant='neutral' copyable={false} />
       </TooltipTrigger>
-      <TooltipContent side='top' className='max-w-xs'>
+      <TooltipContent
+        side='top'
+        className='border-border bg-popover text-foreground max-w-xs rounded-none border p-3 shadow-none'
+      >
         {details}
       </TooltipContent>
     </Tooltip>

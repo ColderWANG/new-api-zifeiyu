@@ -44,10 +44,10 @@ export function RankingsHero(props: RankingsHeroProps) {
   return (
     <section className='space-y-5'>
       <div className='space-y-2'>
-        <h1 className='text-[clamp(1.75rem,4vw,2.5rem)] leading-[1.15] font-bold tracking-tight'>
+        <h1 className='font-serif text-[clamp(2.5rem,6vw,4rem)] leading-[0.95] font-semibold tracking-tighter'>
           {t('Rankings')}
         </h1>
-        <p className='text-muted-foreground/80 max-w-2xl text-sm'>
+        <p className='text-muted-foreground mt-3 max-w-2xl text-sm leading-relaxed'>
           {t(
             'Discover the most-used models and rising vendors on the platform, updated from live usage data.'
           )}
@@ -58,7 +58,7 @@ export function RankingsHero(props: RankingsHeroProps) {
       <div
         role='tablist'
         aria-label={t('Period')}
-        className='border-border/60 flex items-center border-b'
+        className='border-border flex items-center border-b'
       >
         {PERIODS.map((p) => {
           const isActive = props.period === p.id
@@ -70,7 +70,7 @@ export function RankingsHero(props: RankingsHeroProps) {
               aria-selected={isActive}
               onClick={() => props.onPeriodChange(p.id)}
               className={cn(
-                'focus-visible:ring-ring/40 relative -mb-px rounded-sm px-3 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none',
+                'relative -mb-px px-3 py-2 font-mono text-xs tracking-[0.14em] uppercase transition-none outline-none focus-visible:underline focus-visible:decoration-2 focus-visible:underline-offset-4',
                 isActive
                   ? 'text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
@@ -80,7 +80,7 @@ export function RankingsHero(props: RankingsHeroProps) {
               <span
                 aria-hidden
                 className={cn(
-                  'bg-foreground absolute inset-x-3 -bottom-px h-[2px] rounded-full transition-opacity',
+                  'bg-foreground absolute inset-x-2 -bottom-px h-[2px] transition-opacity',
                   isActive ? 'opacity-100' : 'opacity-0'
                 )}
               />

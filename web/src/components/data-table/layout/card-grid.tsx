@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright (C) 2023-2026 QuantumNous
 
 This program is free software: you can redistribute it and/or modify
@@ -18,24 +18,6 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import type { Row, Table } from '@tanstack/react-table'
 import { Database } from 'lucide-react'
-/*
-Copyright (C) 2023-2026 QuantumNous
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-For commercial licensing, please contact support@quantumnous.com
-*/
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -102,17 +84,17 @@ function CardGridSkeleton(props: {
       {[1, 2, 3, 4, 5, 6].map((i) => (
         <div
           key={`${prefix}-${i}`}
-          className='space-y-3 rounded-lg border bg-(--table-row) p-3'
+          className='space-y-3 rounded-none border-2 border-black bg-white p-3 dark:border-white dark:bg-black'
         >
           <div className='flex items-center justify-between gap-2'>
-            <Skeleton className='h-4 w-32' />
-            <Skeleton className='h-5 w-16 rounded-md' />
+            <Skeleton className='h-4 w-32 rounded-none' />
+            <Skeleton className='h-5 w-16 rounded-none' />
           </div>
           <div className='grid grid-cols-2 gap-x-3 gap-y-1.5'>
             {[1, 2, 3, 4].map((j) => (
               <div key={j}>
-                <Skeleton className='mb-1 h-2 w-8' />
-                <Skeleton className='h-4 w-full' />
+                <Skeleton className='mb-1 h-2 w-8 rounded-none' />
+                <Skeleton className='h-4 w-full rounded-none' />
               </div>
             ))}
           </div>
@@ -123,15 +105,10 @@ function CardGridSkeleton(props: {
 }
 
 /**
- * Desktop card view for table data — a responsive grid of bordered cards.
+ * Desktop card view for table data - a responsive grid of bordered cards.
  *
  * Renders the same per-row content as {@link MobileCardList} (via
- * {@link CardRowContent}) unless a custom `renderCard` is supplied. This keeps
- * the card view reusable across any table with zero per-feature work while
- * still allowing a bespoke card design when desired.
- *
- * The default generic card omits the `select` column. Custom `renderCard`
- * implementations can use `helpers.isSelected` to keep selection UI in sync.
+ * {@link CardRowContent}) unless a custom `renderCard` is supplied.
  */
 export function DataTableCardGrid<TData>(props: DataTableCardGridProps<TData>) {
   const { t } = useTranslation()
@@ -160,7 +137,7 @@ export function DataTableCardGrid<TData>(props: DataTableCardGridProps<TData>) {
 
   if (!rows || rows.length === 0) {
     return (
-      <div className='rounded-lg border p-6'>
+      <div className='rounded-none border-2 border-black p-6 dark:border-white'>
         <Empty className='border-none p-0'>
           <EmptyHeader>
             <EmptyMedia variant='icon'>
@@ -185,7 +162,7 @@ export function DataTableCardGrid<TData>(props: DataTableCardGridProps<TData>) {
             data-slot='data-table-card'
             data-state={isSelected ? 'selected' : undefined}
             className={cn(
-              'rounded-lg border bg-(--data-table-card-bg,var(--table-row)) px-3 py-2.5 transition-[background-color,border-color] duration-150 data-[state=selected]:[--data-table-card-bg:color-mix(in_oklch,var(--primary)_7%,var(--table-row))] data-[state=selected]:border-primary/40',
+              'rounded-none border-2 border-black bg-white px-3 py-2.5 transition-none data-[state=selected]:border-black data-[state=selected]:bg-black data-[state=selected]:text-white dark:border-white dark:bg-black dark:data-[state=selected]:border-white dark:data-[state=selected]:bg-white dark:data-[state=selected]:text-black',
               props.getRowClassName?.(row)
             )}
           >

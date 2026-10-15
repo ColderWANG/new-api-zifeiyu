@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright (C) 2023-2026 QuantumNous
 
 This program is free software: you can redistribute it and/or modify
@@ -50,10 +50,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty'
-import { IconBadge } from '@/components/ui/icon-badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Toggle } from '@/components/ui/toggle'
 import {
   Tooltip,
   TooltipContent,
@@ -507,7 +505,7 @@ export function FlowCharts(props: FlowChartsProps) {
     />
   )
   if (displayState === 'loading') {
-    chartContent = <Skeleton className='h-full w-full' />
+    chartContent = <Skeleton className='h-full w-full rounded-none' />
   } else if (displayState === 'error') {
     chartContent = (
       <div className='flex h-full items-center justify-center p-4'>
@@ -520,7 +518,7 @@ export function FlowCharts(props: FlowChartsProps) {
     )
   } else if (displayState === 'empty') {
     chartContent = (
-      <Empty className='h-full border-0 py-12'>
+      <Empty className='h-full rounded-none border-0 py-12'>
         <EmptyHeader>
           <EmptyMedia variant='icon'>
             <Route />
@@ -538,7 +536,7 @@ export function FlowCharts(props: FlowChartsProps) {
         <div className='flex min-w-0 flex-wrap items-end gap-2'>
           <div className='flex min-w-0 flex-col gap-1.5'>
             <div className='flex items-center gap-1.5'>
-              <span className='text-muted-foreground text-xs font-medium'>
+              <span className='font-mono text-xs font-medium tracking-wide text-neutral-500 uppercase'>
                 {t('Flow width metric')}
               </span>
               <TooltipProvider>
@@ -547,14 +545,14 @@ export function FlowCharts(props: FlowChartsProps) {
                     render={
                       <button
                         type='button'
-                        className='text-muted-foreground/60 hover:text-foreground flex size-5 shrink-0 items-center justify-center rounded-md'
+                        className='flex size-5 shrink-0 items-center justify-center rounded-none text-neutral-500 hover:text-black'
                         aria-label={t('Flow width metric')}
                       />
                     }
                   >
                     <Info className='size-3.5' />
                   </TooltipTrigger>
-                  <TooltipContent className='max-w-[14rem]'>
+                  <TooltipContent className='max-w-[14rem] rounded-none border border-black bg-black font-mono text-xs text-white'>
                     {t('Choose how flow widths are calculated.')}
                   </TooltipContent>
                 </Tooltip>
@@ -565,14 +563,17 @@ export function FlowCharts(props: FlowChartsProps) {
               onValueChange={(value) => setMetric(value as FlowMetric)}
               className='shrink-0'
             >
-              <TabsList aria-label={t('Flow width metric')}>
+              <TabsList
+                aria-label={t('Flow width metric')}
+                className='shrink-0 rounded-none border border-black bg-white p-0.5'
+              >
                 {FLOW_METRIC_OPTIONS.map((option) => {
                   const Icon = option.icon
                   return (
                     <TabsTrigger
                       key={option.value}
                       value={option.value}
-                      className='gap-1.5 px-2.5 text-xs'
+                      className='gap-1.5 rounded-none px-2.5 font-mono text-xs font-medium transition-none hover:bg-neutral-100 hover:text-black data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-none'
                     >
                       <Icon data-icon='inline-start' aria-hidden='true' />
                       {t(option.labelKey)}
@@ -584,7 +585,7 @@ export function FlowCharts(props: FlowChartsProps) {
           </div>
 
           <div className='flex min-w-0 flex-col gap-1.5'>
-            <span className='text-muted-foreground text-xs font-medium'>
+            <span className='font-mono text-xs font-medium tracking-wide text-neutral-500 uppercase'>
               {t('Display limit')}
             </span>
             <Tabs
@@ -592,12 +593,15 @@ export function FlowCharts(props: FlowChartsProps) {
               onValueChange={(value) => setTopNodeLimit(Number(value))}
               className='shrink-0'
             >
-              <TabsList aria-label={t('Display limit')}>
+              <TabsList
+                aria-label={t('Display limit')}
+                className='shrink-0 rounded-none border border-black bg-white p-0.5'
+              >
                 {FLOW_TOP_LIMIT_OPTIONS.map((limit) => (
                   <TabsTrigger
                     key={limit}
                     value={String(limit)}
-                    className='px-2.5 text-xs'
+                    className='rounded-none px-2.5 font-mono text-xs font-medium transition-none hover:bg-neutral-100 hover:text-black data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-none'
                   >
                     {t('Top {{count}}', { count: limit })}
                   </TabsTrigger>
@@ -607,7 +611,7 @@ export function FlowCharts(props: FlowChartsProps) {
           </div>
 
           <div className='flex min-w-0 flex-col gap-1.5'>
-            <span className='text-muted-foreground text-xs font-medium'>
+            <span className='font-mono text-xs font-medium tracking-wide text-neutral-500 uppercase'>
               {t('Overflow items')}
             </span>
             <Tabs
@@ -617,12 +621,15 @@ export function FlowCharts(props: FlowChartsProps) {
               }
               className='shrink-0'
             >
-              <TabsList aria-label={t('Overflow items')}>
+              <TabsList
+                aria-label={t('Overflow items')}
+                className='shrink-0 rounded-none border border-black bg-white p-0.5'
+              >
                 {FLOW_OVERFLOW_MODE_OPTIONS.map((option) => (
                   <TabsTrigger
                     key={option.value}
                     value={option.value}
-                    className='px-2.5 text-xs'
+                    className='rounded-none px-2.5 font-mono text-xs font-medium transition-none hover:bg-neutral-100 hover:text-black data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-none'
                   >
                     {t(option.labelKey)}
                   </TabsTrigger>
@@ -666,13 +673,15 @@ export function FlowCharts(props: FlowChartsProps) {
         </div>
       </div>
 
-      <div className='overflow-hidden rounded-lg border'>
-        <div className='flex w-full flex-col gap-2 border-b px-3 py-2 sm:px-5 sm:py-3 lg:flex-row lg:items-center lg:justify-between'>
+      <div className='overflow-hidden rounded-none border border-black bg-white'>
+        <div className='flex w-full flex-col gap-2 border-b border-black bg-white px-3 py-2 sm:px-5 sm:py-3 lg:flex-row lg:items-center lg:justify-between'>
           <div className='flex min-w-0 items-center gap-2'>
-            <IconBadge tone='info' size='sm'>
+            <div className='flex size-7 shrink-0 items-center justify-center rounded-none border border-black/25 bg-white text-black [&>svg]:size-3.5'>
               <GitBranch />
-            </IconBadge>
-            <div className='text-sm font-semibold'>{chartTitle}</div>
+            </div>
+            <div className='font-mono text-sm font-bold tracking-wider text-black uppercase'>
+              {chartTitle}
+            </div>
           </div>
           <TooltipProvider>
             <div className='flex min-w-0 items-center gap-1 overflow-x-auto pb-1 lg:justify-end lg:pb-0'>
@@ -681,14 +690,14 @@ export function FlowCharts(props: FlowChartsProps) {
                   render={
                     <button
                       type='button'
-                      className='text-muted-foreground/60 hover:text-foreground flex size-6 shrink-0 items-center justify-center rounded-md'
+                      className='flex size-6 shrink-0 items-center justify-center rounded-none text-neutral-500 hover:text-black'
                       aria-label={t('Show or hide flow columns')}
                     />
                   }
                 >
                   <Info className='size-3.5' />
                 </TooltipTrigger>
-                <TooltipContent className='max-w-[16rem]'>
+                <TooltipContent className='max-w-[16rem] rounded-none border border-black bg-black font-mono text-xs text-white'>
                   {t('Click a stage to show or hide that column')}
                 </TooltipContent>
               </Tooltip>
@@ -698,25 +707,33 @@ export function FlowCharts(props: FlowChartsProps) {
                 return (
                   <Fragment key={stage}>
                     {index > 0 && (
-                      <ChevronRight className='text-muted-foreground/40 size-3.5 shrink-0' />
+                      <ChevronRight className='size-4 shrink-0 stroke-[2.5] text-black/50' />
                     )}
                     <Tooltip>
                       <TooltipTrigger
                         render={
-                          <Toggle
-                            variant='outline'
-                            size='sm'
-                            pressed={visible}
-                            onPressedChange={() => toggleStage(stage)}
+                          <button
+                            type='button'
+                            onClick={() => toggleStage(stage)}
+                            aria-pressed={visible}
                             aria-label={t(meta.labelKey)}
-                            className={cn('shrink-0', !visible && 'opacity-50')}
+                            className={cn(
+                              'inline-flex shrink-0 items-center gap-1.5 h-8 px-3 rounded-none border text-xs sm:text-sm font-sans font-semibold tracking-tight transition-none cursor-pointer',
+                              visible
+                                ? 'border-2 border-black bg-black text-white hover:bg-neutral-800'
+                                : 'border-2 border-dashed border-neutral-400 bg-neutral-100 text-neutral-600 hover:border-black hover:bg-white hover:text-black'
+                            )}
                           />
                         }
                       >
-                        {!visible && <EyeOff className='size-3' />}
-                        {t(meta.labelKey)}
+                        {!visible && (
+                          <EyeOff className='size-3.5 shrink-0 text-neutral-500' />
+                        )}
+                        <span>{t(meta.labelKey)}</span>
                       </TooltipTrigger>
-                      <TooltipContent>{t(meta.descKey)}</TooltipContent>
+                      <TooltipContent className='rounded-none border border-black bg-black font-mono text-xs text-white'>
+                        {t(meta.descKey)}
+                      </TooltipContent>
                     </Tooltip>
                   </Fragment>
                 )

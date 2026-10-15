@@ -20,13 +20,14 @@ import { useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { PublicLayout } from '@/components/layout'
-import { Footer } from '@/components/layout/components/footer'
 import { RichContent } from '@/components/rich-content'
 import { useTheme } from '@/context/theme-provider'
 import { isLikelyHtml } from '@/lib/content-format'
 import { useAuthStore } from '@/stores/auth-store'
 
-import { CTA, Features, Hero, HowItWorks, Stats } from './components'
+import { CTA, Features, Hero } from './components'
+
+import './monochrome.css'
 import { useHomePageContent } from './hooks'
 
 export function Home() {
@@ -122,12 +123,18 @@ export function Home() {
 
   return (
     <PublicLayout showMainContainer={false}>
-      <Hero isAuthenticated={isAuthenticated} />
-      <Stats />
-      <Features />
-      <HowItWorks />
-      <CTA isAuthenticated={isAuthenticated} />
-      <Footer />
+      {/* Minimalist Monochrome editorial shell */}
+      <main className='mm mm-lines mm-noise relative flex min-h-svh flex-col overflow-hidden bg-white text-black'>
+        <div aria-hidden className='pointer-events-none absolute inset-0'>
+          <div className='absolute inset-y-0 left-8 hidden w-px bg-black/10 lg:block' />
+          <div className='absolute inset-y-0 right-8 hidden w-px bg-black/10 lg:block' />
+        </div>
+        <Hero isAuthenticated={isAuthenticated} />
+        <hr className='mm-rule relative z-10 mx-6 md:mx-10' />
+        <Features />
+        <hr className='mm-rule relative z-10 mx-6 md:mx-10' />
+        <CTA isAuthenticated={isAuthenticated} />
+      </main>
     </PublicLayout>
   )
 }

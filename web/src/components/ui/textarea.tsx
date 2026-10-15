@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright (C) 2023-2026 QuantumNous
 
 This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,7 @@ function Textarea({ className, ...props }: React.ComponentProps<'textarea'>) {
     <textarea
       data-slot='textarea'
       className={cn(
-        'border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 disabled:bg-input/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 flex field-sizing-content max-h-96 min-h-16 w-full overflow-y-auto rounded-lg border bg-transparent px-2.5 py-2 text-base transition-colors outline-none focus-visible:ring-3 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:ring-3 md:text-sm',
+        'border-black dark:border-white placeholder:text-neutral-400 focus-visible:border-black focus-visible:ring-1 focus-visible:ring-black dark:focus-visible:ring-white disabled:bg-neutral-100 dark:disabled:bg-neutral-900 aria-invalid:border-black dark:aria-invalid:border-white flex field-sizing-content max-h-96 min-h-16 w-full overflow-y-auto rounded-none border bg-white dark:bg-black text-black dark:text-white px-2.5 py-2 text-sm transition-none outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
         className
       )}
       {...props}

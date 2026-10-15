@@ -39,13 +39,6 @@ const markdownOptions = {
   gfm: true,
 } as const
 
-const emojiShortcodes: Record<string, string> = {
-  ':fa-gear:': '\u2699\ufe0f',
-  ':fa-star:': '\u2b50',
-  ':smiley:': '\ud83d\ude03',
-  ':star:': '\u2b50',
-}
-
 const allowedAttributes = [
   'checked',
   'class',
@@ -187,12 +180,6 @@ function renderMath(source: string, displayMode: boolean): string {
     displayMode,
     output: 'htmlAndMathml',
     throwOnError: false,
-  })
-}
-
-function replaceEmojiShortcodes(value: string): string {
-  return value.replaceAll(/:(?:smiley|star|fa-star|fa-gear):/g, (shortcode) => {
-    return emojiShortcodes[shortcode] ?? shortcode
   })
 }
 
@@ -627,13 +614,6 @@ markdownRenderer.code = (token: Tokens.Code): string => {
 
 const markdownExtensions: MarkedExtension[] = [
   {
-    walkTokens(token) {
-      if (token.type !== 'text') {
-        return
-      }
-
-      token.text = replaceEmojiShortcodes(token.text)
-    },
     extensions: [
       {
         level: 'block',

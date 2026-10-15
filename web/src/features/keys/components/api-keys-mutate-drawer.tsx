@@ -412,7 +412,11 @@ export function ApiKeysMutateDrawer({
                   <FormItem>
                     <FormLabel>{t('Name')}</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder={t('Enter a name')} />
+                      <Input
+                        {...field}
+                        placeholder={t('Enter a name')}
+                        className='font-sans'
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -538,7 +542,7 @@ export function ApiKeysMutateDrawer({
                           type='button'
                           variant='outline'
                           size='sm'
-                          className='px-2 text-xs sm:px-3 sm:text-sm'
+                          className='hover:bg-accent hover:text-accent-foreground border-border rounded-none border px-2 text-xs transition-none sm:px-3 sm:text-sm'
                           onClick={() => handleSetExpiry(0, 0, 0)}
                         >
                           {t('Never')}
@@ -547,7 +551,7 @@ export function ApiKeysMutateDrawer({
                           type='button'
                           variant='outline'
                           size='sm'
-                          className='px-2 text-xs sm:px-3 sm:text-sm'
+                          className='hover:bg-accent hover:text-accent-foreground border-border rounded-none border px-2 text-xs transition-none sm:px-3 sm:text-sm'
                           onClick={() => handleSetExpiry(1, 0, 0)}
                         >
                           {t('1 Month')}
@@ -556,7 +560,7 @@ export function ApiKeysMutateDrawer({
                           type='button'
                           variant='outline'
                           size='sm'
-                          className='px-2 text-xs sm:px-3 sm:text-sm'
+                          className='hover:bg-accent hover:text-accent-foreground border-border rounded-none border px-2 text-xs transition-none sm:px-3 sm:text-sm'
                           onClick={() => handleSetExpiry(0, 1, 0)}
                         >
                           {t('1 Day')}
@@ -565,7 +569,7 @@ export function ApiKeysMutateDrawer({
                           type='button'
                           variant='outline'
                           size='sm'
-                          className='px-2 text-xs sm:px-3 sm:text-sm'
+                          className='hover:bg-accent hover:text-accent-foreground border-border rounded-none border px-2 text-xs transition-none sm:px-3 sm:text-sm'
                           onClick={() => handleSetExpiry(0, 0, 1)}
                         >
                           {t('1 Hour')}
@@ -679,7 +683,7 @@ export function ApiKeysMutateDrawer({
                   render={
                     <button
                       type='button'
-                      className='hover:bg-muted/40 flex w-full items-center gap-3 rounded-md py-1.5 text-left transition-colors'
+                      className='hover:bg-accent/60 hover:border-border flex w-full items-center gap-3 rounded-none border border-transparent px-2 py-1.5 text-left transition-none'
                     />
                   }
                 >
@@ -736,7 +740,7 @@ export function ApiKeysMutateDrawer({
                           <FormControl>
                             <Textarea
                               {...field}
-                              className='min-h-20 resize-none'
+                              className='min-h-20 resize-none font-mono text-xs'
                               placeholder={t(
                                 'One IP per line (empty for no restriction)'
                               )}
@@ -785,7 +789,12 @@ export function ApiKeysMutateDrawer({
         </Form>
         <SheetFooter className={sideDrawerFooterClassName()}>
           <SheetClose
-            render={<Button variant='outline' className='w-full sm:w-auto' />}
+            render={
+              <Button
+                variant='outline'
+                className='hover:bg-accent hover:text-accent-foreground border-border w-full rounded-none border transition-none sm:w-auto'
+              />
+            }
           >
             {t('Close')}
           </SheetClose>
@@ -793,7 +802,7 @@ export function ApiKeysMutateDrawer({
             type='button'
             onClick={form.handleSubmit(onSubmit, onInvalid)}
             disabled={!isFormInitialized || isSubmitting}
-            className='w-full sm:w-auto'
+            className='bg-primary text-primary-foreground hover:bg-primary/90 w-full rounded-none transition-none sm:w-auto'
           >
             {isSubmitting ? t('Saving...') : t('Save changes')}
           </Button>

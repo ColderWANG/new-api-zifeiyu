@@ -25,27 +25,27 @@ import {
   MODELS_DEFAULT_SECTION,
 } from '@/features/models/section-registry'
 import { ROLE } from '@/lib/roles'
+import { urlSingle } from '@/lib/url-array-schema'
 import { useAuthStore } from '@/stores/auth-store'
 
-const modelsSearchSchema = z.object({
+export const modelsSearchSchema = z.object({
   vPage: z.number().optional().catch(1),
   vPageSize: z.number().optional().catch(20),
   vFilter: z.string().optional().catch(''),
-  vAssociation: z.array(z.string()).optional().catch([]),
+  vAssociation: urlSingle(z.enum(['linked', 'unlinked'])),
   page: z.number().optional().catch(1),
   pageSize: z.number().optional().catch(10),
   filter: z.string().optional().catch(''),
-  vendor: z.array(z.string()).optional().catch([]),
-  status: z.array(z.string()).optional().catch([]),
-  square_state: z
-    .array(z.enum(['visible', 'unavailable', 'hidden', 'partial']))
-    .optional()
-    .catch([]),
-  sync: z.array(z.string()).optional().catch([]),
+  vendor: urlSingle(z.string().min(1)),
+  status: urlSingle(z.enum(['enabled', 'disabled'])),
+  square_state: urlSingle(
+    z.enum(['visible', 'unavailable', 'hidden', 'partial'])
+  ),
+  sync: urlSingle(z.enum(['yes', 'no'])),
   dPage: z.number().optional().catch(1),
   dPageSize: z.number().optional().catch(10),
   dFilter: z.string().optional().catch(''),
-  dStatus: z.array(z.string()).optional().catch([]),
+  dStatus: urlSingle(z.string().min(1)),
 })
 
 export const Route = createFileRoute('/_authenticated/models/$section')({

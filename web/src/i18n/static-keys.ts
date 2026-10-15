@@ -19,6 +19,9 @@ For commercial licensing, please contact support@quantumnous.com
 // Static translation keys that don't get picked up by the t('...') regex.
 // These cover dynamic labels (e.g. constants, configs) that are passed into t at runtime.
 export const STATIC_I18N_KEYS = [
+  'Please choose a PNG, JPG or WebP image.',
+  'Choose a non-empty image smaller than 10 MB.',
+  'This image could not be opened. Please choose another file.',
   'Task usage metadata is unavailable. Pricing details cannot be displayed.',
   'This expression cannot be expanded into a price table. View the original expression below.',
   'This operation is only supported for vLLM or SGLang channels',
@@ -896,4 +899,18 @@ export const STATIC_I18N_KEYS = [
   'Verification method',
   'Admin permissions updated',
   'Provider ID',
+  // Image Studio dashboard relay validation messages.
+  'A dashboard login session is required.',
+  'Invalid reference image upload.',
+  'Duplicate image generation fields are not allowed.',
+  'Invalid image count.',
+  'Choose one reference image.',
+  'Use JSON or multipart form data.',
+  'Invalid image generation request.',
+  'Enter an image description of up to 2000 characters.',
+  'This image model is not available in your current group.',
+  'Unsupported image size.',
+  'Chat image generation requires one image and a supported aspect ratio.',
+  'Unsupported image generation protocol.',
+  'Could not prepare the image generation request.',
 ] as const

@@ -16,10 +16,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
+import i18next from 'i18next'
 import { toast } from 'sonner'
 
 import {
   getServerErrorMessage,
+  getServerErrorRetryAfterSeconds,
+  getServerErrorStatus,
   getServerErrorSources,
   isServerErrorCancelled,
 } from './server-error-message'
@@ -41,10 +44,23 @@ export function handleServerError(
   const reported = sources.some((source) => reportedErrors.has(source))
   markServerErrorHandled(error)
   if (reported) return
+  const status = getServerErrorStatus(error)
+  const retryAfterSeconds = getServerErrorRetryAfterSeconds(error)
+  const isRateLimited = status === 429
   const message =
-    presentation?.title || getServerErrorMessage(error, fallbackMessage)
-  if (presentation?.description) {
-    toast.error(message, { description: presentation.description })
+    presentation?.title ||
+    (isRateLimited
+      ? i18next.t('Too many requests')
+      : getServerErrorMessage(error, fallbackMessage))
+  const description =
+    presentation?.description ??
+    (isRateLimited
+      ? i18next.t('Please wait {{seconds}} seconds before trying again.', {
+          seconds: retryAfterSeconds ?? i18next.t('a moment'),
+        })
+      : undefined)
+  if (description) {
+    toast.error(message, { description })
   } else {
     toast.error(message)
   }

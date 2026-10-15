@@ -269,7 +269,7 @@ export function SubscriptionPlansCard({
         contentClassName='space-y-4 sm:space-y-5'
       >
         {/* My subscriptions & billing preference */}
-        <div className='rounded-xl border p-3 sm:p-4'>
+        <div className='border-border bg-card rounded-md p-3 sm:p-4'>
           <div className='flex flex-wrap items-center justify-between gap-2.5 sm:gap-3'>
             <div className='flex min-w-0 flex-wrap items-center gap-2'>
               <span className='text-sm font-medium'>
@@ -278,7 +278,7 @@ export function SubscriptionPlansCard({
               <span className='flex items-center gap-1.5 text-xs font-medium'>
                 <span
                   className={cn(
-                    'size-1.5 shrink-0 rounded-full',
+                    'size-1.5 shrink-0 rounded-sm',
                     hasActive ? dotColorMap.success : dotColorMap.neutral
                   )}
                   aria-hidden='true'
@@ -553,7 +553,7 @@ export function SubscriptionPlansCard({
                 <Card
                   key={plan.id}
                   data-card-hover='false'
-                  className={cn(isPopular && 'border-primary/70 shadow-sm')}
+                  className={cn(isPopular && 'border-primary/70')}
                 >
                   <CardContent className='flex h-full flex-col p-3.5 sm:p-4'>
                     <div className='mb-2 flex items-start justify-between gap-3'>

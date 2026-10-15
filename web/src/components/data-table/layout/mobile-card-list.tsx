@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright (C) 2023-2026 QuantumNous
 
 This program is free software: you can redistribute it and/or modify
@@ -18,24 +18,6 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import type { Row, Table } from '@tanstack/react-table'
 import { Database } from 'lucide-react'
-/*
-Copyright (C) 2023-2026 QuantumNous
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-For commercial licensing, please contact support@quantumnous.com
-*/
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -65,21 +47,21 @@ interface MobileCardListProps<TData> {
 
 function ListSkeleton() {
   return (
-    <div className='divide-y overflow-hidden rounded-lg border'>
+    <div className='divide-y divide-black/20 overflow-hidden rounded-none border-2 border-black bg-white dark:divide-white/20 dark:border-white dark:bg-black'>
       {[1, 2, 3, 4, 5].map((i) => (
         <div key={i} className='px-3 py-2.5'>
           <div className='flex items-center justify-between'>
-            <Skeleton className='h-4 w-32' />
-            <Skeleton className='h-5 w-16 rounded-md' />
+            <Skeleton className='h-4 w-32 rounded-none' />
+            <Skeleton className='h-5 w-16 rounded-none' />
           </div>
           <div className='mt-1.5 grid grid-cols-2 gap-2'>
             <div className='flex-1'>
-              <Skeleton className='mb-1 h-2 w-8' />
-              <Skeleton className='h-4 w-full' />
+              <Skeleton className='mb-1 h-2 w-8 rounded-none' />
+              <Skeleton className='h-4 w-full rounded-none' />
             </div>
             <div className='flex-1'>
-              <Skeleton className='mb-1 h-2 w-8' />
-              <Skeleton className='h-4 w-full' />
+              <Skeleton className='mb-1 h-2 w-8 rounded-none' />
+              <Skeleton className='h-4 w-full rounded-none' />
             </div>
           </div>
         </div>
@@ -90,13 +72,13 @@ function ListSkeleton() {
 
 function FallbackListSkeleton() {
   return (
-    <div className='divide-y overflow-hidden rounded-lg border'>
+    <div className='divide-y divide-black/20 overflow-hidden rounded-none border-2 border-black bg-white dark:divide-white/20 dark:border-white dark:bg-black'>
       {[1, 2, 3, 4, 5].map((i) => (
         <div key={i} className='space-y-1.5 px-3 py-2.5'>
           {[1, 2, 3].map((j) => (
             <div key={j} className='flex items-center justify-between'>
-              <Skeleton className='h-2.5 w-16' />
-              <Skeleton className='h-3.5 w-28' />
+              <Skeleton className='h-2.5 w-16 rounded-none' />
+              <Skeleton className='h-3.5 w-28 rounded-none' />
             </div>
           ))}
         </div>
@@ -107,13 +89,6 @@ function FallbackListSkeleton() {
 
 /**
  * Mobile-optimized list view for table data.
- *
- * Renders rows inside a single bordered container with dividers —
- * a Vercel/Stripe-style list rather than individual cards.
- *
- * Per-row content is shared with the desktop card view via
- * {@link CardRowContent}; see `card-row-content.tsx` for the column-meta
- * extensions (`mobileTitle`, `mobileBadge`, `mobileHidden`).
  */
 export function MobileCardList<TData>(props: MobileCardListProps<TData>) {
   const {
@@ -145,7 +120,7 @@ export function MobileCardList<TData>(props: MobileCardListProps<TData>) {
 
   if (!rows || rows.length === 0) {
     return (
-      <div className='rounded-lg border p-6'>
+      <div className='rounded-none border-2 border-black p-6 dark:border-white'>
         <Empty className='border-none p-0'>
           <EmptyHeader>
             <EmptyMedia variant='icon'>
@@ -160,9 +135,9 @@ export function MobileCardList<TData>(props: MobileCardListProps<TData>) {
   }
 
   return (
-    <div className='divide-y overflow-hidden rounded-lg border'>
+    <div className='divide-y divide-black/20 overflow-hidden rounded-none border-2 border-black bg-white dark:divide-white/20 dark:border-white dark:bg-black'>
       {enableRowSelection && (
-        <label className='flex items-center gap-2 px-3 py-2 text-xs'>
+        <label className='flex items-center gap-2 border-b border-black/20 px-3 py-2 font-mono text-xs dark:border-white/20'>
           <Checkbox
             checked={table.getIsAllPageRowsSelected()}
             indeterminate={table.getIsSomePageRowsSelected()}
@@ -179,7 +154,7 @@ export function MobileCardList<TData>(props: MobileCardListProps<TData>) {
           <div
             key={key}
             className={cn(
-              '[background-color:var(--data-table-card-bg,var(--table-row))] px-3 py-2.5',
+              'px-3 py-2.5 bg-white dark:bg-black',
               getRowClassName?.(row)
             )}
           >

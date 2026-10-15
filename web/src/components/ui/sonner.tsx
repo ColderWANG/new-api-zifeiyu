@@ -1,104 +1,67 @@
-/*
-Copyright (C) 2023-2026 QuantumNous
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-For commercial licensing, please contact support@quantumnous.com
-*/
 'use client'
 
 import {
-  CheckmarkCircle02Icon,
-  InformationCircleIcon,
-  Alert02Icon,
-  MultiplicationSignCircleIcon,
-  Loading03Icon,
-} from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
+  AlertTriangle,
+  CheckCircle2,
+  Info,
+  LoaderCircle,
+  XCircle,
+} from 'lucide-react'
 import { Toaster as Sonner, type ToasterProps } from 'sonner'
 
-import { useTheme } from '@/context/theme-provider'
-
 const Toaster = (props: ToasterProps) => {
-  const { resolvedTheme } = useTheme()
-
   return (
     <Sonner
-      theme={resolvedTheme}
-      className='toaster group'
+      theme='light'
+      className='toaster group font-sans'
       icons={{
         success: (
-          <HugeiconsIcon
-            icon={CheckmarkCircle02Icon}
-            strokeWidth={2}
-            className='size-4'
-          />
+          <CheckCircle2 className='size-4 text-black' strokeWidth={1.5} />
         ),
-        info: (
-          <HugeiconsIcon
-            icon={InformationCircleIcon}
-            strokeWidth={2}
-            className='size-4'
-          />
-        ),
+        info: <Info className='size-4 text-black' strokeWidth={1.5} />,
         warning: (
-          <HugeiconsIcon
-            icon={Alert02Icon}
-            strokeWidth={2}
-            className='size-4'
-          />
+          <AlertTriangle className='size-4 text-black' strokeWidth={1.5} />
         ),
-        error: (
-          <HugeiconsIcon
-            icon={MultiplicationSignCircleIcon}
-            strokeWidth={2}
-            className='size-4'
-          />
-        ),
+        error: <XCircle className='size-4 text-white' strokeWidth={1.5} />,
         loading: (
-          <HugeiconsIcon
-            icon={Loading03Icon}
-            strokeWidth={2}
-            className='size-4 animate-spin'
+          <LoaderCircle
+            className='size-4 animate-spin text-black'
+            strokeWidth={1.5}
           />
         ),
       }}
+      toastOptions={{
+        classNames: {
+          toast:
+            '!rounded-none !border-2 !border-black !bg-white !text-black !shadow-none !font-medium',
+          title: '!font-semibold !tracking-tight',
+          description: '!text-neutral-600',
+          actionButton:
+            '!rounded-none !border-2 !border-black !bg-black !text-white hover:!bg-white hover:!text-black',
+          cancelButton:
+            '!rounded-none !border-2 !border-black !bg-white !text-black hover:!bg-black hover:!text-white',
+          closeButton:
+            '!rounded-none !border-2 !border-black !bg-white !text-black hover:!bg-black hover:!text-white',
+        },
+      }}
       style={
         {
-          '--normal-bg': 'var(--popover)',
-          '--normal-text': 'var(--popover-foreground)',
-          '--normal-border': 'var(--border)',
-          '--success-bg':
-            'color-mix(in oklch, var(--success) 16%, var(--popover))',
-          '--success-border':
-            'color-mix(in oklch, var(--success) 35%, var(--border))',
-          '--success-text': 'var(--success)',
-          '--info-bg': 'color-mix(in oklch, var(--info) 16%, var(--popover))',
-          '--info-border':
-            'color-mix(in oklch, var(--info) 35%, var(--border))',
-          '--info-text': 'var(--info)',
-          '--warning-bg':
-            'color-mix(in oklch, var(--warning) 18%, var(--popover))',
-          '--warning-border':
-            'color-mix(in oklch, var(--warning) 38%, var(--border))',
-          '--warning-text': 'var(--warning)',
-          '--error-bg':
-            'color-mix(in oklch, var(--destructive) 16%, var(--popover))',
-          '--error-border':
-            'color-mix(in oklch, var(--destructive) 35%, var(--border))',
-          '--error-text': 'var(--destructive)',
-          '--border-radius': 'var(--radius)',
+          '--normal-bg': '#ffffff',
+          '--normal-text': '#000000',
+          '--normal-border': '#000000',
+          '--success-bg': '#ffffff',
+          '--success-border': '#000000',
+          '--success-text': '#000000',
+          '--info-bg': '#ffffff',
+          '--info-border': '#000000',
+          '--info-text': '#000000',
+          '--warning-bg': '#ffffff',
+          '--warning-border': '#000000',
+          '--warning-text': '#000000',
+          '--error-bg': '#000000',
+          '--error-border': '#000000',
+          '--error-text': '#ffffff',
+          '--border-radius': '0px',
         } as React.CSSProperties
       }
       {...props}

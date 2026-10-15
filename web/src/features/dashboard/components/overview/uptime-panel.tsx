@@ -21,7 +21,6 @@ import { memo, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
-import { IconBadge } from '@/components/ui/icon-badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { getUptimeStatus } from '@/features/dashboard/api'
 import type {
@@ -33,16 +32,16 @@ import { cn } from '@/lib/utils'
 import { PanelWrapper } from '../ui/panel-wrapper'
 
 const STATUS_COLOR_MAP: Record<number, string> = {
-  1: 'bg-emerald-500',
-  0: 'bg-red-500',
-  2: 'bg-amber-500',
-  3: 'bg-blue-500',
+  1: 'bg-black',
+  0: 'bg-black/25',
+  2: 'bg-black/60',
+  3: 'bg-black/80',
 }
-const DEFAULT_STATUS_COLOR = 'bg-muted-foreground/40'
+const DEFAULT_STATUS_COLOR = 'bg-black/15'
 
 const StatusDot = memo(function StatusDot(props: { status: number }) {
   const color = STATUS_COLOR_MAP[props.status] ?? DEFAULT_STATUS_COLOR
-  return <span className={cn('inline-block size-2 rounded-full', color)} />
+  return <span className={cn('inline-block size-2 rounded-none', color)} />
 })
 
 export function UptimePanel() {
@@ -98,9 +97,9 @@ export function UptimePanel() {
     <PanelWrapper
       title={
         <span className='flex items-center gap-2'>
-          <IconBadge tone='success' size='sm'>
-            <Activity />
-          </IconBadge>
+          <span className='flex size-7 shrink-0 items-center justify-center border border-black/15 bg-white text-black'>
+            <Activity className='size-3.5' />
+          </span>
           {t('Uptime')}
         </span>
       }
@@ -129,12 +128,12 @@ export function UptimePanel() {
         <div>
           {groups.map((group, groupIdx) => (
             <div key={group.categoryName}>
-              <div className='bg-muted/30 border-border/60 border-b px-3 py-2 sm:px-5'>
+              <div className='border-b border-black/10 bg-black/5 px-3 py-2 sm:px-5'>
                 <div className='flex items-center gap-2'>
-                  <h4 className='text-muted-foreground text-xs font-semibold tracking-wider uppercase'>
+                  <h4 className='text-[10px] font-semibold tracking-[0.16em] text-black/55 uppercase'>
                     {group.categoryName}
                   </h4>
-                  <span className='text-muted-foreground/40 font-mono text-xs tabular-nums'>
+                  <span className='font-mono text-xs text-black/40 tabular-nums'>
                     {group.monitors?.length || 0}
                   </span>
                 </div>
@@ -145,19 +144,19 @@ export function UptimePanel() {
                   <div
                     key={monitor.name}
                     className={cn(
-                      'hover:bg-muted/40 flex items-center justify-between gap-2 px-3 py-2 transition-colors sm:px-5 sm:py-2.5',
+                      'hover:bg-black/5 flex items-center justify-between gap-2 px-3 py-2 transition-colors sm:px-5 sm:py-2.5',
                       monitorIdx < (group.monitors?.length || 0) - 1 &&
-                        'border-border/40 border-b',
+                        'border-black/20 border-b',
                       groupIdx < groups.length - 1 &&
                         monitorIdx === (group.monitors?.length || 0) - 1 &&
-                        'border-border/60 border-b'
+                        'border-black/10 border-b'
                     )}
                   >
                     <div className='flex min-w-0 items-center gap-2.5'>
                       <StatusDot status={monitor.status} />
                       <span className='truncate text-sm'>{monitor.name}</span>
                       {monitor.group && (
-                        <span className='text-muted-foreground/40 shrink-0 text-xs'>
+                        <span className='shrink-0 text-xs text-black/40'>
                           ({monitor.group})
                         </span>
                       )}

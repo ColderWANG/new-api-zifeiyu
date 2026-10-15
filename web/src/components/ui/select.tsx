@@ -19,13 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 'use client'
 
 import { Select as SelectPrimitive } from '@base-ui/react/select'
-import {
-  UnfoldMoreIcon,
-  Tick02Icon,
-  ArrowUp01Icon,
-  ArrowDown01Icon,
-} from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
+import { Check, ChevronDown, ChevronsUpDown, ChevronUp } from 'lucide-react'
 import * as React from 'react'
 
 import { usePortalContainer } from '@/components/ui/portal-container'
@@ -67,7 +61,7 @@ function SelectTrigger({
       data-slot='select-trigger'
       data-size={size}
       className={cn(
-        "border-input focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-placeholder:text-muted-foreground dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 flex w-fit items-center justify-between gap-1.5 rounded-lg border bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:ring-3 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:ring-3 data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-md *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "border-black focus-visible:border-black focus-visible:ring-1 focus-visible:ring-black data-placeholder:text-neutral-400 flex w-full items-center justify-between gap-1.5 rounded-none border bg-white text-black py-1.5 pr-2 pl-2.5 text-xs font-mono whitespace-nowrap transition-none outline-none select-none disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-8 data-[size=sm]:h-7 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5",
         className
       )}
       {...props}
@@ -75,11 +69,7 @@ function SelectTrigger({
       {children}
       <SelectPrimitive.Icon
         render={
-          <HugeiconsIcon
-            icon={UnfoldMoreIcon}
-            strokeWidth={2}
-            className='text-muted-foreground pointer-events-none size-4'
-          />
+          <ChevronsUpDown className='pointer-events-none size-3.5 text-neutral-500' />
         }
       />
     </SelectPrimitive.Trigger>
@@ -116,7 +106,7 @@ function SelectContent({
         data-slot='select-content'
         data-align-trigger={alignItemWithTrigger}
         className={cn(
-          'bg-popover text-popover-foreground ring-foreground/10 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 relative isolate z-50 max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-lg shadow-md ring-1 duration-100 data-[align-trigger=true]:animate-none',
+          'bg-white text-black ring-0 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 relative isolate z-50 max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-none border-2 border-black p-1 shadow-none duration-100 data-[align-trigger=true]:animate-none',
           className
         )}
         {...props}
@@ -146,7 +136,10 @@ function SelectLabel({
   return (
     <SelectPrimitive.GroupLabel
       data-slot='select-label'
-      className={cn('text-muted-foreground px-1.5 py-1 text-xs', className)}
+      className={cn(
+        'text-neutral-500 px-2 py-1 text-[10px] font-mono font-bold uppercase tracking-wider',
+        className
+      )}
       {...props}
     />
   )
@@ -161,7 +154,7 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot='select-item'
       className={cn(
-        "focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground relative flex w-full cursor-default items-center gap-1.5 rounded-md py-1 pr-8 pl-1.5 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        "focus:bg-black focus:text-white not-data-[variant=destructive]:focus:**:text-white data-highlighted:bg-black data-highlighted:text-white not-data-[variant=destructive]:data-highlighted:**:text-white relative flex w-full cursor-pointer items-center gap-1.5 rounded-none py-1.5 pr-8 pl-2 text-xs font-mono text-black outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 transition-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3.5 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className
       )}
       {...props}
@@ -177,11 +170,7 @@ function SelectItem({
           <span className='pointer-events-none absolute right-2 flex size-4 items-center justify-center' />
         }
       >
-        <HugeiconsIcon
-          icon={Tick02Icon}
-          strokeWidth={2}
-          className='pointer-events-none'
-        />
+        <Check className='pointer-events-none size-3.5' />
       </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>
   )
@@ -194,7 +183,10 @@ function SelectSeparator({
   return (
     <SelectPrimitive.Separator
       data-slot='select-separator'
-      className={cn('bg-border pointer-events-none -mx-1 my-1 h-px', className)}
+      className={cn(
+        'bg-black/15 pointer-events-none -mx-1 my-1 h-px',
+        className
+      )}
       {...props}
     />
   )
@@ -208,12 +200,12 @@ function SelectScrollUpButton({
     <SelectPrimitive.ScrollUpArrow
       data-slot='select-scroll-up-button'
       className={cn(
-        "bg-popover top-0 z-10 flex w-full cursor-default items-center justify-center py-1 [&_svg:not([class*='size-'])]:size-4",
+        "bg-white text-black top-0 z-10 flex w-full cursor-default items-center justify-center py-1 [&_svg:not([class*='size-'])]:size-3.5",
         className
       )}
       {...props}
     >
-      <HugeiconsIcon icon={ArrowUp01Icon} strokeWidth={2} />
+      <ChevronUp className='size-3.5' />
     </SelectPrimitive.ScrollUpArrow>
   )
 }
@@ -226,12 +218,12 @@ function SelectScrollDownButton({
     <SelectPrimitive.ScrollDownArrow
       data-slot='select-scroll-down-button'
       className={cn(
-        "bg-popover bottom-0 z-10 flex w-full cursor-default items-center justify-center py-1 [&_svg:not([class*='size-'])]:size-4",
+        "bg-white text-black bottom-0 z-10 flex w-full cursor-default items-center justify-center py-1 [&_svg:not([class*='size-'])]:size-3.5",
         className
       )}
       {...props}
     >
-      <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} />
+      <ChevronDown className='size-3.5' />
     </SelectPrimitive.ScrollDownArrow>
   )
 }
