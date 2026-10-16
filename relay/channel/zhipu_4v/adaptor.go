@@ -1,11 +1,13 @@
 package zhipu_4v
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 
+	"github.com/QuantumNous/new-api/common"
 	channelconstant "github.com/QuantumNous/new-api/constant"
 	"github.com/QuantumNous/new-api/relay/channel"
 	"github.com/QuantumNous/new-api/relay/channel/claude"
@@ -118,7 +120,55 @@ func (a *Adaptor) ConvertOpenAIResponsesRequest(c *gin.Context, info *relaycommo
 }
 
 func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, requestBody io.Reader) (any, error) {
-	return channel.DoApiRequest(a, c, info, requestBody)
+	resp, err := channel.DoApiRequest(a, c, info, requestBody)
+	if err != nil || resp.StatusCode != http.StatusTooManyRequests {
+		return resp, err
+	}
+
+	// A Coding Plan key can be rejected by the standard endpoint with 1113
+	// even while its subscription has quota. Only retry that explicit rejection
+	// on the official Chat endpoint; never redirect custom upstreams or retry
+	// an accepted generation, a rate limit, or an explicitly selected plan.
+	request := resp.Request
+	if request == nil || request.URL == nil || request.GetBody == nil ||
+		request.Method != http.MethodPost || request.URL.Scheme != "https" ||
+		request.URL.Host != "open.bigmodel.cn" || request.URL.Path != "/api/paas/v4/chat/completions" {
+		return resp, nil
+	}
+	const maxErrorBody = 64 << 10
+	body, readErr := io.ReadAll(io.LimitReader(resp.Body, maxErrorBody))
+	// Preserve the original body and its closer for the normal error handler,
+	// including malformed, oversized, and non-matching error responses.
+	resp.Body = struct {
+		io.Reader
+		io.Closer
+	}{io.MultiReader(bytes.NewReader(body), resp.Body), resp.Body}
+	if readErr != nil || len(body) == maxErrorBody {
+		return resp, nil
+	}
+	var upstreamError dto.OpenAIErrorWithStatusCode
+	if common.Unmarshal(body, &upstreamError) != nil || upstreamError.Error.Code != "1113" {
+		return resp, nil
+	}
+	replay, err := request.GetBody()
+	if err != nil {
+		return resp, nil
+	}
+	defer replay.Close()
+	retry := request.Clone(c.Request.Context())
+	retry.URL.Path = "/api/coding/paas/v4/chat/completions"
+	retry.URL.RawPath = ""
+	retry.Body = replay
+	retryResponse, retryErr := channel.DoRequest(c, retry, info)
+	if retryErr != nil {
+		return resp, nil
+	}
+	if retryResponse.StatusCode != http.StatusOK {
+		_ = retryResponse.Body.Close()
+		return resp, nil
+	}
+	_ = resp.Body.Close()
+	return retryResponse, nil
 }
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage any, err *types.NewAPIError) {
