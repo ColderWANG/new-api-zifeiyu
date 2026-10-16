@@ -132,8 +132,38 @@ func OpenAIChatRequestToGeminiGenerateContent(c context.Context, textRequest dto
 						return nil, fmt.Errorf("failed to marshal image_config: %w", err)
 					}
 					geminiRequest.GenerationConfig.ImageConfig = imageConfigBytes
+					responseFormatBytes, err := kitutil.Marshal(map[string]any{"image": geminiImageConfig})
+					if err != nil {
+						return nil, fmt.Errorf("failed to marshal response_format: %w", err)
+					}
+					// Gemini 3.x documents the image ratio under
+					// generationConfig.responseFormat.image. Keep imageConfig too
+					// for older Gemini-compatible endpoints.
+					geminiRequest.GenerationConfig.ResponseFormat = responseFormatBytes
 				}
 			}
+		}
+	}
+
+	if textRequest.ResponseFormat != nil && textRequest.ResponseFormat.Type == "image" {
+		geminiImageConfig := make(map[string]any)
+		if textRequest.ResponseFormat.AspectRatio != "" {
+			geminiImageConfig["aspectRatio"] = textRequest.ResponseFormat.AspectRatio
+		}
+		if textRequest.ResponseFormat.ImageSize != "" {
+			geminiImageConfig["imageSize"] = textRequest.ResponseFormat.ImageSize
+		}
+		if len(geminiImageConfig) > 0 {
+			imageConfigBytes, err := kitutil.Marshal(geminiImageConfig)
+			if err != nil {
+				return nil, fmt.Errorf("failed to marshal image response format: %w", err)
+			}
+			responseFormatBytes, err := kitutil.Marshal(map[string]any{"image": geminiImageConfig})
+			if err != nil {
+				return nil, fmt.Errorf("failed to marshal image response format: %w", err)
+			}
+			geminiRequest.GenerationConfig.ImageConfig = imageConfigBytes
+			geminiRequest.GenerationConfig.ResponseFormat = responseFormatBytes
 		}
 	}
 

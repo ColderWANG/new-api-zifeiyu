@@ -62,6 +62,10 @@ func TestImageStudioSessionRelay(t *testing.T) {
 			if err := common.Unmarshal(request.GenerationConfig.ImageConfig, &imageConfig); err != nil || imageConfig["aspectRatio"] != "1:1" {
 				t.Errorf("Gemini image ratio = %v, want 1:1", imageConfig["aspectRatio"])
 			}
+			var responseFormat map[string]map[string]any
+			if err := common.Unmarshal(request.GenerationConfig.ResponseFormat, &responseFormat); err != nil || responseFormat["image"]["aspectRatio"] != "1:1" {
+				t.Errorf("Gemini response format ratio = %v, want 1:1", responseFormat["image"]["aspectRatio"])
+			}
 			w.Header().Set("Content-Type", "application/json")
 			_, _ = w.Write([]byte(`{"candidates":[{"content":{"role":"model","parts":[{"inlineData":{"mimeType":"image/png","data":"aGVsbG8="}}]},"finishReason":"STOP"}],"usageMetadata":{"promptTokenCount":10,"candidatesTokenCount":20,"totalTokenCount":30}}`))
 			return
@@ -107,7 +111,11 @@ func TestImageStudioSessionRelay(t *testing.T) {
 				t.Error("unvalidated multipliers must not be forwarded")
 			}
 			if r.URL.Path == "/v1/chat/completions" {
-				if body["stream"] != false || body["messages"] == nil || body["size"] != "1536x864" {
+				imageConfig, _ := body["image_config"].(map[string]any)
+				responseFormat, _ := body["response_format"].(map[string]any)
+				ratio, _ := responseFormat["aspect_ratio"].(string)
+				expectedSizes := map[string]string{"1:1": "1024x1024", "3:2": "1536x1024", "2:3": "1024x1536", "16:9": "1536x864"}
+				if body["stream"] != false || body["messages"] == nil || body["size"] != expectedSizes[ratio] || imageConfig["aspect_ratio"] != ratio || imageConfig["image_size"] != "1K" || responseFormat["type"] != "image" || responseFormat["image_size"] != "1K" {
 					t.Error("invalid chat image payload")
 				}
 			} else if r.URL.Path != "/v1/images/generations" || body["n"] != float64(1) || body["prompt"] != "A quiet landscape" {
@@ -185,6 +193,14 @@ func TestImageStudioSessionRelay(t *testing.T) {
 		rec := send(strings.NewReader(`{"model":"studio-chat-image-test","prompt":"A quiet landscape","n":1,"protocol":"chat","aspect_ratio":"16:9"}`), "application/json", session.AccessToken)
 		require.Equal(t, 200, rec.Code, rec.Body.String())
 		require.Contains(t, rec.Body.String(), "data:image/png")
+	})
+	t.Run("chat image request maps every supported ratio", func(t *testing.T) {
+		for _, ratio := range []string{"1:1", "3:2", "2:3", "16:9"} {
+			t.Run(ratio, func(t *testing.T) {
+				rec := send(strings.NewReader(fmt.Sprintf(`{"model":"studio-chat-image-test","prompt":"A quiet landscape","n":1,"protocol":"chat","aspect_ratio":"%s"}`, ratio)), "application/json", session.AccessToken)
+				require.Equal(t, 200, rec.Code, rec.Body.String())
+			})
+		}
 	})
 	t.Run("failed upstream request refunds reserved quota", func(t *testing.T) {
 		before, err := model.GetUserQuota(user.Id, false)

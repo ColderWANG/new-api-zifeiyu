@@ -13,8 +13,10 @@ import (
 )
 
 type ResponseFormat struct {
-	Type       string          `json:"type,omitempty"`
-	JsonSchema json.RawMessage `json:"json_schema,omitempty"`
+	Type        string          `json:"type,omitempty"`
+	JsonSchema  json.RawMessage `json:"json_schema,omitempty"`
+	AspectRatio string          `json:"aspect_ratio,omitempty"`
+	ImageSize   string          `json:"image_size,omitempty"`
 }
 
 type FormatJsonSchema struct {
@@ -46,6 +48,7 @@ type GeneralOpenAIRequest struct {
 	Input               any               `json:"input,omitempty"`
 	Instruction         string            `json:"instruction,omitempty"`
 	Size                string            `json:"size,omitempty"`
+	ImageConfig         json.RawMessage   `json:"image_config,omitempty"`
 	Functions           json.RawMessage   `json:"functions,omitempty"`
 	FrequencyPenalty    *float64          `json:"frequency_penalty,omitempty"`
 	PresencePenalty     *float64          `json:"presence_penalty,omitempty"`

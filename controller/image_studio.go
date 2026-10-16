@@ -180,7 +180,21 @@ func PrepareImageStudio(c *gin.Context) {
 		if len(imageBytes) > 0 {
 			content = append(content, map[string]any{"type": "image_url", "image_url": map[string]string{"url": "data:" + imageType + ";base64," + base64.StdEncoding.EncodeToString(imageBytes)}})
 		}
-		body, err = common.Marshal(map[string]any{"model": input.Model, "stream": false, "messages": []map[string]any{{"role": "user", "content": content}}, "size": size, "extra_body": map[string]any{"google": map[string]any{"image_config": map[string]string{"aspect_ratio": input.AspectRatio}}}})
+		imageConfig := map[string]string{"aspect_ratio": input.AspectRatio, "image_size": "1K"}
+		body, err = common.Marshal(map[string]any{
+			"model":           input.Model,
+			"stream":          false,
+			"messages":        []map[string]any{{"role": "user", "content": content}},
+			"size":            size,
+			"response_format": map[string]string{"type": "image", "aspect_ratio": input.AspectRatio, "image_size": "1K"},
+			// Some OpenAI-compatible Gemini gateways only read image_config
+			// at the top level; keep the existing extra_body form for native
+			// Gemini conversion and older gateways.
+			"image_config": imageConfig,
+			"extra_body": map[string]any{
+				"google": map[string]any{"image_config": imageConfig},
+			},
+		})
 		c.Request.URL.Path = "/v1/chat/completions"
 	default:
 		imageStudioError(c, http.StatusBadRequest, "Unsupported image generation protocol.")
