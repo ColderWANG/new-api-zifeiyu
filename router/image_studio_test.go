@@ -58,6 +58,10 @@ func TestImageStudioSessionRelay(t *testing.T) {
 			if len(request.GenerationConfig.ResponseModalities) != 2 {
 				t.Error("Gemini image output must be enabled")
 			}
+			var imageConfig map[string]any
+			if err := common.Unmarshal(request.GenerationConfig.ImageConfig, &imageConfig); err != nil || imageConfig["aspectRatio"] != "1:1" {
+				t.Errorf("Gemini image ratio = %v, want 1:1", imageConfig["aspectRatio"])
+			}
 			w.Header().Set("Content-Type", "application/json")
 			_, _ = w.Write([]byte(`{"candidates":[{"content":{"role":"model","parts":[{"inlineData":{"mimeType":"image/png","data":"aGVsbG8="}}]},"finishReason":"STOP"}],"usageMetadata":{"promptTokenCount":10,"candidatesTokenCount":20,"totalTokenCount":30}}`))
 			return
@@ -103,7 +107,7 @@ func TestImageStudioSessionRelay(t *testing.T) {
 				t.Error("unvalidated multipliers must not be forwarded")
 			}
 			if r.URL.Path == "/v1/chat/completions" {
-				if body["stream"] != false || body["messages"] == nil {
+				if body["stream"] != false || body["messages"] == nil || body["size"] != "1536x864" {
 					t.Error("invalid chat image payload")
 				}
 			} else if r.URL.Path != "/v1/images/generations" || body["n"] != float64(1) || body["prompt"] != "A quiet landscape" {
@@ -192,7 +196,7 @@ func TestImageStudioSessionRelay(t *testing.T) {
 		require.Eventually(t, func() bool { after, err := model.GetUserQuota(user.Id, false); return err == nil && after == before }, time.Second*3, time.Millisecond*10)
 	})
 	t.Run("native Gemini channel returns images through chat conversion", func(t *testing.T) {
-		rec := send(strings.NewReader(`{"model":"gemini-2.5-flash-image","prompt":"A quiet landscape","n":1,"protocol":"chat","aspect_ratio":"16:9"}`), "application/json", session.AccessToken)
+		rec := send(strings.NewReader(`{"model":"gemini-2.5-flash-image","prompt":"A quiet landscape","n":1,"protocol":"chat","aspect_ratio":"1:1"}`), "application/json", session.AccessToken)
 		require.Equal(t, 200, rec.Code, rec.Body.String())
 		require.Contains(t, rec.Body.String(), "data:image/png;base64,aGVsbG8=")
 	})

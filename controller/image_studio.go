@@ -25,6 +25,13 @@ import (
 
 const imageStudioMaxFileBytes = 10 << 20
 
+var imageStudioSizes = map[string]string{
+	"1:1":  "1024x1024",
+	"3:2":  "1536x1024",
+	"2:3":  "1024x1536",
+	"16:9": "1536x864",
+}
+
 type imageStudioRequest struct {
 	Model       string `json:"model"`
 	Prompt      string `json:"prompt"`
@@ -165,11 +172,15 @@ func PrepareImageStudio(c *gin.Context) {
 			imageStudioError(c, http.StatusBadRequest, "Chat image generation requires one image and a supported aspect ratio.")
 			return
 		}
+		// Keep the selected ratio explicit for both native Gemini adapters and
+		// OpenAI-compatible Gemini gateways. The latter may honor `size` while
+		// ignoring Google's nested image_config extension.
+		size := imageStudioSizes[input.AspectRatio]
 		content := []map[string]any{{"type": "text", "text": input.Prompt}}
 		if len(imageBytes) > 0 {
 			content = append(content, map[string]any{"type": "image_url", "image_url": map[string]string{"url": "data:" + imageType + ";base64," + base64.StdEncoding.EncodeToString(imageBytes)}})
 		}
-		body, err = common.Marshal(map[string]any{"model": input.Model, "stream": false, "messages": []map[string]any{{"role": "user", "content": content}}, "extra_body": map[string]any{"google": map[string]any{"image_config": map[string]string{"aspect_ratio": input.AspectRatio}}}})
+		body, err = common.Marshal(map[string]any{"model": input.Model, "stream": false, "messages": []map[string]any{{"role": "user", "content": content}}, "size": size, "extra_body": map[string]any{"google": map[string]any{"image_config": map[string]string{"aspect_ratio": input.AspectRatio}}}})
 		c.Request.URL.Path = "/v1/chat/completions"
 	default:
 		imageStudioError(c, http.StatusBadRequest, "Unsupported image generation protocol.")
