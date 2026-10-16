@@ -87,7 +87,7 @@ export function getBgColorClass(color?: string): string {
 }
 
 /**
- * Chart color palette - Modern gradient colors compatible with light/dark themes
+ * Chart color palette - Modern gradient colors for the light theme
  * Uses HSL format for better theme adaptation
  */
 export const CHART_COLORS = [

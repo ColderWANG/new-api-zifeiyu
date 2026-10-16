@@ -95,7 +95,7 @@ function ModelCategory(props: ModelCategoryProps) {
             <Button
               type='button'
               variant='ghost'
-              className='min-w-0 flex-1 justify-between px-0 hover:bg-transparent aria-expanded:bg-transparent dark:hover:bg-transparent'
+              className='min-w-0 flex-1 justify-between px-0 hover:bg-transparent aria-expanded:bg-transparent'
             />
           }
         >

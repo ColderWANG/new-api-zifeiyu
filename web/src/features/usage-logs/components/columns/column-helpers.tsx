@@ -141,11 +141,9 @@ export function createDurationColumn<T>(config: {
 
       const durationBgMap: Record<string, string> = {
         success:
-          'border border-emerald-200/40 bg-emerald-50/35 !text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-950/15 dark:!text-emerald-400',
-        warning:
-          'border border-amber-200/45 bg-amber-50/35 !text-amber-600 dark:border-amber-900/40 dark:bg-amber-950/15 dark:!text-amber-400',
-        danger:
-          'border border-rose-200/50 bg-rose-50/35 !text-red-600 dark:border-rose-900/40 dark:bg-rose-950/15 dark:!text-red-400',
+          'border border-emerald-200/40 bg-emerald-50/35 !text-emerald-600',
+        warning: 'border border-amber-200/45 bg-amber-50/35 !text-amber-600',
+        danger: 'border border-rose-200/50 bg-rose-50/35 !text-red-600',
       }
 
       return (
@@ -231,7 +229,7 @@ export function createFailReasonColumn<T>(config: {
             onClick={() => setDialogOpen(true)}
             title={cellTitle}
           >
-            <span className='truncate leading-snug text-red-600 group-hover:underline dark:text-red-400'>
+            <span className='truncate leading-snug text-red-600 group-hover:underline'>
               {failReason}
             </span>
           </button>

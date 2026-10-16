@@ -50,34 +50,12 @@ const LIGHT_SOFT_CHART_COLORS = [
   '#e5d9b8',
 ]
 
-const DARK_SOFT_CHART_COLORS = [
-  '#8fbde5',
-  '#e58fa8',
-  '#7fd0c2',
-  '#b39de0',
-  '#e0c184',
-  '#a1b8d9',
-  '#d697a9',
-  '#8ccab9',
-  '#bc9fd2',
-  '#d8c489',
-]
-
-export type DashboardChartColorScheme = 'light' | 'dark'
-
 const CHART_CORNER_RADIUS = 2
 const CHART_INTERACTION_LINE_WIDTH = 1.5
-const CHART_INTERACTION_STROKE: Record<DashboardChartColorScheme, string> = {
-  light: '#ffffff',
-  dark: '#111114',
-}
+const CHART_INTERACTION_STROKE = '#ffffff'
 
-export function getDashboardChartColors(
-  domainLength: number,
-  scheme: DashboardChartColorScheme = 'light'
-): string[] {
-  const palette =
-    scheme === 'dark' ? DARK_SOFT_CHART_COLORS : LIGHT_SOFT_CHART_COLORS
+export function getDashboardChartColors(domainLength: number): string[] {
+  const palette = LIGHT_SOFT_CHART_COLORS
   if (domainLength <= 0) return [palette[0]]
   if (domainLength <= palette.length) return palette.slice(0, domainLength)
 
@@ -86,12 +64,6 @@ export function getDashboardChartColors(
     result.push(palette[i % palette.length])
   }
   return result
-}
-
-export function getDashboardChartInteractionStroke(
-  scheme: DashboardChartColorScheme
-): string {
-  return CHART_INTERACTION_STROKE[scheme]
 }
 
 function renderQuotaCompat(rawQuota: number, digits = 4): string {
@@ -115,12 +87,11 @@ export function processChartData(
   data: QuotaDataItem[],
   timeGranularity: TimeGranularity = 'day',
   t?: TFunction,
-  chartCornerRadius = CHART_CORNER_RADIUS,
-  colorScheme: DashboardChartColorScheme = 'light'
+  chartCornerRadius = CHART_CORNER_RADIUS
 ): ProcessedChartData {
   const tt: TFunction = t ?? ((x) => x)
   const otherLabel = tt('Other')
-  const chartInteractionStroke = getDashboardChartInteractionStroke(colorScheme)
+  const chartInteractionStroke = CHART_INTERACTION_STROKE
 
   const formatInt = (value: number) =>
     Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(value)
@@ -316,15 +287,10 @@ export function processChartData(
     .map(([time]) => time)
   const sortedModels = [...allModels].sort()
   const modelColorDomain = [...new Set([...sortedModels, otherLabel])]
-  const modelColorRange = getDashboardChartColors(
-    modelColorDomain.length,
-    colorScheme
-  )
+  const modelColorRange = getDashboardChartColors(modelColorDomain.length)
   const otherColor = modelColorRange[modelColorDomain.indexOf(otherLabel)]
   const otherTooltipColor =
-    typeof otherColor === 'string'
-      ? otherColor
-      : getDashboardChartColors(2, colorScheme)[1]
+    typeof otherColor === 'string' ? otherColor : getDashboardChartColors(2)[1]
   const modelColor = {
     type: 'ordinal',
     domain: modelColorDomain,
@@ -767,13 +733,12 @@ export function processUserChartData(
   data: QuotaDataItem[],
   timeGranularity: TimeGranularity = 'day',
   t?: TFunction,
-  limit = 10,
-  colorScheme: DashboardChartColorScheme = 'light'
+  limit = 10
 ): ProcessedUserChartData {
   const tt: TFunction = t ?? ((x) => x)
   const { config } = getCurrencyDisplay()
   const quotaPerUnit = config.quotaPerUnit
-  const chartInteractionStroke = getDashboardChartInteractionStroke(colorScheme)
+  const chartInteractionStroke = CHART_INTERACTION_STROKE
   const userPaletteLength = Number.isFinite(limit) ? Math.max(limit, 1) : 1
 
   const formatVal = (raw: number) => renderQuotaCompat(raw, 2)
@@ -794,7 +759,7 @@ export function processUserChartData(
       legends: { visible: false },
       color: {
         type: 'ordinal',
-        range: getDashboardChartColors(userPaletteLength, colorScheme),
+        range: getDashboardChartColors(userPaletteLength),
       },
       background: { fill: 'transparent' },
     },
@@ -812,7 +777,7 @@ export function processUserChartData(
       legends: { visible: true, selectMode: 'single' },
       color: {
         type: 'ordinal',
-        range: getDashboardChartColors(userPaletteLength, colorScheme),
+        range: getDashboardChartColors(userPaletteLength),
       },
       point: { visible: false },
       background: { fill: 'transparent' },
@@ -839,7 +804,7 @@ export function processUserChartData(
     Usage: Number((quota / quotaPerUnit).toFixed(4)),
   }))
 
-  const userColors = getDashboardChartColors(topUsers.length, colorScheme)
+  const userColors = getDashboardChartColors(topUsers.length)
   const userColorMap = topUsers.reduce<Record<string, string>>(
     (acc, user, i) => {
       acc[user] = userColors[i % userColors.length]

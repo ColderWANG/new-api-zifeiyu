@@ -166,7 +166,7 @@ export function OAuthProviders({
               type='button'
               disabled={disabled || isLoading || extraDisabled}
               onClick={onClick}
-              className='h-11 w-full justify-center gap-2 rounded-xl border-slate-200/90 bg-white shadow-sm transition-all hover:border-blue-200 hover:bg-blue-50/60 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-800 dark:hover:bg-slate-800 dark:hover:text-blue-300'
+              className='h-11 w-full justify-center gap-2 rounded-xl border-slate-200/90 bg-white shadow-sm transition-all hover:border-blue-200 hover:bg-blue-50/60 hover:text-blue-600'
             >
               {icon}
               {label}

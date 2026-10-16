@@ -115,7 +115,7 @@ export function ApiKeyQuotaCell(props: ApiKeyQuotaCellProps) {
             value={percentage}
             aria-label={t('Remaining percentage')}
             className={cn(
-              'w-full [&_[data-slot=progress-indicator]]:bg-primary dark:[&_[data-slot=progress-indicator]]:bg-primary',
+              'w-full [&_[data-slot=progress-indicator]]:bg-primary',
               progressColor
             )}
           />

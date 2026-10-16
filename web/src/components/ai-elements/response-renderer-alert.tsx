@@ -32,32 +32,28 @@ import type {
 const alertConfig = {
   note: {
     label: 'Note',
-    className:
-      'border-blue-500/40 bg-blue-500/8 text-blue-950 dark:text-blue-100',
-    markerClassName: 'text-blue-600 dark:text-blue-300',
+    className: 'border-blue-500/40 bg-blue-500/8 text-blue-950',
+    markerClassName: 'text-blue-600',
   },
   tip: {
     label: 'Tip',
-    className:
-      'border-emerald-500/40 bg-emerald-500/8 text-emerald-950 dark:text-emerald-100',
-    markerClassName: 'text-emerald-600 dark:text-emerald-300',
+    className: 'border-emerald-500/40 bg-emerald-500/8 text-emerald-950',
+    markerClassName: 'text-emerald-600',
   },
   important: {
     label: 'Important',
-    className:
-      'border-violet-500/40 bg-violet-500/8 text-violet-950 dark:text-violet-100',
-    markerClassName: 'text-violet-600 dark:text-violet-300',
+    className: 'border-violet-500/40 bg-violet-500/8 text-violet-950',
+    markerClassName: 'text-violet-600',
   },
   warning: {
     label: 'Warning',
-    className:
-      'border-amber-500/40 bg-amber-500/8 text-amber-950 dark:text-amber-100',
-    markerClassName: 'text-amber-600 dark:text-amber-300',
+    className: 'border-amber-500/40 bg-amber-500/8 text-amber-950',
+    markerClassName: 'text-amber-600',
   },
   caution: {
     label: 'Caution',
-    className: 'border-red-500/40 bg-red-500/8 text-red-950 dark:text-red-100',
-    markerClassName: 'text-red-600 dark:text-red-300',
+    className: 'border-red-500/40 bg-red-500/8 text-red-950',
+    markerClassName: 'text-red-600',
   },
 } satisfies Record<AlertKind, AlertConfig>
 

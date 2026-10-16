@@ -18,11 +18,10 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { VChart } from '@visactor/react-vchart'
 import { PieChart as PieChartIcon } from 'lucide-react'
-import { useEffect, useMemo, useState, useRef } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useThemeCustomization } from '@/context/theme-customization-provider'
-import { useTheme } from '@/context/theme-provider'
 import {
   DEFAULT_TIME_GRANULARITY,
   MODEL_ANALYTICS_CHART_OPTIONS,
@@ -33,11 +32,8 @@ import type {
   QuotaDataItem,
 } from '@/features/dashboard/types'
 import type { TimeGranularity } from '@/lib/time'
+import { useChartTheme } from '@/lib/use-chart-theme'
 import { VCHART_OPTION } from '@/lib/vchart'
-
-let themeManagerPromise: Promise<
-  (typeof import('@visactor/vchart'))['ThemeManager']
-> | null = null
 
 type ChartSpecKey = 'spec_model_line' | 'spec_pie' | 'spec_rank_bar'
 
@@ -56,50 +52,20 @@ interface ModelChartsProps {
 
 export function ModelCharts(props: ModelChartsProps) {
   const { t } = useTranslation()
-  const { resolvedTheme } = useTheme()
+  const { themeReady } = useChartTheme()
   const { customization } = useThemeCustomization()
   const [activeTab, setActiveTab] = useState<ModelAnalyticsChartTab>(
     props.defaultChartTab ?? 'trend'
   )
-  const [themeReady, setThemeReady] = useState(false)
-  const themeManagerRef = useRef<
-    (typeof import('@visactor/vchart'))['ThemeManager'] | null
-  >(null)
   const timeGranularity = props.timeGranularity ?? DEFAULT_TIME_GRANULARITY
 
   useEffect(() => {
     if (props.defaultChartTab) setActiveTab(props.defaultChartTab)
   }, [props.defaultChartTab])
 
-  useEffect(() => {
-    const updateTheme = async () => {
-      setThemeReady(false)
-
-      if (!themeManagerPromise) {
-        themeManagerPromise = import('@visactor/vchart').then(
-          (m) => m.ThemeManager
-        )
-      }
-
-      const ThemeManager = await themeManagerPromise
-      themeManagerRef.current = ThemeManager
-      ThemeManager.setCurrentTheme(resolvedTheme === 'dark' ? 'dark' : 'light')
-      setThemeReady(true)
-    }
-
-    updateTheme()
-  }, [resolvedTheme])
-
   const chartData = useMemo(
-    () =>
-      processChartData(
-        props.loading ? [] : props.data,
-        timeGranularity,
-        t,
-        undefined,
-        resolvedTheme === 'dark' ? 'dark' : 'light'
-      ),
-    [props.data, props.loading, timeGranularity, t, resolvedTheme]
+    () => processChartData(props.loading ? [] : props.data, timeGranularity, t),
+    [props.data, props.loading, timeGranularity, t]
   )
 
   const spec = chartData[CHART_SPEC_KEYS[activeTab]]
@@ -109,7 +75,6 @@ export function ModelCharts(props: ModelChartsProps) {
     specType,
     props.loading ? 'loading' : 'ready',
     props.data.length,
-    resolvedTheme,
     customization.preset,
   ].join('-')
 
@@ -152,7 +117,7 @@ export function ModelCharts(props: ModelChartsProps) {
             key={chartKey}
             spec={{
               ...spec,
-              theme: resolvedTheme === 'dark' ? 'dark' : 'light',
+              theme: 'light',
               background: 'transparent',
             }}
             option={VCHART_OPTION}

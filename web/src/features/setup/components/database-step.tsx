@@ -107,7 +107,7 @@ export function DatabaseStep({ status }: DatabaseStepProps) {
       </div>
 
       {status?.database_type === 'sqlite' && (
-        <Alert className='border-amber-200 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/40'>
+        <Alert className='border-amber-200 bg-amber-50'>
           <AlertTitle className='flex items-center gap-2'>
             <HardDrive className='size-4 text-amber-500' />
             {t('Persist your data file')}
@@ -119,7 +119,7 @@ export function DatabaseStep({ status }: DatabaseStepProps) {
               )}
             </p>
             {isElectron && electronDataDir && (
-              <p className='mt-3 rounded-md bg-amber-100/70 px-3 py-2 font-mono text-xs text-amber-800 dark:bg-amber-900/30 dark:text-amber-200'>
+              <p className='mt-3 rounded-md bg-amber-100/70 px-3 py-2 font-mono text-xs text-amber-800'>
                 {t('Data directory:')} {electronDataDir}
               </p>
             )}
@@ -135,7 +135,7 @@ export function DatabaseStep({ status }: DatabaseStepProps) {
       )}
 
       {status?.database_type === 'mysql' && (
-        <Alert className='border-emerald-200 bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40'>
+        <Alert className='border-emerald-200 bg-emerald-50'>
           <AlertTitle className='flex items-center gap-2'>
             <Server className='size-4 text-emerald-500' />
             {t('MySQL detected')}
@@ -149,7 +149,7 @@ export function DatabaseStep({ status }: DatabaseStepProps) {
       )}
 
       {status?.database_type === 'postgres' && (
-        <Alert className='border-sky-200 bg-sky-50 dark:border-sky-900/60 dark:bg-sky-950/40'>
+        <Alert className='border-sky-200 bg-sky-50'>
           <AlertTitle className='flex items-center gap-2'>
             <Server className='size-4 text-sky-500' />
             {t('PostgreSQL detected')}

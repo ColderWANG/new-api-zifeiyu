@@ -131,11 +131,6 @@ function sanitizeHtmlContent(
   return DOMPurify.sanitize(content)
 }
 
-function syncDarkClass(wrapper: HTMLElement): void {
-  const isDark = document.documentElement.classList.contains('dark')
-  wrapper.classList.toggle('dark', isDark)
-}
-
 function IsolatedHtmlContent(props: {
   className?: string
   html: string
@@ -157,7 +152,6 @@ function IsolatedHtmlContent(props: {
     ].map((node) => node.cloneNode(true))
 
     const wrapper = document.createElement('div')
-    syncDarkClass(wrapper)
     wrapper.innerHTML = props.html
 
     const contentTemplate = document.createElement('template')
@@ -168,14 +162,6 @@ function IsolatedHtmlContent(props: {
       contentTemplate.content,
       wrapper
     )
-
-    const observer = new MutationObserver(() => syncDarkClass(wrapper))
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    })
-
-    return () => observer.disconnect()
   }, [props.html])
 
   return (
@@ -196,10 +182,7 @@ export function HtmlContent(props: HtmlContentProps) {
 
   return (
     <div
-      className={cn(
-        'prose prose-neutral dark:prose-invert max-w-none',
-        props.className
-      )}
+      className={cn('prose prose-neutral max-w-none', props.className)}
       // eslint-disable-next-line react/no-danger -- html is sanitized above
       dangerouslySetInnerHTML={{ __html: html }}
     />

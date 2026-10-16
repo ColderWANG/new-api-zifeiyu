@@ -22,9 +22,6 @@ import type { TooltipValueType } from 'recharts'
 
 import { cn } from '@/lib/utils'
 
-// Format: { THEME_NAME: CSS_SELECTOR }
-const THEMES = { light: '', dark: '.dark' } as const
-
 const INITIAL_DIMENSION = { width: 320, height: 200 } as const
 type TooltipNameType = number | string
 
@@ -33,10 +30,8 @@ export type ChartConfig = Record<
   {
     label?: React.ReactNode
     icon?: React.ComponentType
-  } & (
-    | { color?: string; theme?: never }
-    | { color?: never; theme: Record<keyof typeof THEMES, string> }
-  )
+    color?: string
+  }
 >
 
 type ChartContextProps = {
@@ -99,7 +94,7 @@ function ChartContainer({
 
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
-    ([, config]) => config.theme ?? config.color
+    ([, config]) => config.color
   )
 
   if (!colorConfig.length) {
@@ -109,22 +104,13 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   return (
     <style
       dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
+        __html: `
+[data-chart=${id}] {
 ${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ??
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
-  })
+  .map(([key, itemConfig]) => `  --color-${key}: ${itemConfig.color};`)
   .join('\n')}
 }
-`
-          )
-          .join('\n'),
+`,
       }}
     />
   )
@@ -207,7 +193,7 @@ function ChartTooltipContent({
   return (
     <div
       className={cn(
-        'border-black bg-background grid min-w-32 items-start gap-1.5 rounded-none border-2 px-2.5 py-1.5 text-xs shadow-none dark:border-white',
+        'border-black bg-background grid min-w-32 items-start gap-1.5 rounded-none border-2 px-2.5 py-1.5 text-xs shadow-none',
         className
       )}
     >

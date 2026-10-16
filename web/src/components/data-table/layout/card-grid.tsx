@@ -84,7 +84,7 @@ function CardGridSkeleton(props: {
       {[1, 2, 3, 4, 5, 6].map((i) => (
         <div
           key={`${prefix}-${i}`}
-          className='space-y-3 rounded-none border-2 border-black bg-white p-3 dark:border-white dark:bg-black'
+          className='space-y-3 rounded-none border-2 border-black bg-white p-3'
         >
           <div className='flex items-center justify-between gap-2'>
             <Skeleton className='h-4 w-32 rounded-none' />
@@ -137,7 +137,7 @@ export function DataTableCardGrid<TData>(props: DataTableCardGridProps<TData>) {
 
   if (!rows || rows.length === 0) {
     return (
-      <div className='rounded-none border-2 border-black p-6 dark:border-white'>
+      <div className='rounded-none border-2 border-black p-6'>
         <Empty className='border-none p-0'>
           <EmptyHeader>
             <EmptyMedia variant='icon'>
@@ -162,7 +162,7 @@ export function DataTableCardGrid<TData>(props: DataTableCardGridProps<TData>) {
             data-slot='data-table-card'
             data-state={isSelected ? 'selected' : undefined}
             className={cn(
-              'rounded-none border-2 border-black bg-white px-3 py-2.5 transition-none data-[state=selected]:border-black data-[state=selected]:bg-black data-[state=selected]:text-white dark:border-white dark:bg-black dark:data-[state=selected]:border-white dark:data-[state=selected]:bg-white dark:data-[state=selected]:text-black',
+              'rounded-none border-2 border-black bg-white px-3 py-2.5 transition-none data-[state=selected]:border-black data-[state=selected]:bg-black data-[state=selected]:text-white',
               props.getRowClassName?.(row)
             )}
           >

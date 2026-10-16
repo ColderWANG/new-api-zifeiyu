@@ -89,7 +89,7 @@ function DataTableFacetedFilterInner<TData, TValue>({
           <Button
             variant='outline'
             size='sm'
-            className='h-8 rounded-none border-2 border-dashed border-black dark:border-white'
+            className='h-8 rounded-none border-2 border-dashed border-black'
           />
         }
       >
@@ -99,7 +99,7 @@ function DataTableFacetedFilterInner<TData, TValue>({
           <>
             <Separator
               orientation='vertical'
-              className='mx-2 h-4 bg-black/20 dark:bg-white/20'
+              className='mx-2 h-4 bg-black/20'
             />
             <Badge
               variant='secondary'
@@ -117,7 +117,7 @@ function DataTableFacetedFilterInner<TData, TValue>({
         )}
       </PopoverTrigger>
       <PopoverContent
-        className='max-w-[360px] min-w-[200px] rounded-none border-2 border-black p-0 shadow-none dark:border-white'
+        className='max-w-[360px] min-w-[200px] rounded-none border-2 border-black p-0 shadow-none'
         align='start'
       >
         <Command className='rounded-none'>
@@ -139,7 +139,7 @@ function DataTableFacetedFilterInner<TData, TValue>({
                       className={cn(
                         'flex size-4 items-center justify-center rounded-none border-2 border-current',
                         isSelected
-                          ? 'bg-black text-white dark:bg-white dark:text-black'
+                          ? 'bg-black text-white'
                           : 'opacity-40 [&_svg]:hidden'
                       )}
                     >

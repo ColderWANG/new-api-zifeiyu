@@ -25,27 +25,27 @@ import { stringToColor } from '@/lib/colors'
 import { cn } from '@/lib/utils'
 
 export const dotColorMap = {
-  success: 'bg-black dark:bg-white',
-  warning: 'bg-neutral-600 dark:bg-neutral-400',
-  danger: 'bg-black dark:bg-white',
-  info: 'bg-neutral-500 dark:bg-neutral-400',
-  neutral: 'bg-neutral-400 dark:bg-neutral-600',
-  purple: 'bg-neutral-700 dark:bg-neutral-300',
-  amber: 'bg-neutral-600 dark:bg-neutral-400',
-  blue: 'bg-neutral-800 dark:bg-neutral-200',
-  cyan: 'bg-neutral-600 dark:bg-neutral-400',
-  green: 'bg-black dark:bg-white',
-  grey: 'bg-neutral-400 dark:bg-neutral-500',
-  indigo: 'bg-neutral-800 dark:bg-neutral-200',
-  'light-blue': 'bg-neutral-500 dark:bg-neutral-400',
-  'light-green': 'bg-neutral-600 dark:bg-neutral-300',
-  lime: 'bg-neutral-600 dark:bg-neutral-400',
-  orange: 'bg-neutral-700 dark:bg-neutral-300',
-  pink: 'bg-neutral-700 dark:bg-neutral-300',
-  red: 'bg-black dark:bg-white',
-  teal: 'bg-neutral-600 dark:bg-neutral-400',
-  violet: 'bg-neutral-700 dark:bg-neutral-300',
-  yellow: 'bg-neutral-600 dark:bg-neutral-400',
+  success: 'bg-black',
+  warning: 'bg-neutral-600',
+  danger: 'bg-black',
+  info: 'bg-neutral-500',
+  neutral: 'bg-neutral-400',
+  purple: 'bg-neutral-700',
+  amber: 'bg-neutral-600',
+  blue: 'bg-neutral-800',
+  cyan: 'bg-neutral-600',
+  green: 'bg-black',
+  grey: 'bg-neutral-400',
+  indigo: 'bg-neutral-800',
+  'light-blue': 'bg-neutral-500',
+  'light-green': 'bg-neutral-600',
+  lime: 'bg-neutral-600',
+  orange: 'bg-neutral-700',
+  pink: 'bg-neutral-700',
+  red: 'bg-black',
+  teal: 'bg-neutral-600',
+  violet: 'bg-neutral-700',
+  yellow: 'bg-neutral-600',
 } as const
 
 export const textColorMap = {
@@ -62,7 +62,7 @@ export const textColorMap = {
   grey: 'text-muted-foreground',
   indigo: 'text-chart-1',
   'light-blue': 'text-info',
-  'light-green': 'text-emerald-500 dark:text-emerald-300',
+  'light-green': 'text-emerald-500',
   lime: 'text-chart-3',
   orange: 'text-warning',
   pink: 'text-chart-5',
@@ -167,18 +167,17 @@ export function StatusBadge({
         'inline-flex w-fit max-w-full min-w-0 shrink items-center font-medium tracking-normal whitespace-nowrap transition-none',
         isBadge
           ? cn(
-              'rounded-none border border-black/25 bg-neutral-100/80 text-foreground dark:border-white/25 dark:bg-neutral-900/80',
+              'rounded-none border border-black/25 bg-neutral-100/80 text-foreground',
               sizeMap[size ?? 'sm']
             )
           : cn(
               textSizeMap[size ?? 'sm'],
-              type === 'underline' &&
-                'border-b border-black dark:border-white pb-px'
+              type === 'underline' && 'border-b border-black pb-px'
             ),
         textColorMap[computedVariant],
         pulse && 'animate-pulse',
         copyable &&
-          'cursor-copy hover:border-black hover:bg-neutral-200/80 dark:hover:border-white dark:hover:bg-neutral-800/80 active:translate-y-px',
+          'cursor-copy hover:border-black hover:bg-neutral-200/80 active:translate-y-px',
         className
       )}
       onClick={handleClick}

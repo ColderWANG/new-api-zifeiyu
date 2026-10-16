@@ -58,13 +58,13 @@ export function AutoGroupOrderItem(props: AutoGroupOrderItemProps) {
       dragListener={false}
       dragMomentum={false}
       dragControls={dragControls}
-      className='bg-background relative flex min-w-0 items-center gap-2 rounded-none border-2 border-black p-2 dark:border-white'
+      className='bg-background relative flex min-w-0 items-center gap-2 rounded-none border-2 border-black p-2'
     >
       <Button
         type='button'
         variant='ghost'
         size='icon-sm'
-        className='text-muted-foreground cursor-grab touch-none rounded-none hover:bg-black hover:text-white active:cursor-grabbing dark:hover:bg-white dark:hover:text-black'
+        className='text-muted-foreground cursor-grab touch-none rounded-none hover:bg-black hover:text-white active:cursor-grabbing'
         aria-label={t('Drag {{group}} to reorder', { group: props.group })}
         title={t('Drag {{group}} to reorder', { group: props.group })}
         onPointerDown={handleDragStart}
@@ -87,7 +87,7 @@ export function AutoGroupOrderItem(props: AutoGroupOrderItemProps) {
           type='button'
           variant='ghost'
           size='icon-sm'
-          className='rounded-none hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black'
+          className='rounded-none hover:bg-black hover:text-white'
           disabled={props.index === 0}
           aria-label={t('Move {{group}} up', { group: props.group })}
           onClick={() => props.onMove(props.index, 'up')}
@@ -98,7 +98,7 @@ export function AutoGroupOrderItem(props: AutoGroupOrderItemProps) {
           type='button'
           variant='ghost'
           size='icon-sm'
-          className='rounded-none hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black'
+          className='rounded-none hover:bg-black hover:text-white'
           disabled={props.index === props.count - 1}
           aria-label={t('Move {{group}} down', { group: props.group })}
           onClick={() => props.onMove(props.index, 'down')}
@@ -109,7 +109,7 @@ export function AutoGroupOrderItem(props: AutoGroupOrderItemProps) {
           type='button'
           variant='ghost'
           size='icon-sm'
-          className='rounded-none hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black'
+          className='rounded-none hover:bg-black hover:text-white'
           aria-label={t('Remove {{group}}', { group: props.group })}
           onClick={() => props.onRemove(props.group)}
         >

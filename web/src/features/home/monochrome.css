@@ -100,22 +100,3 @@
   outline: 3px solid var(--mm-foreground);
   outline-offset: 3px;
 }
-
-.dark .mm,
-.dark .mm * {
-  color-scheme: light;
-}
-
-.dark .mm {
-  --mm-background: #ffffff;
-  --mm-foreground: #000000;
-  --mm-muted: #f5f5f5;
-  --mm-muted-foreground: #525252;
-  --mm-border: #000000;
-  --mm-border-light: #e5e5e5;
-}
-
-.dark .mm img,
-.dark .mm svg {
-  filter: none;
-}

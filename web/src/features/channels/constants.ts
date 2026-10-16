@@ -452,20 +452,17 @@ export const RESPONSE_TIME_CONFIG = {
   GOOD: {
     variant: 'success' as const,
     label: 'Good',
-    className:
-      'border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200',
+    className: 'border-green-200 bg-green-50 text-green-800',
   },
   FAIR: {
     variant: 'warning' as const,
     label: 'Fair',
-    className:
-      'border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-200',
+    className: 'border-yellow-200 bg-yellow-50 text-yellow-800',
   },
   POOR: {
     variant: 'danger' as const,
     label: 'Poor',
-    className:
-      'border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200',
+    className: 'border-red-200 bg-red-50 text-red-800',
   },
   UNKNOWN: { variant: 'neutral' as const, label: 'Not tested', className: '' },
 } as const

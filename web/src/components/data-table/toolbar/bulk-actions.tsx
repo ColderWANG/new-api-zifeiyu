@@ -178,14 +178,14 @@ export function DataTableBulkActions<TData>({
           placement === 'floating'
             ? 'fixed bottom-6 left-1/2 z-50 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-none transition-none'
             : 'shrink-0 rounded-none',
-          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-black dark:focus-visible:outline-white focus-visible:outline-offset-2'
+          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-2'
         )}
       >
         <div
           className={cn(
             'p-2 shadow-none',
-            'rounded-none border-2 border-black dark:border-white',
-            'bg-white dark:bg-black',
+            'rounded-none border-2 border-black',
+            'bg-white',
             'flex flex-wrap items-center gap-2'
           )}
         >
@@ -196,7 +196,7 @@ export function DataTableBulkActions<TData>({
                   variant='outline'
                   size='icon'
                   onClick={handleClearSelection}
-                  className='size-7 rounded-none border border-black dark:border-white'
+                  className='size-7 rounded-none border border-black'
                   aria-label={t('Clear selection')}
                   title={t('Clear selection (Escape)')}
                 />
@@ -211,7 +211,7 @@ export function DataTableBulkActions<TData>({
           </Tooltip>
 
           <Separator
-            className='h-5 bg-black/20 dark:bg-white/20'
+            className='h-5 bg-black/20'
             orientation='vertical'
             aria-hidden='true'
           />
@@ -235,7 +235,7 @@ export function DataTableBulkActions<TData>({
           </div>
 
           <Separator
-            className='h-5 bg-black/20 dark:bg-white/20'
+            className='h-5 bg-black/20'
             orientation='vertical'
             aria-hidden='true'
           />

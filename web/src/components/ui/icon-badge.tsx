@@ -22,30 +22,21 @@ import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
 const iconBadgeVariants = cva(
-  'flex shrink-0 items-center justify-center rounded-none border border-black dark:border-white [&>svg]:shrink-0',
+  'flex shrink-0 items-center justify-center rounded-none border border-black [&>svg]:shrink-0',
   {
     variants: {
       tone: {
-        neutral:
-          'bg-neutral-100 text-black dark:bg-neutral-900 dark:text-white',
-        primary: 'bg-black text-white dark:bg-white dark:text-black',
-        success:
-          'bg-neutral-100 text-black dark:bg-neutral-900 dark:text-white',
-        warning:
-          'border-dashed bg-white text-black dark:bg-black dark:text-white',
-        info: 'bg-neutral-100 text-black dark:bg-neutral-900 dark:text-white',
-        destructive:
-          'bg-black text-white dark:bg-white dark:text-black font-bold',
-        'chart-1':
-          'bg-neutral-100 text-black dark:bg-neutral-900 dark:text-white',
-        'chart-2':
-          'bg-neutral-100 text-black dark:bg-neutral-900 dark:text-white',
-        'chart-3':
-          'bg-neutral-100 text-black dark:bg-neutral-900 dark:text-white',
-        'chart-4':
-          'bg-neutral-100 text-black dark:bg-neutral-900 dark:text-white',
-        'chart-5':
-          'bg-neutral-100 text-black dark:bg-neutral-900 dark:text-white',
+        neutral: 'bg-neutral-100 text-black',
+        primary: 'bg-black text-white',
+        success: 'bg-neutral-100 text-black',
+        warning: 'border-dashed bg-white text-black',
+        info: 'bg-neutral-100 text-black',
+        destructive: 'bg-black text-white font-bold',
+        'chart-1': 'bg-neutral-100 text-black',
+        'chart-2': 'bg-neutral-100 text-black',
+        'chart-3': 'bg-neutral-100 text-black',
+        'chart-4': 'bg-neutral-100 text-black',
+        'chart-5': 'bg-neutral-100 text-black',
       },
       size: {
         xs: 'size-5 [&>svg]:size-3',

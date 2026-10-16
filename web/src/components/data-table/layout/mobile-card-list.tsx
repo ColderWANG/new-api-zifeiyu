@@ -47,7 +47,7 @@ interface MobileCardListProps<TData> {
 
 function ListSkeleton() {
   return (
-    <div className='divide-y divide-black/20 overflow-hidden rounded-none border-2 border-black bg-white dark:divide-white/20 dark:border-white dark:bg-black'>
+    <div className='divide-y divide-black/20 overflow-hidden rounded-none border-2 border-black bg-white'>
       {[1, 2, 3, 4, 5].map((i) => (
         <div key={i} className='px-3 py-2.5'>
           <div className='flex items-center justify-between'>
@@ -72,7 +72,7 @@ function ListSkeleton() {
 
 function FallbackListSkeleton() {
   return (
-    <div className='divide-y divide-black/20 overflow-hidden rounded-none border-2 border-black bg-white dark:divide-white/20 dark:border-white dark:bg-black'>
+    <div className='divide-y divide-black/20 overflow-hidden rounded-none border-2 border-black bg-white'>
       {[1, 2, 3, 4, 5].map((i) => (
         <div key={i} className='space-y-1.5 px-3 py-2.5'>
           {[1, 2, 3].map((j) => (
@@ -120,7 +120,7 @@ export function MobileCardList<TData>(props: MobileCardListProps<TData>) {
 
   if (!rows || rows.length === 0) {
     return (
-      <div className='rounded-none border-2 border-black p-6 dark:border-white'>
+      <div className='rounded-none border-2 border-black p-6'>
         <Empty className='border-none p-0'>
           <EmptyHeader>
             <EmptyMedia variant='icon'>
@@ -135,9 +135,9 @@ export function MobileCardList<TData>(props: MobileCardListProps<TData>) {
   }
 
   return (
-    <div className='divide-y divide-black/20 overflow-hidden rounded-none border-2 border-black bg-white dark:divide-white/20 dark:border-white dark:bg-black'>
+    <div className='divide-y divide-black/20 overflow-hidden rounded-none border-2 border-black bg-white'>
       {enableRowSelection && (
-        <label className='flex items-center gap-2 border-b border-black/20 px-3 py-2 font-mono text-xs dark:border-white/20'>
+        <label className='flex items-center gap-2 border-b border-black/20 px-3 py-2 font-mono text-xs'>
           <Checkbox
             checked={table.getIsAllPageRowsSelected()}
             indeterminate={table.getIsSomePageRowsSelected()}
@@ -153,10 +153,7 @@ export function MobileCardList<TData>(props: MobileCardListProps<TData>) {
         return (
           <div
             key={key}
-            className={cn(
-              'px-3 py-2.5 bg-white dark:bg-black',
-              getRowClassName?.(row)
-            )}
+            className={cn('px-3 py-2.5 bg-white', getRowClassName?.(row))}
           >
             <div className='flex min-w-0 items-start gap-2'>
               {enableRowSelection && (

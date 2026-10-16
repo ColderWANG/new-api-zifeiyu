@@ -70,7 +70,7 @@ export function DataTableViewModeToggle(props: DataTableViewModeToggleProps) {
       role='group'
       aria-label={t('View mode')}
       className={cn(
-        'inline-flex h-8 items-center rounded-none border-2 border-black bg-white p-0.5 dark:border-white dark:bg-black',
+        'inline-flex h-8 items-center rounded-none border-2 border-black bg-white p-0.5',
         props.className
       )}
     >

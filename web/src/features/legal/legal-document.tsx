@@ -135,7 +135,7 @@ export function LegalDocument({
           <RichContent
             mode='markdown'
             content={rawContent}
-            className='prose-neutral dark:prose-invert max-w-none'
+            className='prose-neutral max-w-none'
           />
         </div>
       )}

@@ -16,25 +16,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { useEffect, useRef, useState } from 'react'
-
-import { useTheme } from '@/context/theme-provider'
+import { useEffect, useState } from 'react'
 
 /**
- * Lazy-load VChart's `ThemeManager` and switch its theme to follow the
- * resolved app theme (light / dark). Returns flags consumers can use to
- * defer chart rendering until the theme is ready.
+ * Lazy-load VChart's `ThemeManager` and initialize the light theme before
+ * rendering charts.
  */
 let themeManagerPromise: Promise<
   (typeof import('@visactor/vchart'))['ThemeManager']
 > | null = null
 
 export function useChartTheme() {
-  const { resolvedTheme } = useTheme()
   const [themeReady, setThemeReady] = useState(false)
-  const themeRef = useRef<
-    (typeof import('@visactor/vchart'))['ThemeManager'] | null
-  >(null)
 
   useEffect(() => {
     let cancelled = false
@@ -47,15 +40,14 @@ export function useChartTheme() {
       }
       const ThemeManager = await themeManagerPromise
       if (cancelled) return
-      themeRef.current = ThemeManager
-      ThemeManager.setCurrentTheme(resolvedTheme === 'dark' ? 'dark' : 'light')
+      ThemeManager.setCurrentTheme('light')
       setThemeReady(true)
     }
     updateTheme()
     return () => {
       cancelled = true
     }
-  }, [resolvedTheme])
+  }, [])
 
-  return { resolvedTheme, themeReady }
+  return { themeReady }
 }

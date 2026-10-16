@@ -73,13 +73,13 @@ function SheetContent({
         className={cn(
           'bg-background text-foreground fixed z-50 flex flex-col gap-4 overflow-hidden rounded-none text-sm shadow-none transition duration-150 ease-in-out data-ending-style:opacity-0 data-starting-style:opacity-0',
           side === 'right' &&
-            'inset-y-0 right-0 h-full w-3/4 border-l-2 border-black dark:border-white data-ending-style:translate-x-[2.5rem] data-starting-style:translate-x-[2.5rem] sm:max-w-md',
+            'inset-y-0 right-0 h-full w-3/4 border-l-2 border-black data-ending-style:translate-x-[2.5rem] data-starting-style:translate-x-[2.5rem] sm:max-w-md',
           side === 'left' &&
-            'inset-y-0 left-0 h-full w-3/4 border-r-2 border-black dark:border-white data-ending-style:translate-x-[-2.5rem] data-starting-style:translate-x-[-2.5rem] sm:max-w-md',
+            'inset-y-0 left-0 h-full w-3/4 border-r-2 border-black data-ending-style:translate-x-[-2.5rem] data-starting-style:translate-x-[-2.5rem] sm:max-w-md',
           side === 'top' &&
-            'inset-x-0 top-0 h-auto border-b-2 border-black dark:border-white data-ending-style:translate-y-[-2.5rem] data-starting-style:translate-y-[-2.5rem]',
+            'inset-x-0 top-0 h-auto border-b-2 border-black data-ending-style:translate-y-[-2.5rem] data-starting-style:translate-y-[-2.5rem]',
           side === 'bottom' &&
-            'inset-x-0 bottom-0 h-auto border-t-2 border-black dark:border-white data-ending-style:translate-y-[2.5rem] data-starting-style:translate-y-[2.5rem]',
+            'inset-x-0 bottom-0 h-auto border-t-2 border-black data-ending-style:translate-y-[2.5rem] data-starting-style:translate-y-[2.5rem]',
           className
         )}
         {...props}
@@ -91,7 +91,7 @@ function SheetContent({
             render={
               <Button
                 variant='outline'
-                className='absolute top-3 right-3 rounded-none border border-black dark:border-white'
+                className='absolute top-3 right-3 rounded-none border border-black'
                 size='icon-sm'
               />
             }
@@ -109,10 +109,7 @@ function SheetHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot='sheet-header'
-      className={cn(
-        'flex flex-col gap-1 border-b border-black p-4 dark:border-white',
-        className
-      )}
+      className={cn('flex flex-col gap-1 border-b border-black p-4', className)}
       {...props}
     />
   )
@@ -123,7 +120,7 @@ function SheetFooter({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot='sheet-footer'
       className={cn(
-        'mt-auto flex flex-col gap-2 border-t border-black p-4 dark:border-white',
+        'mt-auto flex flex-col gap-2 border-t border-black p-4',
         className
       )}
       {...props}

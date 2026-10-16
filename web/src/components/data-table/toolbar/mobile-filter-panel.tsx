@@ -46,7 +46,7 @@ export function DataTableMobileFilterPanel(
       open={open}
       onOpenChange={setOpen}
       className={cn(
-        'bg-background flex min-w-0 flex-col rounded-none border-2 border-black p-2.5 dark:border-white',
+        'bg-background flex min-w-0 flex-col rounded-none border-2 border-black p-2.5',
         open && (props.compact ? 'gap-2.5' : 'gap-2'),
         props.className
       )}

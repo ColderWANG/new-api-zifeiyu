@@ -345,7 +345,7 @@ export function DynamicPricingBreakdown({
       <section className={cn('min-w-0', !compact && 'py-4')}>
         {!compact && (
           <div className='mb-3 flex items-center gap-2'>
-            <span className='inline-flex size-6 items-center justify-center rounded-lg bg-amber-100 text-amber-700 shadow-sm dark:bg-amber-500/20 dark:text-amber-300'>
+            <span className='inline-flex size-6 items-center justify-center rounded-lg bg-amber-100 text-amber-700 shadow-sm'>
               <TagIcon className='size-3.5' />
             </span>
             <div>
@@ -459,7 +459,7 @@ export function DynamicPricingBreakdown({
     <section className={cn('min-w-0', !compact && 'py-3 sm:py-4')}>
       {!compact && !usageSchema && (
         <div className='mb-3 flex items-start gap-2 sm:mb-4'>
-          <span className='mt-0.5 inline-flex size-6 items-center justify-center rounded-lg bg-amber-100 text-amber-700 shadow-sm dark:bg-amber-500/20 dark:text-amber-300'>
+          <span className='mt-0.5 inline-flex size-6 items-center justify-center rounded-lg bg-amber-100 text-amber-700 shadow-sm'>
             <TagIcon className='size-3.5' />
           </span>
           <div>
@@ -519,7 +519,7 @@ export function DynamicPricingBreakdown({
                     {!usageSchema && (
                       <Badge
                         variant='secondary'
-                        className='bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300'
+                        className='bg-blue-100 text-blue-700'
                       >
                         {tier.label || t('Default')}
                       </Badge>
@@ -527,7 +527,7 @@ export function DynamicPricingBreakdown({
                     {isMatched && (
                       <Badge
                         variant='secondary'
-                        className='bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300'
+                        className='bg-emerald-100 text-emerald-700'
                       >
                         {t('Matched')}
                       </Badge>
@@ -599,10 +599,7 @@ export function DynamicPricingBreakdown({
                 matchedBillingUnit,
                 matchedFixedPrice
               )
-              return cn(
-                isMatched &&
-                  'bg-emerald-50/70 hover:bg-emerald-50/70 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/10'
-              )
+              return cn(isMatched && 'bg-emerald-50/70 hover:bg-emerald-50/70')
             }}
             columns={[
               {
@@ -638,7 +635,7 @@ export function DynamicPricingBreakdown({
                         {!usageSchema && (
                           <Badge
                             variant='secondary'
-                            className='bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300'
+                            className='bg-blue-100 text-blue-700'
                           >
                             {tier.label || t('Default')}
                           </Badge>
@@ -646,7 +643,7 @@ export function DynamicPricingBreakdown({
                         {isMatched && (
                           <Badge
                             variant='secondary'
-                            className='bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300'
+                            className='bg-emerald-100 text-emerald-700'
                           >
                             {t('Matched')}
                           </Badge>
@@ -735,9 +732,8 @@ export function DynamicPricingBreakdown({
                   <Badge
                     variant='secondary'
                     className={cn(
-                      'shrink-0 bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-300',
-                      isMatched &&
-                        'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300'
+                      'shrink-0 bg-orange-100 text-orange-700',
+                      isMatched && 'bg-emerald-100 text-emerald-700'
                     )}
                   >
                     {group.multiplier}x{isMatched && ` · ${t('Matched')}`}

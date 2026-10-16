@@ -837,7 +837,7 @@ export function useCommonLogsColumns(
           if (primary?.muted) {
             primaryTextClass = 'text-muted-foreground/60'
           } else if (primary?.danger) {
-            primaryTextClass = 'text-red-600 dark:text-red-400'
+            primaryTextClass = 'text-red-600'
           }
           let detailPreview = (
             <span className='text-muted-foreground/40'>—</span>

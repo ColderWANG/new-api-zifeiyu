@@ -60,7 +60,7 @@ export function QuotaDetailsPopover(props: QuotaDetailsPopoverProps) {
       </div>
       <PopoverContent
         align='start'
-        className='w-72 max-w-[calc(100vw-2rem)] gap-3 rounded-none border-2 border-black bg-white p-3.5 shadow-none dark:border-white dark:bg-black'
+        className='w-72 max-w-[calc(100vw-2rem)] gap-3 rounded-none border-2 border-black bg-white p-3.5 shadow-none'
       >
         <PopoverTitle className='mb-2 text-xs font-semibold tracking-wider uppercase'>
           {props.title}
@@ -76,7 +76,7 @@ export function QuotaDetailsPopover(props: QuotaDetailsPopoverProps) {
           ))}
         </dl>
         {props.description && (
-          <p className='text-muted-foreground mt-2 border-t border-black/10 pt-2 text-xs leading-relaxed dark:border-white/10'>
+          <p className='text-muted-foreground mt-2 border-t border-black/10 pt-2 text-xs leading-relaxed'>
             {props.description}
           </p>
         )}

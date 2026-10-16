@@ -70,7 +70,7 @@ function AlertDialogContent({
         data-slot='alert-dialog-content'
         data-size={size}
         className={cn(
-          'group/alert-dialog-content bg-background text-foreground border-2 border-black dark:border-white data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 fixed top-[var(--dialog-viewport-center,50dvh)] left-1/2 z-50 grid max-h-[var(--dialog-available-height,calc(100dvh-2rem))] w-full overflow-y-auto overscroll-contain -translate-x-1/2 -translate-y-1/2 gap-4 rounded-none p-6 shadow-none duration-100 outline-none data-[size=default]:max-w-md data-[size=sm]:max-w-xs',
+          'group/alert-dialog-content bg-background text-foreground border-2 border-black data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 fixed top-[var(--dialog-viewport-center,50dvh)] left-1/2 z-50 grid max-h-[var(--dialog-available-height,calc(100dvh-2rem))] w-full overflow-y-auto overscroll-contain -translate-x-1/2 -translate-y-1/2 gap-4 rounded-none p-6 shadow-none duration-100 outline-none data-[size=default]:max-w-md data-[size=sm]:max-w-xs',
           className
         )}
         {...props}
@@ -103,7 +103,7 @@ function AlertDialogFooter({
     <div
       data-slot='alert-dialog-footer'
       className={cn(
-        'bg-neutral-50 dark:bg-neutral-900 -mx-6 -mb-6 flex flex-col-reverse gap-2 border-t-2 border-black dark:border-white p-4 group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end',
+        'bg-neutral-50 -mx-6 -mb-6 flex flex-col-reverse gap-2 border-t-2 border-black p-4 group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end',
         className
       )}
       {...props}
@@ -119,7 +119,7 @@ function AlertDialogMedia({
     <div
       data-slot='alert-dialog-media'
       className={cn(
-        "bg-neutral-100 dark:bg-neutral-800 border border-black dark:border-white mb-2 inline-flex size-10 items-center justify-center rounded-none sm:group-data-[size=default]/alert-dialog-content:row-span-2 *:[svg:not([class*='size-'])]:size-5",
+        "bg-neutral-100 border border-black mb-2 inline-flex size-10 items-center justify-center rounded-none sm:group-data-[size=default]/alert-dialog-content:row-span-2 *:[svg:not([class*='size-'])]:size-5",
         className
       )}
       {...props}

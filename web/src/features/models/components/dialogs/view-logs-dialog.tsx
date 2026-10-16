@@ -203,7 +203,7 @@ export function ViewLogsDialog({
     )
   } else {
     logsContent = (
-      <div className='font-mono text-sm text-neutral-50 dark:text-neutral-100'>
+      <div className='font-mono text-sm text-neutral-50'>
         {keyedLogLines.map(({ key, line }) => (
           <div key={key} className='whitespace-pre-wrap'>
             {line}
@@ -323,7 +323,7 @@ export function ViewLogsDialog({
       </div>
       <div
         ref={scrollRef}
-        className='border-border flex-1 overflow-auto rounded-none border bg-neutral-950 p-3 font-mono text-neutral-50 sm:p-4 dark:bg-black dark:text-neutral-100'
+        className='border-border flex-1 overflow-auto rounded-none border bg-neutral-950 p-3 font-mono text-neutral-50 sm:p-4'
         onScroll={(e) => {
           const target = e.target as HTMLDivElement
           const isAtBottom =

@@ -138,7 +138,7 @@ test('category headers keep a transparent background while expanding and collaps
   expect(header).toHaveClass(
     'aria-expanded:bg-transparent',
     'hover:bg-transparent',
-    'dark:hover:bg-transparent'
+    ''
   )
   await user.click(header)
   expect(header).toHaveAttribute('aria-expanded', 'false')

@@ -45,18 +45,6 @@ For commercial licensing, please contact support@quantumnous.com
   --condition-label: var(--color-amber-800);
 }
 
-.dark .billing-condition-group {
-  --condition-label: var(--primary);
-}
-
-.dark .billing-condition-group[data-condition-kind='any'] {
-  --condition-label: var(--color-violet-300);
-}
-
-.dark .billing-condition-group[data-condition-kind='not'] {
-  --condition-label: var(--color-amber-300);
-}
-
 .billing-condition-label {
   color: var(--condition-label);
 }
