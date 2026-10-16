@@ -4,6 +4,46 @@
 
 当前分支分工：`main` 为二开主分支，`upstream-sync` 保存纯官方代码，`custom-ui` 仅保留历史。下方是保留的上游介绍与截图；官方镜像不包含本仓库的定制功能，请从本仓库验证过的 `main` 提交构建。上游来源、作者归属及原有许可声明保持不变。
 
+## 定制版界面预览
+
+黑白简约的 API 网关，从模型接入、用量分析到图片创作，保持统一的界面体验。点击截图可查看大图。
+
+> 以下为本仓库定制版的实际前端截图，使用隔离的模拟数据：账户、额度、密钥、请求量及性能指标均为演示，不包含真实用户信息，也不代表模型实测性能。生图台展示生成前的工作区，不是生成结果。
+
+### 首页 · 用排版呈现产品
+
+[![定制版首页：黑白排版、统一导航与多协议请求演示](./assets/screenshots/custom/home.webp)](./assets/screenshots/custom/home.webp)
+
+<table>
+  <tr>
+    <th width="50%">概览 · 余额与用量一目了然</th>
+    <th width="50%">数据看板 · 用柔和配色区分模型</th>
+  </tr>
+  <tr>
+    <td><a href="./assets/screenshots/custom/overview.webp"><img src="./assets/screenshots/custom/overview.webp" alt="控制台概览：余额、消耗趋势、请求计数与性能健康，均为演示数据" width="100%"></a></td>
+    <td><a href="./assets/screenshots/custom/analytics.webp"><img src="./assets/screenshots/custom/analytics.webp" alt="数据看板：模型调用统计与淡色堆叠图，均为演示数据" width="100%"></a></td>
+  </tr>
+</table>
+
+### 生图台 · 从文字与参考图开始创作
+
+独立的图片创作工作区，支持文生图与图生图；按当前用户分组展示可用的 image 模型，集中设置生成协议、画面描述、比例与数量。
+
+[![生图台：模型选择、提示词、画面比例与生成前的画布预览](./assets/screenshots/custom/image-studio.webp)](./assets/screenshots/custom/image-studio.webp)
+
+<table>
+  <tr>
+    <th width="50%">API 密钥 · 清晰管理应用访问</th>
+    <th width="50%">登录 · 延续统一视觉语言</th>
+  </tr>
+  <tr>
+    <td><a href="./assets/screenshots/custom/api-keys.webp"><img src="./assets/screenshots/custom/api-keys.webp" alt="API 密钥管理：演示密钥、启停状态、额度与分组" width="100%"></a></td>
+    <td><a href="./assets/screenshots/custom/sign-in.webp"><img src="./assets/screenshots/custom/sign-in.webp" alt="定制版登录页：黑白表单与衬线标题" width="100%"></a></td>
+  </tr>
+</table>
+
+如果你喜欢这套界面和生图工作流，欢迎为本仓库点一个 **Star**，也欢迎通过 Issue / PR 反馈问题、参与改进。
+
 ---
 
 <div align="center">
