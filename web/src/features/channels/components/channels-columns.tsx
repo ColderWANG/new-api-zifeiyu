@@ -62,6 +62,7 @@ import { truncateText } from '@/lib/utils'
 
 import { getCodexUsage, updateChannelBalance } from '../api'
 import {
+  CHANNEL_STATUS,
   CHANNEL_STATUS_CONFIG,
   CHANNEL_TYPE_TASK_PLUGIN,
   CHANNEL_TYPE_VLLM,
@@ -960,7 +961,7 @@ export function useChannelsColumns(
                   variant='success'
                   size='sm'
                   copyable={false}
-                  className='-ml-1.5'
+                  className={`-ml-1.5 ${CHANNEL_STATUS_CONFIG[CHANNEL_STATUS.ENABLED].className}`}
                 />
               )
             } else {
@@ -970,7 +971,7 @@ export function useChannelsColumns(
                   variant='neutral'
                   size='sm'
                   copyable={false}
-                  className='-ml-1.5'
+                  className={`-ml-1.5 ${CHANNEL_STATUS_CONFIG[CHANNEL_STATUS.MANUAL_DISABLED].className}`}
                 />
               )
             }
@@ -1019,6 +1020,7 @@ export function useChannelsColumns(
                       <StatusBadge
                         label={label}
                         variant={config.variant}
+                        className={config.className}
                         size='sm'
                         copyable={false}
                       />
@@ -1048,6 +1050,7 @@ export function useChannelsColumns(
             <StatusBadge
               label={label}
               variant={config.variant}
+              className={config.className}
               size='sm'
               copyable={false}
             />

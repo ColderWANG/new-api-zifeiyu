@@ -255,18 +255,22 @@ export const CHANNEL_STATUS_CONFIG = {
   [CHANNEL_STATUS.UNKNOWN]: {
     variant: 'neutral' as const,
     label: 'Unknown',
+    className: 'border-border bg-muted text-muted-foreground',
   },
   [CHANNEL_STATUS.ENABLED]: {
     variant: 'success' as const,
     label: 'Enabled',
+    className: 'border-primary bg-primary text-primary-foreground',
   },
   [CHANNEL_STATUS.MANUAL_DISABLED]: {
     variant: 'danger' as const,
     label: 'Disabled',
+    className: 'border-border bg-muted text-muted-foreground',
   },
   [CHANNEL_STATUS.AUTO_DISABLED]: {
     variant: 'warning' as const,
     label: 'Auto Disabled',
+    className: 'border-primary/40 border-dashed bg-primary/10 text-primary',
   },
 }
 

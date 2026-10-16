@@ -237,8 +237,8 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
               aria-label={isEnabled ? t('Disable') : t('Enable')}
               className={
                 isEnabled
-                  ? 'text-destructive hover:text-destructive'
-                  : 'text-success hover:text-success'
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground'
               }
             />
           }
