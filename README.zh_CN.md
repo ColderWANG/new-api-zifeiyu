@@ -1,3 +1,11 @@
+## New API · Zifeiyu 定制版说明
+
+本仓库基于 **QuantumNous / New API** 进行二次开发，包含黑白简约界面、控制台体验优化、生图台及相关前后端修复。定制功能说明见 [仓库首页](./README.md)，参与开发与部署前请阅读 [协作流程](./DEVELOPMENT_WORKFLOW.md)。
+
+当前分支分工：`main` 为二开主分支，`upstream-sync` 保存纯官方代码，`custom-ui` 仅保留历史。下方是保留的上游介绍与截图；官方镜像不包含本仓库的定制功能，请从本仓库验证过的 `main` 提交构建。上游来源、作者归属及原有许可声明保持不变。
+
+---
+
 <div align="center">
 
 ![new-api](/web/public/logo.png)
