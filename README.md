@@ -1,5 +1,7 @@
 # New API · Zifeiyu 定制版
 
+[![LINUX DO](./assets/badges/linux-do.png)](https://linux.do/)
+
 基于 **QuantumNous / New API** 持续维护的二次开发版本，由 `zi-fei-yu-2020` 维护本仓库的定制改动。面向自托管 AI 网关，保留上游核心能力，并针对控制台体验与图片生成工作流进行扩展。
 
 ## 本仓库的定制
