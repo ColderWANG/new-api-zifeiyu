@@ -1,5 +1,13 @@
 {
   "translation": {
+    "The model declined or blocked image generation. Review its reply and adjust your request to comply with the provider's requirements.": "The model declined or blocked image generation. Review its reply and adjust your request to comply with the provider's requirements.",
+    "The model returned text instead of an image. Read its reply below; this alone does not indicate a content-policy violation.": "The model returned text instead of an image. Read its reply below; this alone does not indicate a content-policy violation.",
+    "Image data was returned, but its format could not be read. Ask the administrator to check the upstream response format.": "Image data was returned, but its format could not be read. Ask the administrator to check the upstream response format.",
+    "The response reached its output limit before a usable image was returned. Ask the administrator to check the generation limits.": "The response reached its output limit before a usable image was returned. Ask the administrator to check the generation limits.",
+    "The model returned no image or explanation. The cause is unknown; ask the administrator to inspect this request.": "The model returned no image or explanation. The cause is unknown; ask the administrator to inspect this request.",
+    "The server returned an unexpected response format. Ask the administrator to check the channel and generation protocol.": "The server returned an unexpected response format. Ask the administrator to check the channel and generation protocol.",
+    "Model reply (excerpt)": "Model reply (excerpt)",
+    "Copy request ID": "Copy request ID",
     "Image creation": "Image creation",
     "Generation protocol": "Generation protocol",
     "Images API": "Images API",

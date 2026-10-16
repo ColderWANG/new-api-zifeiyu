@@ -1,5 +1,13 @@
 {
   "translation": {
+    "The model declined or blocked image generation. Review its reply and adjust your request to comply with the provider's requirements.": "Модель отказалась генерировать изображение или заблокировала генерацию. Прочитайте ответ и скорректируйте запрос в соответствии с требованиями провайдера.",
+    "The model returned text instead of an image. Read its reply below; this alone does not indicate a content-policy violation.": "Модель вернула текст вместо изображения. Прочитайте ответ ниже; сам по себе текстовый ответ не означает нарушения правил контента.",
+    "Image data was returned, but its format could not be read. Ask the administrator to check the upstream response format.": "Получены данные изображения, но их формат не удалось прочитать. Попросите администратора проверить формат ответа провайдера.",
+    "The response reached its output limit before a usable image was returned. Ask the administrator to check the generation limits.": "Ответ достиг лимита вывода до получения пригодного изображения. Попросите администратора проверить ограничения генерации.",
+    "The model returned no image or explanation. The cause is unknown; ask the administrator to inspect this request.": "Модель не вернула ни изображения, ни пояснения. Причина неизвестна; попросите администратора проверить этот запрос.",
+    "The server returned an unexpected response format. Ask the administrator to check the channel and generation protocol.": "Сервер вернул ответ в неожиданном формате. Попросите администратора проверить канал и протокол генерации.",
+    "Model reply (excerpt)": "Ответ модели (фрагмент)",
+    "Copy request ID": "Копировать ID запроса",
     "Image creation": "Создание изображений",
     "Generation protocol": "Протокол генерации",
     "Images API": "API изображений",

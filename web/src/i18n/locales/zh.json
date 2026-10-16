@@ -1,5 +1,13 @@
 {
   "translation": {
+    "The model declined or blocked image generation. Review its reply and adjust your request to comply with the provider's requirements.": "模型拒绝或拦截了本次生图。请查看返回说明，并根据上游服务的要求调整请求。",
+    "The model returned text instead of an image. Read its reply below; this alone does not indicate a content-policy violation.": "模型只返回了文字，没有返回图片。请查看下方回复；仅凭文字回复不能判定内容违规。",
+    "Image data was returned, but its format could not be read. Ask the administrator to check the upstream response format.": "检测到图片数据，但无法解析其格式。请联系管理员检查上游返回的图片格式。",
+    "The response reached its output limit before a usable image was returned. Ask the administrator to check the generation limits.": "响应达到输出上限，未返回可用图片。请联系管理员检查生成限制。",
+    "The model returned no image or explanation. The cause is unknown; ask the administrator to inspect this request.": "模型未返回图片，也未提供说明。目前无法确定原因，请联系管理员检查本次请求。",
+    "The server returned an unexpected response format. Ask the administrator to check the channel and generation protocol.": "服务返回了无法识别的响应格式。请联系管理员检查渠道和生成协议。",
+    "Model reply (excerpt)": "模型返回内容（摘要）",
+    "Copy request ID": "复制请求 ID",
     "Image creation": "图片创作",
     "Generation protocol": "生成协议",
     "Images API": "图片接口",

@@ -1,5 +1,13 @@
 {
   "translation": {
+    "The model declined or blocked image generation. Review its reply and adjust your request to comply with the provider's requirements.": "モデルが画像生成を拒否またはブロックしました。応答を確認し、提供元の要件に従ってリクエストを調整してください。",
+    "The model returned text instead of an image. Read its reply below; this alone does not indicate a content-policy violation.": "モデルは画像ではなくテキストを返しました。以下の応答を確認してください。テキストの応答だけではコンテンツポリシー違反とは判断できません。",
+    "Image data was returned, but its format could not be read. Ask the administrator to check the upstream response format.": "画像データが返されましたが、形式を読み取れませんでした。管理者に提供元の応答形式の確認を依頼してください。",
+    "The response reached its output limit before a usable image was returned. Ask the administrator to check the generation limits.": "使用可能な画像が返される前に出力上限に達しました。管理者に生成上限の確認を依頼してください。",
+    "The model returned no image or explanation. The cause is unknown; ask the administrator to inspect this request.": "モデルは画像も説明も返しませんでした。原因は不明です。管理者にこのリクエストの確認を依頼してください。",
+    "The server returned an unexpected response format. Ask the administrator to check the channel and generation protocol.": "サーバーが予期しない形式の応答を返しました。管理者にチャネルと生成プロトコルの確認を依頼してください。",
+    "Model reply (excerpt)": "モデルの応答（抜粋）",
+    "Copy request ID": "リクエスト ID をコピー",
     "Image creation": "画像の作成",
     "Generation protocol": "生成プロトコル",
     "Images API": "画像 API",

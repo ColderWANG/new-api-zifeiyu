@@ -1,5 +1,13 @@
 {
   "translation": {
+    "The model declined or blocked image generation. Review its reply and adjust your request to comply with the provider's requirements.": "Mô hình đã từ chối hoặc chặn việc tạo ảnh. Hãy đọc phản hồi và điều chỉnh yêu cầu theo quy định của nhà cung cấp.",
+    "The model returned text instead of an image. Read its reply below; this alone does not indicate a content-policy violation.": "Mô hình trả về văn bản thay vì ảnh. Hãy đọc phản hồi bên dưới; chỉ riêng phản hồi văn bản không chứng minh nội dung vi phạm chính sách.",
+    "Image data was returned, but its format could not be read. Ask the administrator to check the upstream response format.": "Đã nhận dữ liệu ảnh nhưng không đọc được định dạng. Hãy nhờ quản trị viên kiểm tra định dạng phản hồi của nhà cung cấp.",
+    "The response reached its output limit before a usable image was returned. Ask the administrator to check the generation limits.": "Phản hồi đã đạt giới hạn đầu ra trước khi trả về ảnh có thể sử dụng. Hãy nhờ quản trị viên kiểm tra giới hạn tạo ảnh.",
+    "The model returned no image or explanation. The cause is unknown; ask the administrator to inspect this request.": "Mô hình không trả về ảnh hoặc lời giải thích. Chưa rõ nguyên nhân; hãy nhờ quản trị viên kiểm tra yêu cầu này.",
+    "The server returned an unexpected response format. Ask the administrator to check the channel and generation protocol.": "Máy chủ trả về định dạng phản hồi không như dự kiến. Hãy nhờ quản trị viên kiểm tra kênh và giao thức tạo ảnh.",
+    "Model reply (excerpt)": "Phản hồi của mô hình (trích đoạn)",
+    "Copy request ID": "Sao chép ID yêu cầu",
     "Image creation": "Tạo ảnh",
     "Generation protocol": "Giao thức tạo ảnh",
     "Images API": "API hình ảnh",

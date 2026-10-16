@@ -20,16 +20,21 @@ import { Download, Expand, ExternalLink, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { CopyButton } from '@/components/copy-button'
 import { Dialog } from '@/components/dialog'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { handleServerError } from '@/lib/handle-server-error'
+import { getServerErrorMessage } from '@/lib/server-error-message'
 
+import { StudioResponseError } from '../response-error'
 import type { StudioImage } from '../types'
 
 type StudioResultsProps = {
   images: StudioImage[]
   generating: boolean
-  error: string | null
+  error: Error | null
 }
 
 export function StudioResults(props: StudioResultsProps) {
@@ -37,6 +42,43 @@ export function StudioResults(props: StudioResultsProps) {
   const [expanded, setExpanded] = useState<StudioImage | null>(null)
   const [downloading, setDownloading] = useState<number | null>(null)
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set())
+  const diagnostic =
+    props.error instanceof StudioResponseError ? props.error : null
+  let errorMessage = props.error
+    ? getServerErrorMessage(props.error, t('Image generation failed.'))
+    : ''
+  switch (diagnostic?.kind) {
+    case 'refused':
+      errorMessage = t(
+        "The model declined or blocked image generation. Review its reply and adjust your request to comply with the provider's requirements."
+      )
+      break
+    case 'text-only':
+      errorMessage = t(
+        'The model returned text instead of an image. Read its reply below; this alone does not indicate a content-policy violation.'
+      )
+      break
+    case 'unreadable-image':
+      errorMessage = t(
+        'Image data was returned, but its format could not be read. Ask the administrator to check the upstream response format.'
+      )
+      break
+    case 'incomplete':
+      errorMessage = t(
+        'The response reached its output limit before a usable image was returned. Ask the administrator to check the generation limits.'
+      )
+      break
+    case 'empty':
+      errorMessage = t(
+        'The model returned no image or explanation. The cause is unknown; ask the administrator to inspect this request.'
+      )
+      break
+    case 'invalid-response':
+      errorMessage = t(
+        'The server returned an unexpected response format. Ask the administrator to check the channel and generation protocol.'
+      )
+      break
+  }
 
   async function download(image: StudioImage, index: number) {
     try {
@@ -99,12 +141,43 @@ export function StudioResults(props: StudioResultsProps) {
         </div>
       )}
       {props.error && (
-        <p
-          role='alert'
-          className='mb-5 border-l-2 border-black bg-neutral-50 p-4 text-sm leading-relaxed break-words'
-        >
-          {props.error}
-        </p>
+        <Alert className='mb-5 min-w-0 rounded-none border-0 border-l-2 border-black bg-neutral-50 p-4 text-neutral-950'>
+          <AlertTitle>{t('Image generation failed.')}</AlertTitle>
+          <AlertDescription className='min-w-0 space-y-3 leading-relaxed text-neutral-700'>
+            <p className='[overflow-wrap:anywhere]'>{errorMessage}</p>
+            {diagnostic?.reply && (
+              <div className='min-w-0 border-t border-neutral-200 pt-3'>
+                <p className='text-xs font-medium text-neutral-950'>
+                  {t('Model reply (excerpt)')}
+                </p>
+                <ScrollArea
+                  role='region'
+                  aria-label={t('Model reply (excerpt)')}
+                  className='min-w-0 [&_[data-slot=scroll-area-viewport]]:max-h-60'
+                >
+                  <p className='pr-3 [overflow-wrap:anywhere] whitespace-pre-wrap'>
+                    {diagnostic.reply}
+                  </p>
+                </ScrollArea>
+              </div>
+            )}
+            {diagnostic?.requestId && (
+              <div className='flex min-w-0 items-center gap-2 border-t border-neutral-200 pt-3'>
+                <div className='min-w-0 flex-1'>
+                  <span className='text-xs'>{t('Request ID')}</span>
+                  <p className='font-mono text-xs [overflow-wrap:anywhere]'>
+                    {diagnostic.requestId}
+                  </p>
+                </div>
+                <CopyButton
+                  value={diagnostic.requestId}
+                  aria-label={t('Copy request ID')}
+                  className='size-11'
+                />
+              </div>
+            )}
+          </AlertDescription>
+        </Alert>
       )}
       <div className='grid min-w-0 gap-6 sm:grid-cols-2'>
         {props.images.map((image, index) => (

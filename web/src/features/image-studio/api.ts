@@ -18,6 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { api, getFreshAuthHeaders } from '@/lib/api'
 
+import { diagnoseStudioResponse } from './response-error'
 import type { StudioProtocol, StudioRatio, StudioImage } from './types'
 
 export type GenerateImageInput = {
@@ -66,7 +67,14 @@ export async function generateStudioImages(
     skipAuthRefresh: true,
     skipErrorHandler: true,
   })
-  return parseStudioImages(response.data)
+  const images = parseStudioImages(response.data)
+  if (images.length === 0) {
+    throw diagnoseStudioResponse(
+      response.data,
+      response.headers?.['x-oneapi-request-id']
+    )
+  }
+  return images
 }
 
 export function parseStudioImages(response: unknown): StudioImage[] {

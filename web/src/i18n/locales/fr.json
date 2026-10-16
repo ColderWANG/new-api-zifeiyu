@@ -1,5 +1,13 @@
 {
   "translation": {
+    "The model declined or blocked image generation. Review its reply and adjust your request to comply with the provider's requirements.": "Le modèle a refusé ou bloqué la génération d’image. Consultez sa réponse et adaptez votre demande aux exigences du fournisseur.",
+    "The model returned text instead of an image. Read its reply below; this alone does not indicate a content-policy violation.": "Le modèle a renvoyé du texte au lieu d’une image. Consultez sa réponse ci-dessous ; cela ne signifie pas à lui seul une violation des règles de contenu.",
+    "Image data was returned, but its format could not be read. Ask the administrator to check the upstream response format.": "Des données d’image ont été reçues, mais leur format n’a pas pu être lu. Demandez à l’administrateur de vérifier le format de réponse du fournisseur.",
+    "The response reached its output limit before a usable image was returned. Ask the administrator to check the generation limits.": "La réponse a atteint sa limite de sortie sans fournir d’image utilisable. Demandez à l’administrateur de vérifier les limites de génération.",
+    "The model returned no image or explanation. The cause is unknown; ask the administrator to inspect this request.": "Le modèle n’a renvoyé ni image ni explication. La cause est inconnue ; demandez à l’administrateur d’examiner cette requête.",
+    "The server returned an unexpected response format. Ask the administrator to check the channel and generation protocol.": "Le serveur a renvoyé un format de réponse inattendu. Demandez à l’administrateur de vérifier le canal et le protocole de génération.",
+    "Model reply (excerpt)": "Réponse du modèle (extrait)",
+    "Copy request ID": "Copier l’ID de requête",
     "Image creation": "Création d’images",
     "Generation protocol": "Protocole de génération",
     "Images API": "API Images",

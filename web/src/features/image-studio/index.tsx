@@ -24,7 +24,6 @@ import { useTranslation } from 'react-i18next'
 
 import { getUserModels } from '@/features/playground/api'
 import { getSelf } from '@/lib/api'
-import { getServerErrorMessage } from '@/lib/server-error-message'
 import { useAuthStore } from '@/stores/auth-store'
 
 import { generateStudioImages, type GenerateImageInput } from './api'
@@ -76,13 +75,6 @@ function ImageStudioWorkspace() {
       const result = await generateStudioImages(input, controller.signal)
       if (controller.signal.aborted) {
         throw new DOMException('Aborted', 'AbortError')
-      }
-      if (result.length === 0) {
-        throw new Error(
-          t(
-            'The model returned no image. Check the selected protocol and model capabilities.'
-          )
-        )
       }
       return result
     },
@@ -230,14 +222,7 @@ function ImageStudioWorkspace() {
           <StudioResults
             images={images}
             generating={generation.isPending}
-            error={
-              generation.isError
-                ? getServerErrorMessage(
-                    generation.error,
-                    t('Image generation failed.')
-                  )
-                : null
-            }
+            error={generation.isError ? generation.error : null}
           />
         ) : (
           <StudioCanvas
