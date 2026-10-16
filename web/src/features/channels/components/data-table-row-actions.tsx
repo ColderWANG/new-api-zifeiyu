@@ -235,11 +235,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
               onClick={handleToggleStatus}
               disabled={isTogglingStatus}
               aria-label={isEnabled ? t('Disable') : t('Enable')}
-              className={
-                isEnabled
-                  ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-              }
+              className='text-muted-foreground hover:text-foreground'
             />
           }
         >

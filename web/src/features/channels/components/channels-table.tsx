@@ -72,6 +72,8 @@ import { useChannelsColumns } from './channels-columns'
 import { useChannels } from './channels-provider'
 import { DataTableBulkActions } from './data-table-bulk-actions'
 
+import './channels-table.css'
+
 const route = getRouteApi('/_authenticated/channels/')
 const CHANNELS_COLUMN_VISIBILITY_STORAGE_KEY = 'channels:column-visibility'
 const CHANNELS_COLUMN_SIZING_STORAGE_KEY = 'channels:column-sizing'
@@ -527,12 +529,16 @@ export function ChannelsTable() {
       }}
       getRowClassName={(row, { isMobile }) => {
         if (!isDisabledChannelRow(row.original)) {
-          return undefined
+          return 'channel-row data-[state=selected]:![--data-table-card-bg:var(--background)] data-[state=selected]:text-foreground'
         }
-        if (isMobile) {
-          return DISABLED_ROW_MOBILE
-        }
-        return DISABLED_ROW_DESKTOP
+        return cn(
+          'channel-row',
+          isMobile ? DISABLED_ROW_MOBILE : DISABLED_ROW_DESKTOP,
+          'data-[state=selected]:text-foreground',
+          row.original.status === CHANNEL_STATUS.AUTO_DISABLED
+            ? 'channel-auto-disabled border-primary/50 border-dashed'
+            : 'channel-manual-disabled border-foreground/25'
+        )
       }}
       bulkActions={batchMode ? <DataTableBulkActions table={table} /> : null}
     />

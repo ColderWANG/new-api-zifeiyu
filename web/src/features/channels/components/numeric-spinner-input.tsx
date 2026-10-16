@@ -141,6 +141,7 @@ export function NumericSpinnerInput({
         <Label className='text-muted-foreground mr-1.5 text-xs'>{label}</Label>
       )}
       <div
+        data-slot='numeric-spinner'
         onBlur={handleControlBlur}
         className={cn(
           'group/spinner border-input inline-flex h-7 items-center gap-0 rounded-md border transition-colors',

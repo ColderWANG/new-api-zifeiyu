@@ -1,0 +1,107 @@
+/*
+Copyright (C) 2023-2026 QuantumNous
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For commercial licensing, please contact support@quantumnous.com
+*/
+/* Apply state colors to the entire row/card through the shared table tokens. */
+.channel-manual-disabled {
+  --table-disabled: color-mix(
+    in oklch,
+    var(--foreground) 15%,
+    var(--background)
+  );
+  --table-disabled-hover: color-mix(
+    in oklch,
+    var(--foreground) 18%,
+    var(--background)
+  );
+  --table-disabled-border: color-mix(
+    in oklch,
+    var(--foreground) 30%,
+    var(--background)
+  );
+}
+
+.channel-auto-disabled {
+  --table-disabled: color-mix(in oklch, var(--primary) 6%, var(--background));
+  --table-disabled-hover: color-mix(
+    in oklch,
+    var(--primary) 9%,
+    var(--background)
+  );
+  --table-disabled-border: color-mix(
+    in oklch,
+    var(--primary) 50%,
+    var(--background)
+  );
+}
+
+/* Keep controls and metadata on the card surface, including disabled states. */
+.channel-card [data-slot='numeric-spinner'] {
+  border: 0;
+  border-bottom: 1px solid
+    color-mix(in oklch, var(--foreground) 20%, transparent);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.channel-card [data-slot='numeric-spinner']:hover,
+.channel-card [data-slot='numeric-spinner'] button:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--foreground) 8%, transparent);
+}
+
+.channel-card [data-slot='numeric-spinner']:focus-within {
+  border-bottom-color: color-mix(in oklch, var(--foreground) 50%, transparent);
+  background: color-mix(in oklch, var(--foreground) 4%, transparent);
+}
+
+.channel-card [data-slot='numeric-spinner']:focus-within {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.channel-card [data-slot='provider-badge'] [data-slot='status-badge'] {
+  border: 0;
+  padding-inline: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+}
+
+.channel-card-metrics
+  :is([data-slot='status-badge'], dd [data-slot='tooltip-trigger']) {
+  background: transparent;
+}
+
+:is(.channel-manual-disabled, .channel-auto-disabled)
+  .channel-card-metrics
+  :is([data-slot='status-badge'], dd [data-slot='tooltip-trigger']) {
+  color: var(--muted-foreground);
+}
+
+:is(.channel-manual-disabled, .channel-auto-disabled)
+  .channel-card-status
+  [data-slot='status-badge'] {
+  border-color: color-mix(in oklch, var(--foreground) 25%, transparent);
+  background: transparent;
+  color: var(--foreground);
+}
+
+/* Selection is an outline so it never erases the channel's state color. */
+[data-slot='data-table-card'].channel-row[data-state='selected'] {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

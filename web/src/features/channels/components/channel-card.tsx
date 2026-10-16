@@ -23,7 +23,6 @@ import { useTranslation } from 'react-i18next'
 import { GroupBadge } from '@/components/group-badge'
 import { StatusBadgeTypeContext } from '@/components/status-badge'
 
-import { CHANNEL_STATUS } from '../constants'
 import { isTagAggregateRow, parseGroupsList } from '../lib'
 import type { Channel } from '../types'
 import { ChannelRowActionsLayoutContext } from './channel-row-actions-context'
@@ -74,19 +73,11 @@ function ChannelCardComponent({
 
   const labelClass = 'text-muted-foreground text-[11px] font-medium select-none'
 
-  // In card view the enable/disable state is already conveyed by the inline
-  // power toggle, so the plain "Enabled"/"Disabled" badge is redundant. Keep
-  // only the informative states (e.g. auto-disabled, unknown) and tag rows.
-  const showStatusBadge =
-    isTagRow ||
-    (row.original.status !== CHANNEL_STATUS.ENABLED &&
-      row.original.status !== CHANNEL_STATUS.MANUAL_DISABLED)
-
   return (
     <ChannelRowActionsLayoutContext.Provider value='card'>
       <div
         data-state={isSelected ? 'selected' : undefined}
-        className='flex min-w-0 flex-col gap-3'
+        className='channel-card flex min-w-0 flex-col gap-3'
       >
         {/* Row 1: selection + type, with status badge + actions menu */}
         <div className='flex items-center justify-between gap-2'>
@@ -97,7 +88,7 @@ function ChannelCardComponent({
             <div className='min-w-0 overflow-hidden'>{typeCell}</div>
           </div>
           <div className='flex shrink-0 items-center gap-1.5'>
-            {showStatusBadge && statusCell}
+            <span className='channel-card-status'>{statusCell}</span>
             {actionsCell}
           </div>
         </div>
@@ -105,7 +96,7 @@ function ChannelCardComponent({
         {/* Both rows share their columns: identity/balance on the left,
           priority/response and weight/last tested on the right. */}
         <StatusBadgeTypeContext.Provider value='text'>
-          <div className='grid grid-cols-[minmax(0,1fr)_auto_auto] items-start gap-3'>
+          <div className='channel-card-metrics grid grid-cols-[minmax(0,1fr)_auto_auto] items-start gap-3'>
             <div className='min-w-0 overflow-hidden text-sm'>
               {!isTagRow && (
                 <div className={labelClass}>
@@ -159,6 +150,7 @@ function ChannelCardComponent({
                   group={g}
                   label={sensitiveVisible ? undefined : SENSITIVE_MASK}
                   size='sm'
+                  className='border-foreground/15 text-muted-foreground bg-transparent'
                 />
               ))}
             </div>
