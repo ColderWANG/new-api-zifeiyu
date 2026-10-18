@@ -121,7 +121,7 @@ export function PublicHeader(props: PublicHeaderProps) {
   useEffect(() => {
     if (!mobileOpen) return
 
-    const mediaQuery = window.matchMedia('(min-width: 1024px)')
+    const mediaQuery = window.matchMedia('(min-width: 1280px)')
     const closeForLargeScreen = () => {
       if (mediaQuery.matches) setMobileOpen(false)
     }
@@ -205,9 +205,9 @@ export function PublicHeader(props: PublicHeaderProps) {
     <>
       <header className='border-border bg-background/95 text-foreground supports-[backdrop-filter]:bg-background/85 fixed inset-x-0 top-0 z-50 h-16 border-b backdrop-blur'>
         <div className='mx-auto flex h-full max-w-7xl items-center px-6 md:px-10'>
-          <nav className='grid h-14 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 lg:grid-cols-[auto_minmax(0,1fr)_auto]'>
+          <nav className='grid h-14 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 xl:grid-cols-[auto_minmax(0,1fr)_auto]'>
             {/* Logo */}
-            <div className='@container/system-brand flex min-w-0 shrink-0 items-center gap-1 lg:min-w-36'>
+            <div className='@container/system-brand flex min-w-0 shrink-0 items-center gap-1 xl:min-w-36'>
               <Link
                 to={homeUrl}
                 className='group flex min-w-0 items-center gap-2.5'
@@ -232,12 +232,12 @@ export function PublicHeader(props: PublicHeaderProps) {
             <PublicNavigation
               links={links}
               pathname={pathname}
-              className='col-start-2 row-start-1 px-4'
+              className='col-start-2 row-start-1 px-4 lg:hidden xl:flex'
               onNavigate={(link, event) => handleNavLinkClick(event, link)}
             />
 
             {/* Desktop actions */}
-            <div className='col-start-3 row-start-1 hidden min-w-0 items-center justify-end gap-2 lg:flex'>
+            <div className='col-start-3 row-start-1 hidden min-w-0 items-center justify-end gap-2 xl:flex'>
               {(showLanguageSwitcher || showNotifications) && (
                 <div className='bg-border hidden h-4 w-px xl:block' />
               )}
@@ -265,7 +265,7 @@ export function PublicHeader(props: PublicHeaderProps) {
             </div>
 
             {/* Mobile: compact actions + hamburger */}
-            <div className='col-start-2 row-start-1 flex shrink-0 items-center justify-end gap-2 lg:hidden'>
+            <div className='col-start-2 row-start-1 flex shrink-0 items-center justify-end gap-2 xl:hidden'>
               {showAuthButtons && !loading && isAuthenticated && (
                 <ProfileDropdown />
               )}
@@ -312,7 +312,7 @@ export function PublicHeader(props: PublicHeaderProps) {
         aria-modal={mobileOpen || undefined}
         aria-label={t('Primary navigation')}
         className={cn(
-          'fixed inset-0 z-40 bg-background text-foreground transition-opacity duration-100 lg:pointer-events-none lg:hidden',
+          'fixed inset-0 z-40 bg-background text-foreground transition-opacity duration-100 xl:pointer-events-none xl:hidden',
           mobileOpen
             ? 'pointer-events-auto opacity-100'
             : 'pointer-events-none opacity-0'

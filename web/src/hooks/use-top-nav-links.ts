@@ -86,6 +86,14 @@ export function useTopNavLinks(): TopNavLink[] {
     links.push({ title: t('Rankings'), href: '/rankings', requiresAuth })
   }
 
+  if (modules.games !== false && status?.game_center_enabled !== false) {
+    links.push({
+      title: t('Game Center'),
+      href: '/games',
+      requiresAuth: !isAuthed,
+    })
+  }
+
   // Docs (supports external links)
   if (modules?.docs !== false) {
     if (docsLink) {

@@ -29,6 +29,7 @@ export type HeaderNavModules = {
   console: boolean
   pricing: ModuleAccess
   rankings: ModuleAccess
+  games: boolean
   docs: boolean
   about: boolean
   [key: string]: boolean | ModuleAccess
@@ -39,6 +40,7 @@ const DEFAULT_HEADER_NAV_MODULES: HeaderNavModules = {
   console: true,
   pricing: { enabled: true, requireAuth: false },
   rankings: { enabled: true, requireAuth: false },
+  games: true,
   docs: true,
   about: true,
 }
@@ -221,5 +223,32 @@ export function isSidebarModuleEnabled(
     return true
   } catch {
     return true
+  }
+}
+
+const WORKBENCH_FLAGS: Record<string, string> = {
+  '/games': 'game_center_enabled',
+  '/image-studio': 'image_studio_enabled',
+  '/translation-studio': 'translation_studio_enabled',
+}
+export function isWorkbenchEnabled(
+  status: Record<string, unknown> | null,
+  url: string
+): boolean {
+  const key = WORKBENCH_FLAGS[url]
+  return !key || status?.[key] !== false
+}
+export async function isWorkbenchEnabledForGuard(
+  queryClient: QueryClient,
+  url: string
+): Promise<boolean> {
+  try {
+    const status = await queryClient.fetchQuery({
+      ...statusQueryOptions,
+      staleTime: 0,
+    })
+    return isWorkbenchEnabled(status, url)
+  } catch {
+    return false
   }
 }

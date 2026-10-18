@@ -20,11 +20,16 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 
 import { Main } from '@/components/layout'
 import { TranslationStudio } from '@/features/translation-studio'
-import { isSidebarModuleEnabled } from '@/lib/nav-modules'
+import { isWorkbenchEnabledForGuard } from '@/lib/nav-modules'
 
 export const Route = createFileRoute('/_authenticated/translation-studio/')({
-  beforeLoad: () => {
-    if (!isSidebarModuleEnabled('chat', 'playground')) {
+  beforeLoad: async ({ context }) => {
+    if (
+      !(await isWorkbenchEnabledForGuard(
+        context.queryClient,
+        '/translation-studio'
+      ))
+    ) {
       throw redirect({ to: '/dashboard' })
     }
   },

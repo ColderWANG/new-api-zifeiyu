@@ -17,7 +17,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { Link } from '@tanstack/react-router'
-import { House } from 'lucide-react'
+import { Gamepad2, House } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { NotificationPopover } from '@/components/notification-popover'
@@ -100,6 +101,7 @@ export function AppHeader({
   showNotifications = true,
   showProfileDropdown = true,
 }: AppHeaderProps) {
+  const { t } = useTranslation()
   // Prioritize dynamically generated links from backend
   const dynamicLinks = useTopNavLinks()
   const links = dynamicLinks.length > 0 ? dynamicLinks : navLinks
@@ -144,7 +146,18 @@ export function AppHeader({
   const center = showTopNav ? <TopNav links={links} /> : null
 
   const right = rightContent ?? (
-    <div className='flex items-center justify-end gap-2 sm:gap-3'>
+    <div className='flex items-center justify-end gap-1 sm:gap-3'>
+      {links.some((link) => link.href === '/games') && (
+        <Button
+          type='button'
+          variant='ghost'
+          size='icon'
+          className='size-9 lg:hidden'
+          render={<Link to='/games' aria-label={t('Game Center')} />}
+        >
+          <Gamepad2 className='size-4' />
+        </Button>
+      )}
       {showSearch && <Search className='h-9 w-9 p-0 sm:w-36 lg:w-44' />}
       {showNotifications && (
         <NotificationPopover

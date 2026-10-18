@@ -73,7 +73,7 @@ export async function translateSource(
         ]
       : (unit.text ?? '')
     const response = await api.post<ChatCompletionResponse>(
-      '/pg/chat/completions',
+      '/pg/translation-studio',
       {
         model: options.model,
         group: options.group,

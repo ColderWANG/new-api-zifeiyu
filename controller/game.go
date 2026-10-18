@@ -1,0 +1,108 @@
+package controller
+
+import (
+	"errors"
+	"net/http"
+	"time"
+
+	"github.com/QuantumNous/new-api/common"
+	"github.com/QuantumNous/new-api/model"
+	"github.com/gin-gonic/gin"
+)
+
+func GetGameStatus(c *gin.Context) {
+	now := time.Now()
+	settings, err := model.GetGameSettings()
+	if err != nil {
+		common.ApiErrorT(c, "Unable to load the daily challenge")
+		return
+	}
+	run, err := model.GetTodayGame(c.GetInt("id"), now)
+	if err != nil {
+		common.ApiErrorT(c, "Unable to load the daily challenge")
+		return
+	}
+	budgets, err := model.GetGameBudgets(settings, now)
+	if err != nil {
+		common.ApiErrorT(c, "Unable to load the daily challenge")
+		return
+	}
+	day, week, reset := model.GameCalendar(now)
+	c.JSON(http.StatusOK, gin.H{"success": true, "data": gin.H{"settings": settings, "budgets": budgets, "run": run, "day": day, "week": week, "resets_at": reset, "server_time": now.UnixMilli()}})
+}
+func StartGame(c *gin.Context) {
+	run, err := model.StartGame(c.GetInt("id"), time.Now())
+	if err != nil {
+		if errors.Is(err, model.ErrGameBudget) {
+			common.ApiErrorT(c, "The daily reward budget cannot cover another run")
+		} else if errors.Is(err, model.ErrGameClosed) {
+			common.ApiErrorT(c, "The daily challenge is currently closed")
+		} else {
+			common.ApiErrorT(c, "Unable to start the daily challenge. Please try again")
+		}
+		return
+	}
+	common.ApiSuccess(c, run)
+}
+func AdvanceGame(c *gin.Context) {
+	var body struct {
+		ID     string `json:"id" binding:"required,max=40"`
+		From   int    `json:"from" binding:"min=0"`
+		Inputs []int  `json:"inputs" binding:"max=50"`
+		Quit   bool   `json:"quit"`
+	}
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 4096)
+	if err := c.ShouldBindJSON(&body); err != nil {
+		common.ApiErrorT(c, "Invalid game input")
+		return
+	}
+	run, err := model.AdvanceGame(c.GetInt("id"), body.ID, body.From, body.Inputs, body.Quit, time.Now())
+	if err != nil {
+		common.ApiErrorT(c, "Game progress is out of sync. Reconnect to continue the same run")
+		return
+	}
+	common.ApiSuccess(c, run)
+}
+func GetGameRankings(c *gin.Context) {
+	rows, err := model.GetGameRanking(c.GetInt("id"), c.Query("period") == "week", time.Now())
+	if err != nil {
+		common.ApiErrorT(c, "Unable to load rankings")
+		return
+	}
+	common.ApiSuccess(c, rows)
+}
+func UpdateGameSettings(c *gin.Context) {
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 4096)
+	var request struct {
+		model.GameSettings
+		ImageStudioEnabled       *bool `json:"image_studio_enabled"`
+		TranslationStudioEnabled *bool `json:"translation_studio_enabled"`
+	}
+	if err := c.ShouldBindJSON(&request); err != nil {
+		common.ApiErrorT(c, "Invalid game reward settings")
+		return
+	}
+	settings := request.GameSettings
+	settings.RewardVersion = 2
+	studios := map[string]bool{}
+	if request.ImageStudioEnabled != nil {
+		studios["image_studio"] = *request.ImageStudioEnabled
+	}
+	if request.TranslationStudioEnabled != nil {
+		studios["translation_studio"] = *request.TranslationStudioEnabled
+	}
+	if err := model.SaveWorkbenchSettings(settings, studios); err != nil {
+		common.ApiErrorT(c, "Invalid game reward settings")
+		return
+	}
+	common.ApiSuccess(c, settings)
+}
+
+func GetGameSettings(c *gin.Context) {
+	settings, err := model.GetGameSettings()
+	if err != nil {
+		common.ApiErrorT(c, "Unable to load game settings")
+		return
+	}
+	common.ApiSuccess(c, settings)
+}

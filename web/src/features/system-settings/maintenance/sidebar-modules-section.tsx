@@ -88,6 +88,18 @@ export function SidebarModulesSection({
     Record<string, { title: string; description: string }>
   > = {
     chat: {
+      image_studio: {
+        title: t('Image Studio'),
+        description: t('Show Image Studio in the sidebar.'),
+      },
+      translation_studio: {
+        title: t('Translation Studio'),
+        description: t('Show Translation Studio in the sidebar.'),
+      },
+      games: {
+        title: t('Game Center'),
+        description: t('Show Game Center in the sidebar.'),
+      },
       playground: {
         title: t('Playground'),
         description: t('Experiment with prompts and models in real time.'),

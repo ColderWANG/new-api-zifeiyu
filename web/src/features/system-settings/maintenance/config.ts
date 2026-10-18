@@ -26,6 +26,7 @@ export type HeaderNavModulesConfig = {
   console: boolean
   pricing: HeaderNavAccessConfig
   rankings: HeaderNavAccessConfig
+  games: boolean
   docs: boolean
   about: boolean
   [key: string]: boolean | HeaderNavAccessConfig
@@ -49,6 +50,7 @@ export const HEADER_NAV_DEFAULT: HeaderNavModulesConfig = {
     enabled: true,
     requireAuth: false,
   },
+  games: true,
   docs: true,
   about: true,
 }
@@ -57,6 +59,9 @@ export const SIDEBAR_MODULES_DEFAULT: SidebarModulesAdminConfig = {
   chat: {
     enabled: true,
     playground: true,
+    image_studio: true,
+    translation_studio: true,
+    games: true,
     chat: true,
   },
   console: {
@@ -217,6 +222,13 @@ export function parseSidebarModulesAdmin(
       result[sectionKey] = sectionConfig
     })
 
+    if (result.chat) {
+      for (const key of ['image_studio', 'translation_studio']) {
+        if (!(key in result.chat)) {
+          result.chat[key] = result.chat.playground !== false
+        }
+      }
+    }
     // Merge defaults to ensure expected sections exist
     Object.entries(defaults).forEach(([sectionKey, config]) => {
       if (!result[sectionKey]) {

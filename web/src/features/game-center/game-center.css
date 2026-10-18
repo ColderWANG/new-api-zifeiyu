@@ -1,0 +1,30 @@
+.game-center {
+  --game-floor: #f6f7f4;
+}
+.game-center .game-arena {
+  background: var(--game-floor);
+}
+@media (max-width: 639px) {
+  .game-center {
+    padding-top: 88px;
+  }
+  .game-center .game-arena {
+    touch-action: pan-y;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-center *,
+  .game-center *::before,
+  .game-center *::after {
+    scroll-behavior: auto;
+  }
+}
+
+.game-touch-controls {
+  display: none;
+}
+@media (pointer: coarse), (max-width: 639px) {
+  .game-touch-controls {
+    display: flex;
+  }
+}

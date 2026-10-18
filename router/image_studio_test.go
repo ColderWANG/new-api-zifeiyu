@@ -110,6 +110,14 @@ func TestImageStudioSessionRelay(t *testing.T) {
 			if _, found := body["extra"]; found {
 				t.Error("unvalidated multipliers must not be forwarded")
 			}
+			if r.URL.Path == "/v1/chat/completions" && body["image_config"] == nil {
+				if body["model"] != "studio-chat-image-test" || body["messages"] == nil {
+					t.Error("invalid translation relay payload")
+				}
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(`{"id":"translation-test","object":"chat.completion","model":"studio-chat-image-test","choices":[{"index":0,"message":{"role":"assistant","content":"translated source"},"finish_reason":"stop"}],"usage":{"prompt_tokens":10,"completion_tokens":10,"total_tokens":20}}`))
+				return
+			}
 			if r.URL.Path == "/v1/chat/completions" {
 				imageConfig, _ := body["image_config"].(map[string]any)
 				responseFormat, _ := body["response_format"].(map[string]any)
@@ -261,6 +269,60 @@ func TestImageStudioSessionRelay(t *testing.T) {
 			require.Equal(t, 400, rec.Code, rec.Body.String())
 		}
 		require.Equal(t, before, calls.Load())
+	})
+	t.Run("translation endpoint preserves session relay and billing", func(t *testing.T) {
+		balance, err := model.GetUserQuota(user.Id, true)
+		require.NoError(t, err)
+		req := httptest.NewRequest(http.MethodPost, "/pg/translation-studio", strings.NewReader(`{"model":"studio-chat-image-test","group":"default","messages":[{"role":"user","content":"Translate this source"}],"max_tokens":32,"stream":false}`))
+		req.Header.Set("Authorization", "Bearer "+session.AccessToken)
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+		engine.ServeHTTP(rec, req)
+		require.Equal(t, http.StatusOK, rec.Code, rec.Body.String())
+		require.Contains(t, rec.Body.String(), "translated source")
+		after, err := model.GetUserQuota(user.Id, true)
+		require.NoError(t, err)
+		require.Equal(t, balance-5000, after)
+	})
+	t.Run("disabled studios reject requests before charging", func(t *testing.T) {
+		common.OptionMapRWMutex.Lock()
+		if common.OptionMap == nil {
+			common.OptionMap = map[string]string{}
+		}
+		oldImage, hasImage := common.OptionMap["studio_setting.image_studio_enabled"]
+		oldTranslation, hasTranslation := common.OptionMap["studio_setting.translation_studio_enabled"]
+		common.OptionMap["studio_setting.image_studio_enabled"] = "false"
+		common.OptionMap["studio_setting.translation_studio_enabled"] = "false"
+		common.OptionMapRWMutex.Unlock()
+		t.Cleanup(func() {
+			common.OptionMapRWMutex.Lock()
+			defer common.OptionMapRWMutex.Unlock()
+			if hasImage {
+				common.OptionMap["studio_setting.image_studio_enabled"] = oldImage
+			} else {
+				delete(common.OptionMap, "studio_setting.image_studio_enabled")
+			}
+			if hasTranslation {
+				common.OptionMap["studio_setting.translation_studio_enabled"] = oldTranslation
+			} else {
+				delete(common.OptionMap, "studio_setting.translation_studio_enabled")
+			}
+		})
+		before := calls.Load()
+		balance, err := model.GetUserQuota(user.Id, true)
+		require.NoError(t, err)
+		rec := send(encode(request), "application/json", session.AccessToken)
+		require.Equal(t, http.StatusForbidden, rec.Code)
+		req := httptest.NewRequest(http.MethodPost, "/pg/translation-studio", strings.NewReader(`{"model":"text-only","messages":[]}`))
+		req.Header.Set("Authorization", "Bearer "+session.AccessToken)
+		req.Header.Set("Content-Type", "application/json")
+		rec = httptest.NewRecorder()
+		engine.ServeHTTP(rec, req)
+		require.Equal(t, http.StatusForbidden, rec.Code)
+		require.Equal(t, before, calls.Load())
+		after, err := model.GetUserQuota(user.Id, true)
+		require.NoError(t, err)
+		require.Equal(t, balance, after)
 	})
 	t.Run("revoked session is rejected", func(t *testing.T) {
 		_, err := model.RevokeUserSession(user.Id, session.Session.SID, "test")

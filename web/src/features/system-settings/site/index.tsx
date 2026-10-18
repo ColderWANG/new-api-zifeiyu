@@ -25,6 +25,8 @@ import {
 } from './section-registry.tsx'
 
 const defaultSiteSettings: SiteSettings = {
+  'studio_setting.image_studio_enabled': true,
+  'studio_setting.translation_studio_enabled': true,
   Notice: '',
   SystemName: 'New API',
   Logo: '',

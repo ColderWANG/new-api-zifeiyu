@@ -141,6 +141,14 @@ func SetApiRouter(router *gin.Engine) {
 				selfRoute.POST("/2fa/disable", middleware.DisableCache(), controller.Disable2FA)
 				selfRoute.POST("/2fa/backup_codes", middleware.DisableCache(), controller.RegenerateBackupCodes)
 
+				// Daily competitive game; use the existing authenticated user boundary.
+				selfRoute.GET("/game", middleware.DisableCache(), controller.GetGameStatus)
+				selfRoute.GET("/game/rankings", middleware.DisableCache(), controller.GetGameRankings)
+				selfRoute.POST("/game/start", middleware.UserCriticalRateLimit("game-start"), controller.StartGame)
+				selfRoute.POST("/game/input", controller.AdvanceGame)
+				selfRoute.GET("/game/settings", middleware.RootAuth(), middleware.DisableCache(), controller.GetGameSettings)
+				selfRoute.PUT("/game/settings", middleware.RootAuth(), controller.UpdateGameSettings)
+
 				// Check-in routes
 				selfRoute.GET("/checkin", controller.GetCheckinStatus)
 				selfRoute.POST("/checkin", middleware.TurnstileCheck(), controller.DoCheckin)

@@ -174,7 +174,7 @@ describe('Translation Studio', () => {
       'Translated invoice 42'
     )
     expect(api.post).toHaveBeenCalledWith(
-      '/pg/chat/completions',
+      '/pg/translation-studio',
       expect.objectContaining({
         model: 'visible-model',
         group: 'translation-team',
@@ -365,7 +365,7 @@ describe('translation requests', () => {
       vi.fn()
     )
     expect(api.post).toHaveBeenCalledWith(
-      '/pg/chat/completions',
+      '/pg/translation-studio',
       expect.objectContaining({
         messages: [
           expect.objectContaining({ role: 'system' }),

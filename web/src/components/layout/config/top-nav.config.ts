@@ -11,6 +11,7 @@ export const defaultTopNavLinks: TopNavLink[] = [
   { title: 'Console', href: '/dashboard' },
   { title: 'Model Square', href: '/pricing' },
   { title: 'Rankings', href: '/rankings' },
+  { title: 'Game Center', href: '/games', requiresAuth: true },
   { title: 'Docs', href: '/docs' },
   { title: 'About', href: '/about' },
 ]

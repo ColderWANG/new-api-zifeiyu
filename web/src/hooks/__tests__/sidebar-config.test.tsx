@@ -26,6 +26,7 @@ import {
   parseSidebarModulesAdmin,
   serializeSidebarModulesAdmin,
 } from '@/features/system-settings/maintenance/config'
+import { isWorkbenchEnabled } from '@/lib/nav-modules'
 import { useAuthStore } from '@/stores/auth-store'
 
 import { useSidebarConfig } from '../use-sidebar-config'
@@ -45,12 +46,18 @@ afterEach(() => {
   useAuthStore.getState().auth.reset()
 })
 
-function sidebarFor(admin?: object, user?: object, canConfigure = true) {
+function sidebarFor(
+  admin?: object,
+  user?: object,
+  canConfigure = true,
+  flags: Record<string, unknown> = {}
+) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   })
   client.setQueryData(['status'], {
     SidebarModulesAdmin: admin ? JSON.stringify(admin) : '',
+    ...flags,
   })
   useAuthStore.getState().auth.setUser({
     id: 1,
@@ -196,4 +203,72 @@ describe('translation studio sidebar visibility', () => {
       ).toBe(false)
     }
   )
+})
+
+describe('independent studio and game navigation', () => {
+  it('does not tie independent entries to the playground switch', () => {
+    const { result } = sidebarFor({
+      chat: {
+        enabled: true,
+        playground: false,
+        image_studio: true,
+        translation_studio: false,
+        games: true,
+      },
+    })
+    const titles = result.current
+      .flatMap((group) => group.items)
+      .map((item) => item.title)
+    expect(titles).toContain('Image Studio')
+    expect(titles).toContain('Game Center')
+    expect(titles).not.toContain('Translation Studio')
+    expect(titles).not.toContain('Playground')
+  })
+  it('keeps legacy hidden studios hidden until an explicit override', () => {
+    const config = parseSidebarModulesAdmin(
+      JSON.stringify({ chat: { enabled: true, playground: false } })
+    )
+    expect(config.chat.image_studio).toBe(false)
+    expect(config.chat.translation_studio).toBe(false)
+  })
+  it('a feature switch hides its entry even when sidebar display is enabled', () => {
+    const { result } = sidebarFor(
+      {
+        chat: {
+          enabled: true,
+          image_studio: true,
+          translation_studio: true,
+          games: true,
+        },
+      },
+      undefined,
+      true,
+      { image_studio_enabled: false, game_center_enabled: false }
+    )
+    const titles = result.current
+      .flatMap((group) => group.items)
+      .map((item) => item.title)
+    expect(titles).not.toContain('Image Studio')
+    expect(titles).not.toContain('Game Center')
+    expect(titles).toContain('Translation Studio')
+  })
+  it('sidebar display does not disable direct feature access', () => {
+    expect(
+      isWorkbenchEnabled(
+        {
+          image_studio_enabled: true,
+          SidebarModulesAdmin: JSON.stringify({
+            chat: { image_studio: false },
+          }),
+        },
+        '/image-studio'
+      )
+    ).toBe(true)
+    expect(
+      isWorkbenchEnabled(
+        { translation_studio_enabled: false },
+        '/translation-studio'
+      )
+    ).toBe(false)
+  })
 })

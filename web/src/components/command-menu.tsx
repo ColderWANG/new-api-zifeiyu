@@ -30,6 +30,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
+import { useSidebarConfig } from '@/hooks/use-sidebar-config'
 import { useSidebarData } from '@/hooks/use-sidebar-data'
 
 import { getNavGroupsForPath } from './layout/lib/sidebar-view-registry'
@@ -49,7 +50,9 @@ export function CommandMenu({
 
   // Use the active nested sidebar view's nav groups when one matches
   // the current URL; otherwise fall back to the root navigation.
-  const navGroups = getNavGroupsForPath(pathname, t) ?? sidebarData.navGroups
+  const navGroups = useSidebarConfig(
+    getNavGroupsForPath(pathname, t) ?? sidebarData.navGroups
+  )
 
   const runCommand = React.useCallback(
     (command: () => unknown) => {

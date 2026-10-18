@@ -1,3 +1,7 @@
+import { useMemo } from 'react'
+
+import type { NavGroup, NavItem } from '@/components/layout/types'
+import { useStatus } from '@/hooks/use-status'
 /*
 Copyright (C) 2023-2026 QuantumNous
 
@@ -16,10 +20,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { useMemo } from 'react'
-
-import type { NavGroup, NavItem } from '@/components/layout/types'
-import { useStatus } from '@/hooks/use-status'
+import { isWorkbenchEnabled } from '@/lib/nav-modules'
 import { useAuthStore } from '@/stores/auth-store'
 
 type SidebarSectionConfig = {
@@ -40,6 +41,9 @@ const DEFAULT_SIDEBAR_MODULES: SidebarModulesAdminConfig = {
   chat: {
     enabled: true,
     playground: true,
+    image_studio: true,
+    translation_studio: true,
+    games: true,
     chat: true,
   },
   console: {
@@ -82,6 +86,13 @@ const mergeWithDefaultSidebarModules = (
       }
 
       merged[sectionKey] = { ...defaultSection, ...existingSection }
+      if (sectionKey === 'chat') {
+        for (const key of ['image_studio', 'translation_studio']) {
+          if (existingSection[key] === undefined) {
+            merged[sectionKey][key] = existingSection.playground !== false
+          }
+        }
+      }
       Object.keys(defaultSection).forEach((moduleKey) => {
         if (merged[sectionKey][moduleKey] === undefined) {
           merged[sectionKey][moduleKey] = defaultSection[moduleKey]
@@ -98,8 +109,9 @@ const mergeWithDefaultSidebarModules = (
  */
 const URL_TO_CONFIG_MAP: Record<string, { section: string; module: string }> = {
   '/playground': { section: 'chat', module: 'playground' },
-  '/image-studio': { section: 'chat', module: 'playground' },
-  '/translation-studio': { section: 'chat', module: 'playground' },
+  '/image-studio': { section: 'chat', module: 'image_studio' },
+  '/translation-studio': { section: 'chat', module: 'translation_studio' },
+  '/games': { section: 'chat', module: 'games' },
   '/dashboard': { section: 'console', module: 'detail' },
   '/dashboard/overview': { section: 'console', module: 'detail' },
   '/dashboard/models': { section: 'console', module: 'detail' },
@@ -159,6 +171,11 @@ function parseUserSidebarConfig(
   try {
     const parsed = JSON.parse(value) as SidebarModulesAdminConfig
     if (!parsed || typeof parsed !== 'object') return null
+    if (parsed.chat?.playground === false) {
+      for (const key of ['image_studio', 'translation_studio']) {
+        if (parsed.chat[key] === undefined) parsed.chat[key] = false
+      }
+    }
     return parsed
   } catch {
     return null
@@ -307,10 +324,13 @@ export function useSidebarConfig(navGroups: NavGroup[]): NavGroup[] {
       navGroups
         .map((group) => ({
           ...group,
-          items: filterNavItems(group.items, adminConfig, userConfig),
+          items: filterNavItems(group.items, adminConfig, userConfig).filter(
+            (item) =>
+              !('url' in item) || isWorkbenchEnabled(status, item.url as string)
+          ),
         }))
         .filter((group) => group.items.length > 0), // Only show navigation groups with visible items
-    [navGroups, adminConfig, userConfig]
+    [navGroups, adminConfig, userConfig, status]
   )
 
   return filteredNavGroups

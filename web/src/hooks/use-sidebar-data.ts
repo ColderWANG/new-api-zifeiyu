@@ -29,6 +29,7 @@ import {
   LayoutDashboard,
   ListTodo,
   MessageSquare,
+  Gamepad2,
   PlugZap,
   Radio,
   ServerCog,
@@ -74,6 +75,7 @@ export function useSidebarData(): SidebarData {
             url: '/translation-studio',
             icon: Languages,
           },
+          { title: t('Game Center'), url: '/games', icon: Gamepad2 },
           {
             title: t('Chat'),
             icon: MessageSquare,

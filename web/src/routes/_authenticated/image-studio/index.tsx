@@ -21,11 +21,13 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 
 import { Main } from '@/components/layout'
 import { ImageStudio } from '@/features/image-studio'
-import { isSidebarModuleEnabled } from '@/lib/nav-modules'
+import { isWorkbenchEnabledForGuard } from '@/lib/nav-modules'
 
 export const Route = createFileRoute('/_authenticated/image-studio/')({
-  beforeLoad: () => {
-    if (!isSidebarModuleEnabled('chat', 'playground')) {
+  beforeLoad: async ({ context }) => {
+    if (
+      !(await isWorkbenchEnabledForGuard(context.queryClient, '/image-studio'))
+    ) {
       throw redirect({ to: '/dashboard' })
     }
   },

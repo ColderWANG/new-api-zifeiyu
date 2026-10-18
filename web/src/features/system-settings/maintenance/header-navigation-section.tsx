@@ -55,6 +55,7 @@ const headerNavSchema = z.object({
   pricingRequireAuth: z.boolean(),
   rankingsEnabled: z.boolean(),
   rankingsRequireAuth: z.boolean(),
+  games: z.boolean(),
   docs: z.boolean(),
   about: z.boolean(),
 })
@@ -89,6 +90,7 @@ const toFormValues = (config: HeaderNavModulesConfig): HeaderNavFormValues => ({
     config.rankings?.requireAuth === undefined
       ? HEADER_NAV_DEFAULT.rankings.requireAuth
       : Boolean(config.rankings.requireAuth),
+  games: config.games ?? HEADER_NAV_DEFAULT.games,
   docs:
     config.docs === undefined ? HEADER_NAV_DEFAULT.docs : Boolean(config.docs),
   about:
@@ -119,6 +121,7 @@ export function HeaderNavigationSection({
       ...config,
       home: values.home,
       console: values.console,
+      games: values.games,
       docs: values.docs,
       about: values.about,
       pricing: {
@@ -162,6 +165,11 @@ export function HeaderNavigationSection({
       key: 'console',
       title: t('Console'),
       description: t('User dashboard and quota controls.'),
+    },
+    {
+      key: 'games',
+      title: t('Game Center'),
+      description: t('Show Game Center in the header.'),
     },
     {
       key: 'docs',

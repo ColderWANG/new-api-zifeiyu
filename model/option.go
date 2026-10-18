@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"maps"
 	"strconv"
 	"strings"
@@ -228,6 +229,16 @@ func SyncOptions(frequency int) {
 }
 
 func validateOptionValue(key string, value string) error {
+	if key == "game_center" {
+		var settings GameSettings
+		if err := common.Unmarshal([]byte(value), &settings); err != nil {
+			return ErrGameSettings
+		}
+		return ValidateGameSettings(settings)
+	}
+	if (key == "studio_setting.image_studio_enabled" || key == "studio_setting.translation_studio_enabled") && value != "true" && value != "false" {
+		return errors.New("Invalid studio availability setting")
+	}
 	if key == legacyAccessTokenRetireAtKey {
 		return errLegacyRetireAtReadOnly
 	}

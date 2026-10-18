@@ -128,6 +128,12 @@ func TestAccessTokenRouteRulesCoverEveryDashboardRoute(t *testing.T) {
 		assert.True(t, panel[key], "declared route %s is not a registered panel route", key)
 	}
 
+	for _, key := range []string{"GET /api/user/game", "GET /api/user/game/rankings", "POST /api/user/game/start", "POST /api/user/game/input", "PUT /api/user/game/settings"} {
+		rule, ok := middleware.AccessTokenRouteRule(key)
+		require.True(t, ok, key)
+		assert.Equal(t, "session", rule.Kind(), "game routes must reject personal access tokens: %s", key)
+	}
+
 	permissionRoutes := map[string]authz.Permission{}
 	for _, route := range channelPermissionRoutes {
 		permissionRoutes[route.method+" "+joinPaths("/api/channel", route.path)] = route.permission
