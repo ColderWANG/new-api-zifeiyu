@@ -1,0 +1,443 @@
+/*
+Copyright (C) 2023-2026 QuantumNous
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For commercial licensing, please contact support@quantumnous.com
+*/
+.translation-studio {
+  width: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+  padding: 30px clamp(18px, 3vw, 44px) 36px;
+  color: var(--foreground);
+  background: var(--background);
+}
+.translation-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  padding-bottom: 26px;
+  border-bottom: 2px solid var(--foreground);
+}
+.translation-eyebrow {
+  margin-bottom: 8px;
+  font: 10px var(--font-mono);
+  letter-spacing: 0.18em;
+  color: var(--muted-foreground);
+}
+.translation-heading h1 {
+  font-size: 32px;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+}
+.translation-subtitle {
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+.translation-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.translation-group span:first-of-type {
+  color: var(--foreground);
+  font-family: var(--font-mono);
+}
+.translation-group span:last-child {
+  border-left: 1px solid var(--border);
+  padding-left: 8px;
+}
+.translation-settings {
+  display: grid;
+  grid-template-columns: minmax(240px, 1.05fr) minmax(340px, 1.4fr) minmax(
+      150px,
+      0.6fr
+    );
+  gap: 26px;
+  align-items: start;
+  padding: 24px 0;
+}
+.translation-settings label {
+  font-size: 12px;
+}
+.translation-model-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.translation-model-field [data-slot='input-group'] {
+  min-height: 40px;
+  border-color: var(--border);
+  box-shadow: none;
+}
+.translation-language-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 32px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+.translation-swap {
+  margin-top: 24px;
+  width: 32px;
+}
+.translation-caption {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+.translation-caption button {
+  padding: 0 4px;
+  height: auto;
+  font-size: inherit;
+}
+.translation-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  border: 1px solid var(--foreground);
+}
+.translation-panel {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  min-height: 490px;
+}
+.translation-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 17px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.translation-panel-heading h2 {
+  font-size: 13px;
+  font-weight: 650;
+}
+.translation-panel-heading > span {
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.translation-modes {
+  width: 100%;
+  justify-content: flex-start;
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  gap: 12px;
+}
+.translation-modes button {
+  min-height: 42px;
+  padding: 0 8px;
+  font-size: 12px;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+}
+.translation-modes button[data-pressed] {
+  border-bottom-color: var(--foreground);
+  color: var(--foreground);
+}
+.translation-source-text {
+  flex: 1;
+  min-height: 320px;
+  resize: vertical;
+  border: 0;
+  padding: 20px;
+  box-shadow: none;
+  background: transparent;
+  font-size: 14px;
+  line-height: 1.9;
+}
+.translation-source-text:focus-visible {
+  outline: 1px solid var(--ring);
+  outline-offset: -3px;
+  box-shadow: none;
+}
+.translation-file-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.translation-dropzone {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  height: auto;
+  min-height: 300px;
+  margin: 18px;
+  border: 1px dashed color-mix(in oklch, var(--foreground) 25%, transparent);
+  white-space: normal;
+  text-align: center;
+  padding: 28px;
+}
+.translation-dropzone > strong {
+  font-size: 13px;
+  font-weight: 500;
+}
+.translation-dropzone > span {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  line-height: 1.7;
+}
+.translation-file-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 20px 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.translation-image-preview {
+  flex: 1;
+  overflow: auto;
+  padding: 20px;
+  max-height: 430px;
+}
+.translation-image-preview > img {
+  display: block;
+  max-width: 100%;
+  max-height: 350px;
+  object-fit: contain;
+  margin-inline: auto;
+}
+.translation-extracted-text {
+  padding: 18px 20px;
+  max-height: 380px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.9;
+}
+.translation-panel-footnote {
+  display: flex;
+  align-items: center;
+  min-height: 60px;
+  margin-top: auto;
+  padding: 12px 20px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+  border-top: 1px solid var(--border);
+}
+.translation-result {
+  border-left: 1px solid var(--foreground);
+  background: color-mix(in oklch, var(--foreground) 1.5%, var(--background));
+}
+.translation-empty {
+  min-height: 355px;
+}
+.translation-empty [data-slot='empty-media'] {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  width: 54px;
+  height: 54px;
+}
+.translation-empty [data-slot='empty-title'] {
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.translation-empty [data-slot='empty-description'] {
+  max-width: 310px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.translation-result-text {
+  flex: 1;
+  min-height: 340px;
+  max-height: 560px;
+  padding: 24px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow: auto;
+  font: 14px/1.95 var(--font-body);
+}
+.translation-reading {
+  display: flex;
+  flex: 1;
+  min-height: 300px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+.translation-result-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding: 12px 20px;
+  min-height: 55px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.translation-progress {
+  width: 100%;
+  height: 3px;
+  accent-color: var(--foreground);
+}
+.translation-progress::-webkit-progress-bar {
+  background: var(--border);
+}
+.translation-progress::-webkit-progress-value {
+  background: var(--foreground);
+}
+.translation-bottom {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 20px 0;
+}
+.translation-preferences {
+  flex: 1;
+  max-width: 560px;
+  font-size: 12px;
+}
+.translation-preferences summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 12px 0;
+}
+.translation-preferences textarea {
+  margin-top: 6px;
+  min-height: 92px;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.translation-submit {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.translation-submit p {
+  max-width: 230px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted-foreground);
+}
+.translation-run {
+  height: 46px;
+  min-width: 160px;
+  padding-inline: 24px;
+  gap: 24px;
+}
+.translation-disclaimer {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--muted-foreground);
+}
+@media (max-width: 1100px) {
+  .translation-settings {
+    grid-template-columns: minmax(180px, 1fr) minmax(290px, 1.5fr);
+    gap: 20px;
+  }
+  .translation-settings > div:last-child {
+    grid-column: 1 / -1;
+    max-width: 230px;
+  }
+  .translation-group {
+    display: none;
+  }
+}
+@media (max-width: 767px) {
+  .translation-studio {
+    padding: 22px 16px;
+  }
+  .translation-heading h1 {
+    font-size: 28px;
+  }
+  .translation-settings {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  .translation-settings > div:last-child {
+    max-width: none;
+  }
+  .translation-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .translation-panel {
+    min-height: 410px;
+  }
+  .translation-result {
+    border-left: 0;
+    border-top: 1px solid var(--foreground);
+  }
+  .translation-bottom {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .translation-preferences,
+  .translation-submit {
+    width: 100%;
+    max-width: none;
+  }
+  .translation-submit {
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .translation-run {
+    min-width: 140px;
+  }
+  .translation-source-text {
+    min-height: 270px;
+  }
+}
+
+@media (max-width: 767px) {
+  .translation-studio {
+    padding-bottom: 100px;
+  }
+  .translation-submit {
+    position: fixed;
+    z-index: 30;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-top: 1px solid var(--border);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: var(--background);
+  }
+  .translation-submit p {
+    display: none;
+  }
+  .translation-run {
+    width: 100%;
+  }
+}

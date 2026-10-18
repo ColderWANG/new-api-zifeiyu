@@ -180,3 +180,20 @@ describe('audit log sidebar entry', () => {
     expect(titles).toContain('Audit Logs')
   })
 })
+
+describe('translation studio sidebar visibility', () => {
+  it.each([
+    [{ chat: { enabled: true, playground: false } }, undefined],
+    [undefined, { chat: { enabled: true, playground: false } }],
+  ])(
+    'hides Translation Studio when playground access is hidden (%j, %j)',
+    (admin, user) => {
+      const { result } = sidebarFor(admin, user)
+      expect(
+        result.current
+          .flatMap((group) => group.items)
+          .some((item) => item.title === 'Translation Studio')
+      ).toBe(false)
+    }
+  )
+})

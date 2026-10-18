@@ -24,6 +24,7 @@ import {
   FileText,
   FlaskConical,
   ImagePlus,
+  Languages,
   Key,
   LayoutDashboard,
   ListTodo,
@@ -67,6 +68,11 @@ export function useSidebarData(): SidebarData {
             title: t('Image Studio'),
             url: '/image-studio',
             icon: ImagePlus,
+          },
+          {
+            title: t('Translation Studio'),
+            url: '/translation-studio',
+            icon: Languages,
           },
           {
             title: t('Chat'),

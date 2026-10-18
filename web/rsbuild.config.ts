@@ -72,6 +72,11 @@ export default defineConfig(({ envMode }) => {
       proxy: devProxy,
     },
     output: {
+      // PDF parsing stays local, including CJK maps, fonts and image decoders.
+      copy: ['cmaps', 'standard_fonts', 'wasm'].map((directory) => ({
+        from: path.resolve(__dirname, 'node_modules/pdfjs-dist', directory),
+        to: `static/pdfjs/${directory}`,
+      })),
       // Production optimizations
       minify: isProd,
       target: 'web',
