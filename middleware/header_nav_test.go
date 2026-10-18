@@ -263,34 +263,3 @@ func TestHeaderNavPublicRouteRejectsExpiredInternalAccessToken(t *testing.T) {
 	require.Equal(t, http.StatusUnauthorized, response.Code)
 	require.Contains(t, response.Body.String(), "AUTH_TOKEN_EXPIRED")
 }
-
-func TestStudioAvailabilitySwitchesAreIndependent(t *testing.T) {
-	common.OptionMapRWMutex.Lock()
-	previous := common.OptionMap
-	common.OptionMap = map[string]string{"studio_setting.translation_studio_enabled": "false"}
-	common.OptionMapRWMutex.Unlock()
-	t.Cleanup(func() { common.OptionMapRWMutex.Lock(); common.OptionMap = previous; common.OptionMapRWMutex.Unlock() })
-	engine := gin.New()
-	calls := 0
-	for _, module := range []string{"image_studio", "translation_studio"} {
-		engine.POST("/"+module, StudioEnabled(module), func(c *gin.Context) { calls++; c.Status(http.StatusNoContent) })
-	}
-	denied := httptest.NewRecorder()
-	engine.ServeHTTP(denied, httptest.NewRequest(http.MethodPost, "/translation_studio", nil))
-	assert.Equal(t, http.StatusForbidden, denied.Code)
-	assert.Zero(t, calls)
-	allowed := httptest.NewRecorder()
-	engine.ServeHTTP(allowed, httptest.NewRequest(http.MethodPost, "/image_studio", nil))
-	assert.Equal(t, http.StatusNoContent, allowed.Code)
-	assert.Equal(t, 1, calls)
-	common.OptionMapRWMutex.Lock()
-	common.OptionMap["studio_setting.image_studio_enabled"] = "false"
-	common.OptionMap["studio_setting.translation_studio_enabled"] = "true"
-	common.OptionMapRWMutex.Unlock()
-	restored := httptest.NewRecorder()
-	engine.ServeHTTP(restored, httptest.NewRequest(http.MethodPost, "/translation_studio", nil))
-	assert.Equal(t, http.StatusNoContent, restored.Code)
-	denied = httptest.NewRecorder()
-	engine.ServeHTTP(denied, httptest.NewRequest(http.MethodPost, "/image_studio", nil))
-	assert.Equal(t, http.StatusForbidden, denied.Code)
-}

@@ -94,7 +94,12 @@ func TestGameDatabaseMatrix(t *testing.T) {
 						require.Equal(t, 42, legacyPeriod.Spent)
 						require.Zero(t, legacyPeriod.Reserved)
 					}
+					// Retiring studio controls must not rewrite or delete legacy option data.
+					require.NoError(t, db.Create(&Option{Key: "studio_setting.image_studio_enabled", Value: "false"}).Error)
 					require.NoError(t, SaveGameSettings(GameSettings{Enabled: true, RewardVersion: 1, RewardsEnabled: true, DailyQuota: 200, DailyBudget: 300, WeeklyBudget: 1000}))
+					var legacyStudio Option
+					require.NoError(t, db.Where(&Option{Key: "studio_setting.image_studio_enabled"}).First(&legacyStudio).Error)
+					require.Equal(t, "false", legacyStudio.Value)
 					for i := 1; i <= 3; i++ {
 						require.NoError(t, db.Create(&User{Id: i, Username: []string{"one", "two", "three"}[i-1], Password: "unusable", AffCode: []string{"affone", "afftwo", "affthree"}[i-1], DisplayName: []string{"Alpha", "Beta", "Gamma"}[i-1], Quota: 1000}).Error)
 					}
@@ -127,7 +132,7 @@ func TestGameDatabaseMatrix(t *testing.T) {
 					require.NoError(t, e)
 					budgets, e := GetGameBudgets(settings, now)
 					require.NoError(t, e)
-					require.Equal(t, GameBudgetView{DailyQuota: 200, DailyRemaining: 300, WeeklyPool: 1000, CanStart: true}, budgets)
+					require.Equal(t, GameBudgetView{DailyQuota: 200, DailyRemaining: 300, WeeklyPool: 1000, CanStart: true, WeeklyRewardVersion: 1, WeeklyFirstQuota: 300, WeeklySecondQuota: 200, WeeklyThirdQuota: 150, WeeklyRewardsEnabled: true}, budgets)
 
 					_, err = AdvanceGame(2, run.ID, 0, []int{1}, false, now)
 					require.Error(t, err, "cannot submit another user's run")
@@ -225,6 +230,8 @@ func TestGameDatabaseMatrix(t *testing.T) {
 					require.NoError(t, err)
 					require.Nil(t, next)
 					verifyTokenGameRewards(t, db)
+					verifyGameRewardActivation(t, db)
+					verifyWeeklyPodiumRewards(t, db)
 				})
 			}
 		})
@@ -408,3 +415,139 @@ type legacyGamePeriodSchema struct {
 }
 
 func (legacyGamePeriodSchema) TableName() string { return "game_periods" }
+
+// Enabling rewards must activate a disabled day's empty snapshot, without
+// rewriting existing runs or unlocking another attempt for those players.
+func verifyGameRewardActivation(t *testing.T, db *gorm.DB) {
+	t.Helper()
+	for id := 301; id <= 310; id++ {
+		require.NoError(t, db.Create(&User{Id: id, Username: fmt.Sprintf("activation%d", id), Password: "unusable", AffCode: fmt.Sprintf("activation%d", id)}).Error)
+	}
+	now := time.Date(2026, 11, 9, 12, 0, 0, 0, gameZone)
+	settings := GameSettings{Enabled: true, RewardVersion: 2, FirstTokenQuota: 2500000, SubsequentTokenQuota: 250000, DailyBudget: 49000000}
+	require.NoError(t, SaveGameSettings(settings))
+	oldFinished, err := StartGame(301, now)
+	require.NoError(t, err)
+	oldRunning, err := StartGame(302, now)
+	require.NoError(t, err)
+	oldFinished = finishRewardTestRun(t, db, oldFinished, 101, now.Add(time.Second))
+	require.Zero(t, oldFinished.QuotaAwarded)
+	var history GameRun
+	require.NoError(t, db.First(&history, "id = ?", oldFinished.ID).Error)
+	settings.RewardsEnabled = true
+	require.NoError(t, SaveGameSettings(settings))
+	budgets, err := GetGameBudgets(settings, now)
+	require.NoError(t, err)
+	require.Equal(t, 2500000, budgets.FirstTokenQuota, "the empty disabled period must not override the newly enabled reward")
+	require.Equal(t, 250000, budgets.SubsequentTokenQuota)
+	require.Equal(t, 49000000, budgets.DailyRemaining)
+	require.True(t, budgets.CanStart)
+	var wg sync.WaitGroup
+	for _, id := range []int{303, 304} {
+		wg.Go(func() { _, _ = StartGame(id, now.Add(2*time.Second)) })
+	}
+	wg.Wait()
+	var newRuns []GameRun
+	require.NoError(t, db.Where("user_id IN ?", []int{303, 304}).Find(&newRuns).Error)
+	require.Len(t, newRuns, 1, "concurrent activation may reserve the daily budget only once")
+	winner := newRuns[0]
+	require.Equal(t, 2500000, winner.FirstTokenQuota)
+	require.Equal(t, 250000, winner.SubsequentTokenQuota)
+	require.Equal(t, 49000000, winner.ReservedQuota)
+	var period GamePeriod
+	require.NoError(t, db.First(&period, "id = ?", "token:2026-11-09").Error)
+	require.Equal(t, 49000000, period.Reserved)
+	require.True(t, period.RewardsInitialized)
+	var unchanged GameRun
+	require.NoError(t, db.First(&unchanged, "id = ?", history.ID).Error)
+	require.Equal(t, history, unchanged, "completed history must remain byte-for-byte unchanged")
+	oldRunning = finishRewardTestRun(t, db, oldRunning, 1, now.Add(3*time.Second))
+	require.Zero(t, oldRunning.QuotaAwarded, "an existing zero-reward run retains its starting rules")
+	current, err := gameView(&winner, now)
+	require.NoError(t, err)
+	finished := finishRewardTestRun(t, db, current, 3, now.Add(4*time.Second))
+	require.Equal(t, 3000000, finished.QuotaAwarded)
+	for range 3 {
+		repeated, err := AdvanceGame(winner.UserID, winner.ID, 1, nil, true, now.Add(5*time.Second))
+		require.NoError(t, err)
+		require.Equal(t, 3000000, repeated.QuotaAwarded)
+	}
+	repeated, err := StartGame(301, now.Add(5*time.Second))
+	require.NoError(t, err)
+	require.Equal(t, history.ID, repeated.ID)
+	require.Zero(t, repeated.QuotaAwarded)
+	var ledgerCount int64
+	require.NoError(t, db.Model(&GameReward{}).Where("user_id BETWEEN ? AND ?", 301, 304).Count(&ledgerCount).Error)
+	require.EqualValues(t, 1, ledgerCount)
+	var wallet User
+	require.NoError(t, db.First(&wallet, winner.UserID).Error)
+	require.Equal(t, 3000000, wallet.Quota)
+	require.NoError(t, db.First(&period, "id = ?", "token:2026-11-09").Error)
+	require.Equal(t, 3000000, period.Spent)
+	require.Zero(t, period.Reserved)
+	// Switching off/on must never refill a used budget or change its reward rates.
+	settings.RewardsEnabled = false
+	require.NoError(t, SaveGameSettings(settings))
+	settings.RewardsEnabled = true
+	settings.FirstTokenQuota = 5000000
+	settings.DailyBudget = 0
+	require.NoError(t, SaveGameSettings(settings))
+	budgets, err = GetGameBudgets(settings, now)
+	require.NoError(t, err)
+	require.Equal(t, 2500000, budgets.FirstTokenQuota)
+	require.Equal(t, 46000000, budgets.DailyRemaining)
+	require.False(t, budgets.Unlimited)
+	// Intentionally enabled zero-valued rewards are different from disabled rewards.
+	zeroDay := now.AddDate(0, 0, 1)
+	settings.FirstTokenQuota, settings.SubsequentTokenQuota = 0, 0
+	require.NoError(t, SaveGameSettings(settings))
+	_, err = StartGame(305, zeroDay)
+	require.NoError(t, err)
+	settings.FirstTokenQuota, settings.SubsequentTokenQuota = 2500000, 250000
+	require.NoError(t, SaveGameSettings(settings))
+	budgets, err = GetGameBudgets(settings, zeroDay)
+	require.NoError(t, err)
+	require.Zero(t, budgets.FirstTokenQuota)
+	require.Zero(t, budgets.SubsequentTokenQuota)
+	// A pre-upgrade positive snapshot remains frozen even without the new marker.
+	legacyDay := now.AddDate(0, 0, 2)
+	require.NoError(t, db.Create(&GamePeriod{ID: "token:2026-11-11", Budget: 49000000, FirstTokenQuota: 1000000, SubsequentTokenQuota: 100000}).Error)
+	budgets, err = GetGameBudgets(settings, legacyDay)
+	require.NoError(t, err)
+	require.Equal(t, 1000000, budgets.FirstTokenQuota)
+	legacy, err := StartGame(306, legacyDay)
+	require.NoError(t, err)
+	require.Equal(t, 1000000, legacy.FirstTokenQuota)
+	// Insufficient funding rolls back activation as well as the daily attempt.
+	limitedDay := now.AddDate(0, 0, 3)
+	settings.RewardsEnabled = false
+	require.NoError(t, SaveGameSettings(settings))
+	_, err = StartGame(307, limitedDay)
+	require.NoError(t, err)
+	settings.RewardsEnabled = true
+	settings.DailyBudget = 1
+	require.NoError(t, SaveGameSettings(settings))
+	_, err = StartGame(308, limitedDay)
+	require.ErrorIs(t, err, ErrGameBudget)
+	var attempts int64
+	require.NoError(t, db.Model(&GameRun{}).Where("user_id = ?", 308).Count(&attempts).Error)
+	require.Zero(t, attempts)
+	var failedPeriod GamePeriod
+	require.NoError(t, db.First(&failedPeriod, "id = ?", "token:2026-11-12").Error)
+	require.Zero(t, failedPeriod.FirstTokenQuota)
+	require.Zero(t, failedPeriod.Reserved)
+	require.False(t, failedPeriod.RewardsInitialized)
+}
+
+func finishRewardTestRun(t *testing.T, db *gorm.DB, run *GameView, picked int, now time.Time) *GameView {
+	t.Helper()
+	state := tokengame.New(42)
+	state.Tick, state.HP, state.Kills, state.PickedTokens, state.Collected = 1, 0, picked, picked, picked*10
+	state.Score = 5677
+	raw, err := common.Marshal(state)
+	require.NoError(t, err)
+	require.NoError(t, db.Model(&GameRun{}).Where("id = ?", run.ID).Update("state_json", string(raw)).Error)
+	result, err := AdvanceGame(run.UserID, run.ID, 1, nil, false, now)
+	require.NoError(t, err)
+	return result
+}

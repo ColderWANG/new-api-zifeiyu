@@ -19,8 +19,8 @@ For commercial licensing, please contact support@quantumnous.com
 import { strToU8, zipSync } from 'fflate'
 import { describe, expect, it } from 'vitest'
 
+import { readDocx } from '../lib/docx'
 import {
-  extractDocxText,
   MAX_FILE_BYTES,
   readTranslationFile,
   splitTranslationText,
@@ -64,24 +64,28 @@ describe('translation source preparation', () => {
       'word/document.xml': strToU8(xml),
       'unrelated.xml': strToU8('Ignore me'),
     })
-    expect(await extractDocxText(bytes)).toBe('Purchase order\n\nItem | Price')
+    expect((await readDocx(bytes)).text).toBe('Purchase order\nItem\nPrice')
     const source = await readTranslationFile(
       sourceFile(bytes, 'order.docx'),
       new AbortController().signal
     )
-    expect(source.units).toEqual([{ text: 'Purchase order\n\nItem | Price' }])
+    expect(source.format).toBe('docx')
+    expect(source.docx).toBeDefined()
+    expect(source.units[0].segments?.map((segment) => segment.text)).toEqual([
+      'Purchase order',
+      'Item',
+      'Price',
+    ])
     expect(source.imagePages).toBe(0)
     expect(source.pages).toBe(0)
   })
 
   it('rejects DOCX entity declarations and files without a document body', async () => {
     await expect(
-      extractDocxText(
-        zipSync({ 'word/document.xml': strToU8('<!DOCTYPE x><x/>') })
-      )
+      readDocx(zipSync({ 'word/document.xml': strToU8('<!DOCTYPE x><x/>') }))
     ).rejects.toThrow('unsupported XML')
     await expect(
-      extractDocxText(zipSync({ 'other.xml': strToU8('<x/>') }))
+      readDocx(zipSync({ 'other.xml': strToU8('<x/>') }))
     ).rejects.toThrow('invalid')
   })
 

@@ -23,11 +23,11 @@ import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { formatNumber } from '@/lib/format'
+import { formatNumber, formatQuota } from '@/lib/format'
 
 import { getRankings } from './api'
 
-export function Leaderboard() {
+export function Leaderboard(props: { weeklyPrizes: number[] }) {
   const { t } = useTranslation()
   const [period, setPeriod] = useState<'day' | 'week'>('day')
   const ranks = useQuery({
@@ -81,9 +81,16 @@ export function Leaderboard() {
                 <span className='text-muted-foreground ml-1'>({t('You')})</span>
               )}
             </span>
-            <span className='font-mono text-sm tabular-nums'>
-              {formatNumber(row.score)}
-            </span>
+            <div className='shrink-0 text-right'>
+              <span className='font-mono text-sm tabular-nums'>
+                {formatNumber(row.score)}
+              </span>
+              {period === 'week' && row.rank <= 3 && (
+                <p className='text-muted-foreground mt-1 font-mono text-xs'>
+                  {formatQuota(props.weeklyPrizes[row.rank - 1] ?? 0)}
+                </p>
+              )}
+            </div>
           </li>
         ))}
       </ol>

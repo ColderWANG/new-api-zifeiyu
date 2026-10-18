@@ -102,6 +102,7 @@ var accessTokenRouteRules = map[string]accessTokenRouteRule{
 	"POST /api/user/2fa/backup_codes":        accessTokenScopeRule("account_security:write"),
 	// Competitive runs and reward administration require a browser session.
 	"GET /api/user/game":                           accessTokenSessionRule,
+	"GET /api/user/game/rewards":                   accessTokenSessionRule,
 	"GET /api/user/game/rankings":                  accessTokenSessionRule,
 	"POST /api/user/game/start":                    accessTokenSessionRule,
 	"POST /api/user/game/input":                    accessTokenSessionRule,

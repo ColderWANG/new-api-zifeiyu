@@ -141,8 +141,6 @@ export type SystemTaskFilters = {
 }
 
 export type SiteSettings = {
-  'studio_setting.image_studio_enabled': boolean
-  'studio_setting.translation_studio_enabled': boolean
   Notice: string
   SystemName: string
   Logo: string

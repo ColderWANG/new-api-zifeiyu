@@ -1,4 +1,3 @@
-import { zodResolver } from '@hookform/resolvers/zod'
 /*
 Copyright (C) 2023-2026 QuantumNous
 
@@ -17,6 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import { useForm, type Resolver } from 'react-hook-form'
@@ -61,22 +61,16 @@ const amountSchema = z.preprocess(
 )
 const schema = z.object({
   enabled: z.boolean(),
-  imageEnabled: z.boolean(),
-  translationEnabled: z.boolean(),
   rewardsEnabled: z.boolean(),
   first: amountSchema,
   additional: amountSchema,
   dailyBudget: amountSchema,
-  weeklyBudget: amountSchema,
+  weeklyFirst: amountSchema,
+  weeklySecond: amountSchema,
+  weeklyThird: amountSchema,
 })
 type Values = z.infer<typeof schema>
-export function WorkbenchSettingsSection({
-  imageEnabled,
-  translationEnabled,
-}: {
-  imageEnabled: boolean
-  translationEnabled: boolean
-}) {
+export function GameSettingsSection() {
   const { t } = useTranslation()
   const query = useQuery({
     queryKey: ['game-settings'],
@@ -91,38 +85,30 @@ export function WorkbenchSettingsSection({
       </div>
     )
   }
-  return (
-    <WorkbenchSettingsForm
-      settings={query.data}
-      imageEnabled={imageEnabled}
-      translationEnabled={translationEnabled}
-    />
-  )
+  return <GameSettingsForm settings={query.data} />
 }
-function WorkbenchSettingsForm({
-  settings,
-  imageEnabled,
-  translationEnabled,
-}: {
-  settings: GameSettings
-  imageEnabled: boolean
-  translationEnabled: boolean
-}) {
+function GameSettingsForm({ settings }: { settings: GameSettings }) {
   const { t } = useTranslation()
   const client = useQueryClient()
   const [saving, setSaving] = useState(false)
   const defaults = useMemo(
     () => ({
       enabled: settings.enabled,
-      imageEnabled,
-      translationEnabled,
       rewardsEnabled: settings.rewards_enabled,
       first: quotaUnitsToDollars(settings.first_token_quota),
       additional: quotaUnitsToDollars(settings.subsequent_token_quota),
       dailyBudget: quotaUnitsToDollars(settings.daily_budget),
-      weeklyBudget: quotaUnitsToDollars(settings.weekly_budget),
+      weeklyFirst: quotaUnitsToDollars(
+        settings.weekly_first_quota ?? Math.floor(settings.weekly_budget * 0.3)
+      ),
+      weeklySecond: quotaUnitsToDollars(
+        settings.weekly_second_quota ?? Math.floor(settings.weekly_budget * 0.2)
+      ),
+      weeklyThird: quotaUnitsToDollars(
+        settings.weekly_third_quota ?? Math.floor(settings.weekly_budget * 0.15)
+      ),
     }),
-    [settings, imageEnabled, translationEnabled]
+    [settings]
   )
   const form = useForm<Values>({
     resolver: zodResolver(schema) as Resolver<Values>,
@@ -136,21 +122,30 @@ function WorkbenchSettingsForm({
   const maximum =
     parseQuotaFromDollars(Number(first)) +
     186 * parseQuotaFromDollars(Number(additional))
+  const weeklyTotal =
+    parseQuotaFromDollars(Number(form.watch('weeklyFirst'))) +
+    parseQuotaFromDollars(Number(form.watch('weeklySecond'))) +
+    parseQuotaFromDollars(Number(form.watch('weeklyThird')))
   async function submit(values: Values) {
     setSaving(true)
     try {
       await saveSettings({
         ...settings,
         enabled: values.enabled,
-        image_studio_enabled: values.imageEnabled,
-        translation_studio_enabled: values.translationEnabled,
         rewards_enabled: values.rewardsEnabled,
         reward_version: 2,
         daily_quota: 0,
         first_token_quota: parseQuotaFromDollars(values.first),
         subsequent_token_quota: parseQuotaFromDollars(values.additional),
         daily_budget: parseQuotaFromDollars(values.dailyBudget),
-        weekly_budget: parseQuotaFromDollars(values.weeklyBudget),
+        weekly_reward_version: 2,
+        weekly_first_quota: parseQuotaFromDollars(values.weeklyFirst),
+        weekly_second_quota: parseQuotaFromDollars(values.weeklySecond),
+        weekly_third_quota: parseQuotaFromDollars(values.weeklyThird),
+        weekly_budget:
+          parseQuotaFromDollars(values.weeklyFirst) +
+          parseQuotaFromDollars(values.weeklySecond) +
+          parseQuotaFromDollars(values.weeklyThird),
       })
       form.reset(values)
       toast.success(t('Saved successfully'))
@@ -160,6 +155,7 @@ function WorkbenchSettingsForm({
       setSaving(false)
       await Promise.all([
         client.invalidateQueries({ queryKey: ['game-settings'] }),
+        client.invalidateQueries({ queryKey: ['game-rewards'] }),
         client.invalidateQueries({ queryKey: ['game-status'] }),
         client.invalidateQueries({ queryKey: ['status'] }),
         client.invalidateQueries({ queryKey: ['system-options'] }),
@@ -167,7 +163,7 @@ function WorkbenchSettingsForm({
     }
   }
   return (
-    <SettingsSection title={t('Studios and games')}>
+    <SettingsSection title={t('Game Center')}>
       <SettingsForm onSubmit={form.handleSubmit(submit)}>
         <SettingsPageFormActions
           onSave={form.handleSubmit(submit)}
@@ -177,7 +173,7 @@ function WorkbenchSettingsForm({
         <FieldGroup>
           <FieldDescription>
             {t(
-              'Feature switches disable the page and its studio requests. Navigation visibility is configured separately in Header navigation and Sidebar modules.'
+              'Configure game availability and rewards. Navigation visibility is configured in Header navigation and Sidebar modules.'
             )}
           </FieldDescription>
           <div className='divide-y'>
@@ -191,22 +187,6 @@ function WorkbenchSettingsForm({
               description={t(
                 'Closing Game Center prevents new runs. Existing runs can finish and settle.'
               )}
-            />
-            <SettingsSwitchField
-              controlId='feature-image-studio'
-              label={t('Image Studio')}
-              checked={form.watch('imageEnabled')}
-              onCheckedChange={(v) =>
-                form.setValue('imageEnabled', v, { shouldDirty: true })
-              }
-            />
-            <SettingsSwitchField
-              controlId='feature-translation-studio'
-              label={t('Translation Studio')}
-              checked={form.watch('translationEnabled')}
-              onCheckedChange={(v) =>
-                form.setValue('translationEnabled', v, { shouldDirty: true })
-              }
             />
           </div>
           <div className='border-t pt-4'>
@@ -261,18 +241,70 @@ function WorkbenchSettingsForm({
                 )}
               </FieldDescription>
             </Field>
-            <Field>
-              <FieldLabel htmlFor='reward-weekly-budget'>
-                {t('Weekly leaderboard prize pool')} ({getCurrencyLabel()})
-              </FieldLabel>
-              <Input
-                id='reward-weekly-budget'
-                type='number'
-                min={0}
-                step={getEditableQuotaStep()}
-                {...form.register('weeklyBudget')}
-              />
-            </Field>
+          </div>
+          <div className='space-y-4 border-t pt-5'>
+            <div>
+              <h3 className='text-sm font-semibold'>
+                {t('Weekly leaderboard rewards')}
+              </h3>
+              <FieldDescription>
+                {t(
+                  'Set fixed rewards for first, second and third place. Only these three places receive weekly rewards after saving.'
+                )}
+              </FieldDescription>
+            </div>
+            <div className='grid gap-5 sm:grid-cols-3'>
+              <Field>
+                <FieldLabel htmlFor='reward-weekly-first'>
+                  {t('Weekly first-place reward')} ({getCurrencyLabel()})
+                </FieldLabel>
+                <Input
+                  id='reward-weekly-first'
+                  type='number'
+                  min={0}
+                  step={getEditableQuotaStep()}
+                  {...form.register('weeklyFirst')}
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor='reward-weekly-second'>
+                  {t('Weekly second-place reward')} ({getCurrencyLabel()})
+                </FieldLabel>
+                <Input
+                  id='reward-weekly-second'
+                  type='number'
+                  min={0}
+                  step={getEditableQuotaStep()}
+                  {...form.register('weeklySecond')}
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor='reward-weekly-third'>
+                  {t('Weekly third-place reward')} ({getCurrencyLabel()})
+                </FieldLabel>
+                <Input
+                  id='reward-weekly-third'
+                  type='number'
+                  min={0}
+                  step={getEditableQuotaStep()}
+                  {...form.register('weeklyThird')}
+                />
+              </Field>
+            </div>
+            <p className='text-sm'>
+              {t('Total weekly podium rewards')}:{' '}
+              <strong>{formatQuota(weeklyTotal)}</strong>
+            </p>
+            <FieldDescription>
+              {t(
+                'Saved amounts apply to this week’s unsettled prizes. Player pages refresh rewards automatically every 5 seconds. Settled rewards are never recalculated.'
+              )}
+            </FieldDescription>
+            <FieldDescription>
+              {t(
+                'Turn on quota rewards to activate weekly prizes. Turning them off does not cancel an already activated week.'
+              )}
+            </FieldDescription>
           </div>
           {Object.keys(form.formState.errors).length > 0 && (
             <p role='alert' className='text-destructive text-sm'>
@@ -292,7 +324,7 @@ function WorkbenchSettingsForm({
           </div>
           <FieldDescription>
             {t(
-              'Feature availability changes immediately. Reward amounts and budgets apply to the next period once the current period has started.'
+              'Game switches apply immediately. Daily rewards and budgets lock at the first reward-enabled run; earlier runs keep their starting rules. Weekly prize changes apply to the current unsettled week.'
             )}
           </FieldDescription>
         </FieldGroup>

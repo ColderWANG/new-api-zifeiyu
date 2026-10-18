@@ -68,11 +68,11 @@ func SetRelayRouter(router *gin.Engine) {
 	{
 		playgroundRouter.POST("/chat/completions", controller.Playground)
 	}
-	router.POST("/pg/translation-studio", middleware.RouteTag("relay"), middleware.SystemPerformanceCheck(), middleware.UserAuth(), middleware.StudioEnabled("translation_studio"), func(c *gin.Context) { c.Request.URL.Path = "/pg/chat/completions"; c.Next() }, middleware.Distribute(), controller.Playground)
+	router.POST("/pg/translation-studio", middleware.RouteTag("relay"), middleware.SystemPerformanceCheck(), middleware.UserAuth(), func(c *gin.Context) { c.Request.URL.Path = "/pg/chat/completions"; c.Next() }, middleware.Distribute(), controller.Playground)
 	imageStudioRouter := router.Group("/pg")
 	imageStudioRouter.POST("/image-studio",
 		middleware.RouteTag("relay"), middleware.SystemPerformanceCheck(), middleware.UserAuth(),
-		middleware.StudioEnabled("image_studio"), controller.PrepareImageStudio, middleware.ModelRequestRateLimit(),
+		controller.PrepareImageStudio, middleware.ModelRequestRateLimit(),
 		middleware.PinTaskPluginEndpoint(), middleware.PrepareTaskPluginEndpoint(), middleware.Distribute(), controller.ImageStudio,
 	)
 	relayV1Router := router.Group("/v1")

@@ -228,8 +228,6 @@ export function isSidebarModuleEnabled(
 
 const WORKBENCH_FLAGS: Record<string, string> = {
   '/games': 'game_center_enabled',
-  '/image-studio': 'image_studio_enabled',
-  '/translation-studio': 'translation_studio_enabled',
 }
 export function isWorkbenchEnabled(
   status: Record<string, unknown> | null,
@@ -238,6 +236,7 @@ export function isWorkbenchEnabled(
   const key = WORKBENCH_FLAGS[url]
   return !key || status?.[key] !== false
 }
+
 export async function isWorkbenchEnabledForGuard(
   queryClient: QueryClient,
   url: string

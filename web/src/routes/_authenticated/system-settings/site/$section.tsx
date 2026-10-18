@@ -28,6 +28,13 @@ export const Route = createFileRoute(
   '/_authenticated/system-settings/site/$section'
 )({
   beforeLoad: ({ params }) => {
+    if (params.section === 'studios-games') {
+      throw redirect({
+        to: '/system-settings/site/$section',
+        params: { section: 'game-center' },
+        replace: true,
+      })
+    }
     const validSections = SITE_SECTION_IDS as unknown as string[]
     if (!validSections.includes(params.section)) {
       throw redirect({

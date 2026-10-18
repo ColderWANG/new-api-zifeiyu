@@ -143,6 +143,7 @@ func SetApiRouter(router *gin.Engine) {
 
 				// Daily competitive game; use the existing authenticated user boundary.
 				selfRoute.GET("/game", middleware.DisableCache(), controller.GetGameStatus)
+				selfRoute.GET("/game/rewards", middleware.DisableCache(), controller.GetGameRewards)
 				selfRoute.GET("/game/rankings", middleware.DisableCache(), controller.GetGameRankings)
 				selfRoute.POST("/game/start", middleware.UserCriticalRateLimit("game-start"), controller.StartGame)
 				selfRoute.POST("/game/input", controller.AdvanceGame)

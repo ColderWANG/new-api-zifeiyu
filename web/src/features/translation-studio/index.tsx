@@ -54,6 +54,7 @@ import { useAuthStore } from '@/stores/auth-store'
 
 import { translateSource } from './api'
 import { TranslationSourcePanel } from './components/source-panel'
+import { exportTranslation, translationDownloadName } from './lib/export'
 import { readTranslationFile, splitTranslationText } from './lib/source'
 import {
   TRANSLATION_LANGUAGES,
@@ -92,6 +93,7 @@ function TranslationWorkspace() {
   const [fileName, setFileName] = useState('')
   const [preparing, setPreparing] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState(EMPTY_PROGRESS)
   const [runState, setRunState] = useState<
@@ -99,6 +101,7 @@ function TranslationWorkspace() {
   >('idle')
   const parsing = useRef<AbortController | null>(null)
   const translating = useRef<AbortController | null>(null)
+  const downloading = useRef<AbortController | null>(null)
 
   const modelsQuery = useQuery({
     queryKey: ['translation-studio-models', user?.id, group],
@@ -111,7 +114,7 @@ function TranslationWorkspace() {
     models.find((item) => item.value === selectedModel)?.value ??
     models[0]?.value ??
     ''
-  const disabled = busy || preparing
+  const disabled = busy || preparing || exporting
   const canTranslate =
     !!model &&
     !!group &&
@@ -124,6 +127,7 @@ function TranslationWorkspace() {
     () => () => {
       parsing.current?.abort()
       translating.current?.abort()
+      downloading.current?.abort()
     },
     []
   )
@@ -144,7 +148,7 @@ function TranslationWorkspace() {
   }
 
   async function selectFile(file: File) {
-    if (busy) return
+    if (busy || exporting) return
     parsing.current?.abort()
     const controller = new AbortController()
     parsing.current = controller
@@ -241,19 +245,51 @@ function TranslationWorkspace() {
     }
   }
 
-  function download() {
-    const filename = (source?.name ?? 'translation')
-      .replace(/\.[^.]+$/, '')
-      .replaceAll(/[<>:"/\\|?*]/g, '_')
-    const blob = new Blob([progress.text], { type: 'text/plain;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `${filename}-${targetLanguage}.txt`
-    link.click()
-    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  async function download() {
+    if (downloading.current) return
+    const controller = new AbortController()
+    downloading.current = controller
+    setExporting(true)
+    setError(null)
+    try {
+      const fileSource = mode === 'text' ? null : source
+      const blob = await exportTranslation(
+        fileSource,
+        progress,
+        targetLanguage,
+        controller.signal
+      )
+      controller.signal.throwIfAborted()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = translationDownloadName(
+        fileSource,
+        targetLanguage,
+        runState !== 'complete'
+      )
+      link.click()
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+    } catch (cause) {
+      if (!controller.signal.aborted) {
+        setError(
+          getServerErrorMessage(
+            cause,
+            t('Unable to export the translation. Please try again.')
+          )
+        )
+      }
+    } finally {
+      if (downloading.current === controller) {
+        downloading.current = null
+        setExporting(false)
+      }
+    }
   }
 
+  const downloadFormat =
+    mode === 'text' ? 'TXT' : (source?.format ?? 'txt').toUpperCase()
+  const downloadLabel = t('Download {{format}}', { format: downloadFormat })
   const languageItems = Object.fromEntries(
     TRANSLATION_LANGUAGES.map((language) => [language.value, t(language.label)])
   )
@@ -316,7 +352,9 @@ function TranslationWorkspace() {
       <header className='translation-heading'>
         <div>
           <p className='translation-eyebrow'>{t('Translation workspace')}</p>
-          <h1>{t('Translation Studio')}</h1>
+          <h1 className='font-serif text-4xl font-medium tracking-tight sm:text-5xl'>
+            {t('Translation Studio')}
+          </h1>
           <p className='translation-subtitle'>
             {t(
               'Translate text, images and documents with the models available to your account.'
@@ -495,7 +533,7 @@ function TranslationWorkspace() {
           source={source}
           fileName={fileName}
           preparing={preparing}
-          busy={busy}
+          busy={busy || exporting}
           onFile={(file) => void selectFile(file)}
           onRemove={removeFile}
         />
@@ -513,23 +551,44 @@ function TranslationWorkspace() {
             <p role='status' aria-live='polite'>
               {statusText}
             </p>
-            {progress.text && (
-              <div className='flex gap-1'>
+            {progress.completed > 0 && (
+              <div className='flex shrink-0 gap-1'>
                 <CopyButton
                   value={progress.text}
                   aria-label={t('Copy translation')}
                 />
                 <Button
                   variant='ghost'
-                  size='icon'
-                  onClick={download}
-                  aria-label={t('Download translation')}
+                  size='sm'
+                  onClick={() => void download()}
+                  disabled={busy || exporting}
+                  aria-label={downloadLabel}
                 >
-                  <Download size={16} aria-hidden='true' />
+                  {exporting ? (
+                    <Loader2
+                      size={16}
+                      className='animate-spin'
+                      aria-hidden='true'
+                    />
+                  ) : (
+                    <Download size={16} aria-hidden='true' />
+                  )}
+                  {downloadLabel}
                 </Button>
               </div>
             )}
           </div>
+          {progress.completed > 0 &&
+            runState !== 'complete' &&
+            !busy &&
+            mode !== 'text' &&
+            (source?.docx || source?.renderedPages) && (
+              <p className='translation-caption px-5 pb-3'>
+                {t(
+                  'Partial file: untranslated sections remain in the original language.'
+                )}
+              </p>
+            )}
           {busy && progress.total > 0 && (
             <progress
               className='translation-progress'
@@ -599,7 +658,7 @@ function TranslationWorkspace() {
       </div>
       <p className='translation-disclaimer'>
         {t(
-          'PDF: up to 20 pages. Results are plain text; the original file layout is not reconstructed. Translation uses your account quota at the selected model rates.'
+          'Downloads keep the uploaded file format. DOCX retains document structure; PDF and images place translations over the source pages as flattened images. Complex backgrounds and layouts may need review. PDF: up to 20 pages. Translation uses your account quota at the selected model rates.'
         )}
       </p>
     </div>

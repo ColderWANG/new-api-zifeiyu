@@ -17,20 +17,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 
 import { Main } from '@/components/layout'
 import { ImageStudio } from '@/features/image-studio'
-import { isWorkbenchEnabledForGuard } from '@/lib/nav-modules'
 
 export const Route = createFileRoute('/_authenticated/image-studio/')({
-  beforeLoad: async ({ context }) => {
-    if (
-      !(await isWorkbenchEnabledForGuard(context.queryClient, '/image-studio'))
-    ) {
-      throw redirect({ to: '/dashboard' })
-    }
-  },
   component: () => (
     <Main className='overflow-y-auto'>
       <ImageStudio />

@@ -26,6 +26,7 @@ import {
   waitFor,
 } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { strToU8, zipSync } from 'fflate'
 import i18next from 'i18next'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -108,6 +109,60 @@ function renderStudio() {
 }
 
 describe('Translation Studio', () => {
+  it('downloads an uploaded DOCX as a DOCX package after structured translation', async () => {
+    const bytes = zipSync({
+      'word/document.xml': strToU8(
+        '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>Invoice</w:t></w:r></w:p></w:body></w:document>'
+      ),
+    })
+    const file = new File([new Uint8Array(bytes)], 'invoice.docx', {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    })
+    Object.defineProperty(file, 'arrayBuffer', {
+      value: async () => new Uint8Array(bytes).buffer,
+    })
+    vi.mocked(api.post).mockResolvedValue(
+      completion('{"translations":[{"id":"s0","text":"Translated invoice"}]}')
+    )
+    const createURL = vi.fn((_blob: Blob) => 'blob:test-docx')
+    const BaseURL = URL
+    vi.stubGlobal(
+      'URL',
+      class extends BaseURL {
+        static createObjectURL = createURL
+        static revokeObjectURL = vi.fn()
+      }
+    )
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {})
+    renderStudio()
+    await waitFor(() =>
+      expect(
+        screen.getByRole('combobox', { name: 'Translation model' })
+      ).toHaveValue('visible-model')
+    )
+    await userEvent.upload(
+      screen.getByLabelText('Upload translation source'),
+      file
+    )
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Translate' })).toBeEnabled()
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Translate' }))
+    expect(await screen.findByLabelText('Translated text')).toHaveTextContent(
+      'Translated invoice'
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Download DOCX' }))
+    await waitFor(() => expect(click).toHaveBeenCalledOnce())
+    expect(createURL.mock.calls[0][0]).toMatchObject({
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    })
+    expect((click.mock.instances[0] as HTMLAnchorElement).download).toBe(
+      'invoice-zh-CN.docx'
+    )
+  })
+
   it.each(Object.entries({ en, zhCN: zh, zhTW, fr, ru, ja, vi: viLocale }))(
     'renders controls, guidance and file errors in interface language %s',
     async (language, locale) => {
@@ -184,9 +239,7 @@ describe('Translation Studio', () => {
         signal: expect.any(AbortSignal),
       })
     )
-    expect(
-      screen.getByRole('button', { name: 'Download translation' })
-    ).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Download TXT' })).toBeEnabled()
   })
 
   it('shows an empty account state and cannot submit without an available model', async () => {
@@ -329,6 +382,66 @@ describe('Translation Studio', () => {
 })
 
 describe('translation requests', () => {
+  it('retains completed document mappings when a later response loses segment IDs', async () => {
+    vi.mocked(api.post)
+      .mockResolvedValueOnce(
+        completion('{"translations":[{"id":"s0","text":"First"}]}')
+      )
+      .mockResolvedValueOnce(completion('{"translations":[]}'))
+    const progress = vi.fn()
+    await expect(
+      translateSource(
+        {
+          ...options,
+          units: [
+            { segments: [{ id: 's0', text: 'One', paragraph: 'p0' }] },
+            { segments: [{ id: 's1', text: 'Two', paragraph: 'p1' }] },
+          ],
+        },
+        new AbortController().signal,
+        progress
+      )
+    ).rejects.toThrow('document structure')
+    expect(progress).toHaveBeenCalledTimes(1)
+    expect(progress).toHaveBeenLastCalledWith({
+      completed: 1,
+      total: 2,
+      text: 'First',
+      translations: { s0: 'First' },
+    })
+  })
+
+  it('requests and validates image text positions for same-format image downloads', async () => {
+    vi.mocked(api.post).mockResolvedValue(
+      completion(
+        '{"regions":[{"box":[10,20,400,60],"text":"Translated title"}]}'
+      )
+    )
+    const progress = vi.fn()
+    await translateSource(
+      {
+        ...options,
+        units: [
+          { image: 'data:image/png;base64,AAAA', page: 1, locateText: true },
+        ],
+      },
+      new AbortController().signal,
+      progress
+    )
+    expect(progress).toHaveBeenLastCalledWith({
+      completed: 1,
+      total: 1,
+      text: 'Translated title',
+      regions: {
+        1: [{ id: 'p1ocr0', text: 'Translated title', box: [10, 20, 400, 60] }],
+      },
+    })
+    const payload = vi.mocked(api.post).mock.calls[0][1] as {
+      messages: { content: string }[]
+    }
+    expect(payload.messages[0].content).toContain('normalized to 0..1000')
+  })
+
   it('preserves completed sections when a later model response fails', async () => {
     vi.mocked(api.post)
       .mockResolvedValueOnce(completion('First translated section'))

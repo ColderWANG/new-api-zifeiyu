@@ -21,6 +21,10 @@ import { api } from '@/lib/api'
 import type { GameState } from './engine'
 
 export type GameSettings = {
+  weekly_reward_version?: number
+  weekly_first_quota?: number
+  weekly_second_quota?: number
+  weekly_third_quota?: number
   enabled: boolean
   rewards_enabled: boolean
   daily_quota: number
@@ -48,6 +52,11 @@ export type GameRun = {
 export type GameStatus = {
   settings: GameSettings
   budgets: {
+    weekly_reward_version?: number
+    weekly_first_quota?: number
+    weekly_second_quota?: number
+    weekly_third_quota?: number
+    weekly_rewards_enabled?: boolean
     daily_quota: number
     daily_remaining: number
     weekly_pool: number
@@ -62,6 +71,13 @@ export type GameStatus = {
   day: string
   week: string
   resets_at: number
+  server_time: number
+}
+export type GameRewards = {
+  budgets: GameStatus['budgets']
+  week: string
+  enabled: boolean
+  rewards_enabled: boolean
   server_time: number
 }
 export type Rank = {
@@ -81,6 +97,10 @@ function unwrap<T>(response: Envelope<T>): T {
 }
 export const getGameStatus = () =>
   api.get<Envelope<GameStatus>>(path).then((r) => unwrap(r.data))
+export const getGameRewards = () =>
+  api
+    .get<Envelope<GameRewards>>(`${path}/rewards`, { skipErrorHandler: true })
+    .then((r) => unwrap(r.data))
 export const startGame = () =>
   api
     .post<Envelope<GameRun>>(`${path}/start`, undefined, {
@@ -105,12 +125,7 @@ export const getRankings = (period: 'day' | 'week') =>
   api
     .get<Envelope<Rank[]>>(`${path}/rankings`, { params: { period } })
     .then((r) => unwrap(r.data))
-export const saveSettings = (
-  settings: GameSettings & {
-    image_studio_enabled?: boolean
-    translation_studio_enabled?: boolean
-  }
-) =>
+export const saveSettings = (settings: GameSettings) =>
   api
     .put<Envelope<GameSettings>>(`${path}/settings`, settings)
     .then((r) => unwrap(r.data))

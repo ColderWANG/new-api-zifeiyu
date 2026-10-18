@@ -231,7 +231,7 @@ describe('independent studio and game navigation', () => {
     expect(config.chat.image_studio).toBe(false)
     expect(config.chat.translation_studio).toBe(false)
   })
-  it('a feature switch hides its entry even when sidebar display is enabled', () => {
+  it('only the game switch affects availability; retired studio flags are ignored', () => {
     const { result } = sidebarFor(
       {
         chat: {
@@ -248,7 +248,7 @@ describe('independent studio and game navigation', () => {
     const titles = result.current
       .flatMap((group) => group.items)
       .map((item) => item.title)
-    expect(titles).not.toContain('Image Studio')
+    expect(titles).toContain('Image Studio')
     expect(titles).not.toContain('Game Center')
     expect(titles).toContain('Translation Studio')
   })
@@ -269,6 +269,6 @@ describe('independent studio and game navigation', () => {
         { translation_studio_enabled: false },
         '/translation-studio'
       )
-    ).toBe(false)
+    ).toBe(true)
   })
 })

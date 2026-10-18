@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 # New API / QuantumNous derivative: deployment entry point for this custom fork.
 # Run on the production host: bash /root/zifeiyu/project/new-api/upgrade.sh
+#
+# 涉及数据库变更时，先审查迁移兼容性和恢复方案，再依次执行：
+# 1. 仅预检查：拉取远程提交并检查升级条件，不构建、不停服、不执行数据库迁移。
+#    bash upgrade.sh --check --allow-database-change
+# 2. 正式升级：构建镜像，停止应用并备份数据库，然后启动新版本并验证服务。
+#    bash upgrade.sh --allow-database-change
+# --allow-database-change 表示已确认数据库变更风险，不会跳过备份和升级检查。
+# 若新应用已尝试启动后升级失败，需要人工检查恢复，不会自动回退旧应用或数据库。
 set -euo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
 exec python3 - "$ROOT" "$@" <<'PY'

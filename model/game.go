@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"hash/crc32"
-	"strconv"
+	"sync"
 	"time"
 
 	"github.com/QuantumNous/new-api/common"
@@ -19,6 +19,7 @@ var ErrGameClosed = errors.New("The daily challenge is currently closed")
 var ErrGameInput = errors.New("Game progress is out of sync. Reconnect to continue the same run")
 var ErrGameBudget = errors.New("The daily reward budget cannot cover another run")
 var ErrGameSettings = errors.New("Invalid game reward settings")
+var gameSettingsMutex sync.Mutex
 
 // One unique daily attempt per account, enforced by the database on every instance.
 type GameRun struct {
@@ -38,6 +39,11 @@ type GameRun struct {
 	ReservedQuota        int    `json:"-"`
 }
 type GamePeriod struct {
+	WeeklyRewardVersion  int    `gorm:"not null;default:0"`
+	WeeklyFirstQuota     int    `gorm:"not null;default:0"`
+	WeeklySecondQuota    int    `gorm:"not null;default:0"`
+	WeeklyThirdQuota     int    `gorm:"not null;default:0"`
+	RewardsInitialized   bool   `gorm:"not null;default:false"`
 	ID                   string `gorm:"type:varchar(20);primaryKey"`
 	Budget               int
 	Spent                int
@@ -47,6 +53,16 @@ type GamePeriod struct {
 	SubsequentTokenQuota int
 	Settled              bool
 }
+
+// Legacy periods did not record whether rewards had ever been enabled.
+// Preserve any existing financial terms, reservations, spending or settlement;
+// only a wholly empty disabled period can acquire its first reward rules.
+func (period GamePeriod) rewardRulesInitialized() bool {
+	return period.RewardsInitialized || period.WeeklyFirstQuota != 0 || period.WeeklySecondQuota != 0 || period.WeeklyThirdQuota != 0 || period.Budget != 0 || period.Spent != 0 ||
+		period.Reserved != 0 || period.DailyQuota != 0 || period.FirstTokenQuota != 0 ||
+		period.SubsequentTokenQuota != 0 || period.Settled
+}
+
 type GameReward struct {
 	ID        string `gorm:"type:varchar(80);primaryKey"`
 	UserID    int    `gorm:"index"`
@@ -54,6 +70,10 @@ type GameReward struct {
 	CreatedAt int64
 }
 type GameSettings struct {
+	WeeklyRewardVersion  int  `json:"weekly_reward_version"`
+	WeeklyFirstQuota     int  `json:"weekly_first_quota"`
+	WeeklySecondQuota    int  `json:"weekly_second_quota"`
+	WeeklyThirdQuota     int  `json:"weekly_third_quota"`
 	Enabled              bool `json:"enabled"`
 	RewardsEnabled       bool `json:"rewards_enabled"`
 	DailyQuota           int  `json:"daily_quota"`
@@ -64,28 +84,76 @@ type GameSettings struct {
 	SubsequentTokenQuota int  `json:"subsequent_token_quota"`
 }
 
-func GetGameSettings() (GameSettings, error) {
-	settings := GameSettings{Enabled: true, RewardVersion: 2, FirstTokenQuota: common.QuotaRound(5 * common.QuotaPerUnit), SubsequentTokenQuota: common.QuotaRound(common.QuotaPerUnit / 2), DailyBudget: 0, WeeklyBudget: 50000}
-	var option Option
-	err := DB.Where(&Option{Key: "game_center"}).First(&option).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return settings, ValidateGameSettings(settings)
-	}
-	if err != nil {
-		return settings, err
-	}
-	err = common.Unmarshal([]byte(option.Value), &settings)
+func normalizeGameSettings(settings GameSettings) GameSettings {
 	if settings.RewardVersion == 0 {
 		settings.RewardVersion = 2
 	}
-	if err == nil {
-		err = ValidateGameSettings(settings)
+	if settings.WeeklyRewardVersion == 0 {
+		settings.WeeklyRewardVersion = 1
 	}
-	return settings, err
+	if settings.WeeklyRewardVersion == 1 {
+		settings.WeeklyFirstQuota = int(int64(settings.WeeklyBudget) * 30 / 100)
+		settings.WeeklySecondQuota = int(int64(settings.WeeklyBudget) * 20 / 100)
+		settings.WeeklyThirdQuota = int(int64(settings.WeeklyBudget) * 15 / 100)
+	} else {
+		settings.WeeklyBudget = settings.WeeklyFirstQuota + settings.WeeklySecondQuota + settings.WeeklyThirdQuota
+	}
+	return settings
 }
 
-// GameBudgetView reports the actual frozen budget, not subsequently edited settings.
+func (settings GameSettings) weeklyPeriod(week string) GamePeriod {
+	period := GamePeriod{ID: "week:" + week, WeeklyRewardVersion: max(1, settings.WeeklyRewardVersion)}
+	if !settings.RewardsEnabled {
+		return period
+	}
+	period.RewardsInitialized = true
+	if period.WeeklyRewardVersion >= 2 {
+		period.WeeklyFirstQuota, period.WeeklySecondQuota, period.WeeklyThirdQuota = settings.WeeklyFirstQuota, settings.WeeklySecondQuota, settings.WeeklyThirdQuota
+		period.Budget = period.WeeklyFirstQuota + period.WeeklySecondQuota + period.WeeklyThirdQuota
+	} else {
+		period.Budget = settings.WeeklyBudget
+	}
+	return period
+}
+
+func (period GamePeriod) weeklyPrizes() []int {
+	if period.WeeklyRewardVersion >= 2 {
+		return []int{period.WeeklyFirstQuota, period.WeeklySecondQuota, period.WeeklyThirdQuota}
+	}
+	percentages := []int{30, 20, 15, 5, 5, 5, 5, 5, 5, 5}
+	prizes := make([]int, len(percentages))
+	for i, percentage := range percentages {
+		prizes[i] = int(int64(period.Budget) * int64(percentage) / 100)
+	}
+	return prizes
+}
+
+func GetGameSettings() (GameSettings, error) {
+	settings := GameSettings{Enabled: true, RewardVersion: 2, WeeklyRewardVersion: 1, FirstTokenQuota: common.QuotaRound(5 * common.QuotaPerUnit), SubsequentTokenQuota: common.QuotaRound(common.QuotaPerUnit / 2), DailyBudget: 0, WeeklyBudget: 50000}
+	var option Option
+	err := DB.Where(&Option{Key: "game_center"}).First(&option).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return settings, err
+	}
+	if err == nil {
+		if err = common.Unmarshal([]byte(option.Value), &settings); err != nil {
+			return settings, err
+		}
+	}
+	if err = ValidateGameSettings(settings); err != nil {
+		return settings, err
+	}
+	return normalizeGameSettings(settings), nil
+}
+
+// GameBudgetView reports frozen reward rules once active, or the current
+// configuration before the first reward-enabled run initializes the day.
 type GameBudgetView struct {
+	WeeklyRewardVersion  int  `json:"weekly_reward_version"`
+	WeeklyFirstQuota     int  `json:"weekly_first_quota"`
+	WeeklySecondQuota    int  `json:"weekly_second_quota"`
+	WeeklyThirdQuota     int  `json:"weekly_third_quota"`
+	WeeklyRewardsEnabled bool `json:"weekly_rewards_enabled"`
 	DailyQuota           int  `json:"daily_quota"`
 	DailyRemaining       int  `json:"daily_remaining"`
 	WeeklyPool           int  `json:"weekly_pool"`
@@ -100,6 +168,7 @@ type GameBudgetView struct {
 func GetGameBudgets(settings GameSettings, now time.Time) (GameBudgetView, error) {
 	day, week, _ := GameCalendar(now)
 	view := GameBudgetView{CanStart: true}
+	weekly := settings.weeklyPeriod(week)
 	dayID := "day:" + day
 	if settings.RewardVersion >= 2 {
 		dayID = "token:" + day
@@ -108,7 +177,6 @@ func GetGameBudgets(settings GameSettings, now time.Time) (GameBudgetView, error
 	if settings.RewardsEnabled {
 		view.DailyQuota = settings.DailyQuota
 		view.DailyRemaining = settings.DailyBudget
-		view.WeeklyPool = settings.WeeklyBudget
 		view.FirstTokenQuota = settings.FirstTokenQuota
 		view.SubsequentTokenQuota = settings.SubsequentTokenQuota
 	}
@@ -118,6 +186,9 @@ func GetGameBudgets(settings GameSettings, now time.Time) (GameBudgetView, error
 	}
 	for _, p := range periods {
 		if p.ID == dayID {
+			if settings.RewardVersion >= 2 && !p.rewardRulesInitialized() {
+				continue
+			}
 			view.DailyQuota = p.DailyQuota
 			view.DailyReserved = p.Reserved
 			view.DailyRemaining = max(0, p.Budget-p.Spent-p.Reserved)
@@ -125,9 +196,14 @@ func GetGameBudgets(settings GameSettings, now time.Time) (GameBudgetView, error
 			view.SubsequentTokenQuota = p.SubsequentTokenQuota
 			view.Unlimited = settings.RewardVersion >= 2 && p.Budget == 0
 		} else {
-			view.WeeklyPool = p.Budget
+			weekly = p
 		}
 	}
+	prizes := weekly.weeklyPrizes()
+	view.WeeklyPool = weekly.Budget
+	view.WeeklyRewardVersion = max(1, weekly.WeeklyRewardVersion)
+	view.WeeklyFirstQuota, view.WeeklySecondQuota, view.WeeklyThirdQuota = prizes[0], prizes[1], prizes[2]
+	view.WeeklyRewardsEnabled = weekly.rewardRulesInitialized()
 	if settings.RewardVersion >= 2 {
 		view.MaxRunReward = GameTokenReward(tokengame.MaxTokens, view.FirstTokenQuota, view.SubsequentTokenQuota)
 		view.CanStart = view.Unlimited || view.DailyRemaining >= view.MaxRunReward
@@ -142,6 +218,12 @@ func GetGameBudgets(settings GameSettings, now time.Time) (GameBudgetView, error
 	return view, nil
 }
 func ValidateGameSettings(settings GameSettings) error {
+	if settings.WeeklyRewardVersion < 0 || settings.WeeklyRewardVersion > 2 || settings.WeeklyFirstQuota < 0 || settings.WeeklySecondQuota < 0 || settings.WeeklyThirdQuota < 0 || settings.WeeklyFirstQuota > 1000000000 || settings.WeeklySecondQuota > 1000000000 || settings.WeeklyThirdQuota > 1000000000 {
+		return ErrGameSettings
+	}
+	if settings.WeeklyRewardVersion == 2 && int64(settings.WeeklyFirstQuota)+int64(settings.WeeklySecondQuota)+int64(settings.WeeklyThirdQuota) > 1000000000 {
+		return ErrGameSettings
+	}
 	if settings.DailyQuota < 0 || settings.DailyQuota > 10000000 || settings.DailyBudget < 0 || settings.DailyBudget > 1000000000 || settings.WeeklyBudget < 0 || settings.WeeklyBudget > 1000000000 || (settings.RewardVersion == 1 && settings.DailyQuota > settings.DailyBudget) {
 		return ErrGameSettings
 	}
@@ -157,27 +239,52 @@ func ValidateGameSettings(settings GameSettings) error {
 
 	return nil
 }
-func SaveGameSettings(settings GameSettings) error { return SaveWorkbenchSettings(settings, nil) }
-func SaveWorkbenchSettings(settings GameSettings, studios map[string]bool) error {
-	if settings.RewardVersion == 0 {
-		settings.RewardVersion = 2
-	}
+func SaveGameSettings(settings GameSettings) error {
+	return saveGameSettingsAt(settings, time.Now())
+}
+func saveGameSettingsAt(settings GameSettings, now time.Time) error {
 	if err := ValidateGameSettings(settings); err != nil {
 		return err
 	}
-
+	settings = normalizeGameSettings(settings)
 	value, err := common.Marshal(settings)
 	if err != nil {
 		return err
 	}
-	values := map[string]string{"game_center": string(value)}
-	for module, enabled := range studios {
-		if module != "image_studio" && module != "translation_studio" {
+	gameSettingsMutex.Lock()
+	defer gameSettingsMutex.Unlock()
+	err = DB.Transaction(func(tx *gorm.DB) error {
+		option := Option{Key: "game_center", Value: string(value)}
+		if err := tx.Clauses(clause.OnConflict{Columns: []clause.Column{{Name: "key"}}, DoUpdates: clause.AssignmentColumns([]string{"value"})}).Create(&option).Error; err != nil {
+			return err
+		}
+		if settings.WeeklyRewardVersion < 2 {
+			return nil
+		}
+		_, week, _ := GameCalendar(now)
+		period := GamePeriod{ID: "week:" + week, WeeklyRewardVersion: 2}
+		if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&period).Error; err != nil {
+			return err
+		}
+		if err := lockForUpdate(tx).First(&period, "id = ?", period.ID).Error; err != nil {
+			return err
+		}
+		if period.Settled || (!settings.RewardsEnabled && !period.rewardRulesInitialized()) {
+			return nil
+		}
+		if period.Spent != 0 {
 			return ErrGameSettings
 		}
-		values["studio_setting."+module+"_enabled"] = strconv.FormatBool(enabled)
+		period.WeeklyRewardVersion = 2
+		period.WeeklyFirstQuota, period.WeeklySecondQuota, period.WeeklyThirdQuota = settings.WeeklyFirstQuota, settings.WeeklySecondQuota, settings.WeeklyThirdQuota
+		period.Budget = settings.WeeklyBudget
+		period.RewardsInitialized = true
+		return tx.Save(&period).Error
+	})
+	if err != nil {
+		return err
 	}
-	return UpdateOptionsBulk(values)
+	return updateOptionMap("game_center", string(value))
 }
 func GameTokenReward(count, first, subsequent int) int {
 	if count <= 0 {
@@ -260,14 +367,14 @@ func StartGame(userID int, now time.Time) (*GameView, error) {
 			return tx.Where("user_id = ? AND day = ?", userID, day).First(&run).Error
 		}
 		daily := GamePeriod{ID: "day:" + day}
-		weekly := GamePeriod{ID: "week:" + week}
+		weekly := settings.weeklyPeriod(week)
 		if settings.RewardVersion >= 2 {
 			daily.ID = "token:" + day
 		}
 		if settings.RewardsEnabled {
+			daily.RewardsInitialized = settings.RewardVersion >= 2
 			daily.Budget = settings.DailyBudget
 			daily.DailyQuota = settings.DailyQuota
-			weekly.Budget = settings.WeeklyBudget
 			daily.FirstTokenQuota = settings.FirstTokenQuota
 			daily.SubsequentTokenQuota = settings.SubsequentTokenQuota
 		}
@@ -276,9 +383,30 @@ func StartGame(userID int, now time.Time) (*GameView, error) {
 				return err
 			}
 		}
+		if settings.WeeklyRewardVersion >= 2 && settings.RewardsEnabled {
+			if err := lockForUpdate(tx).First(&weekly, "id = ?", weekly.ID).Error; err != nil {
+				return err
+			}
+			if !weekly.rewardRulesInitialized() {
+				weekly = settings.weeklyPeriod(week)
+				if err := tx.Save(&weekly).Error; err != nil {
+					return err
+				}
+			}
+		}
 		if settings.RewardVersion >= 2 {
 			if err := lockForUpdate(tx).First(&daily, "id = ?", daily.ID).Error; err != nil {
 				return err
+			}
+			if settings.RewardsEnabled && !daily.rewardRulesInitialized() {
+				daily.RewardsInitialized = true
+				daily.Budget = settings.DailyBudget
+				daily.DailyQuota = settings.DailyQuota
+				daily.FirstTokenQuota = settings.FirstTokenQuota
+				daily.SubsequentTokenQuota = settings.SubsequentTokenQuota
+				if err := tx.Save(&daily).Error; err != nil {
+					return err
+				}
 			}
 			run.FirstTokenQuota = daily.FirstTokenQuota
 			run.SubsequentTokenQuota = daily.SubsequentTokenQuota
@@ -507,12 +635,12 @@ func SettleGameWeek(week string, now time.Time) error {
 		if err != nil {
 			return err
 		}
-		percentages := []int{30, 20, 15, 5, 5, 5, 5, 5, 5, 5}
+		prizes := period.weeklyPrizes()
 		for i, row := range rows {
-			if i >= len(percentages) {
+			if i >= len(prizes) {
 				break
 			}
-			amount := int(int64(period.Budget) * int64(percentages[i]) / 100)
+			amount := prizes[i]
 			if amount == 0 {
 				continue
 			}

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"errors"
 	"maps"
 	"strconv"
 	"strings"
@@ -235,9 +234,6 @@ func validateOptionValue(key string, value string) error {
 			return ErrGameSettings
 		}
 		return ValidateGameSettings(settings)
-	}
-	if (key == "studio_setting.image_studio_enabled" || key == "studio_setting.translation_studio_enabled") && value != "true" && value != "false" {
-		return errors.New("Invalid studio availability setting")
 	}
 	if key == legacyAccessTokenRetireAtKey {
 		return errLegacyRetireAtReadOnly

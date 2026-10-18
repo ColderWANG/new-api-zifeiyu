@@ -36,11 +36,12 @@ import { PublicLayout } from '@/components/layout/components/public-layout'
 import { Button } from '@/components/ui/button'
 import { formatNumber, formatQuota } from '@/lib/format'
 
-import { getGameStatus, startGame } from './api'
+import { getGameRewards, getGameStatus, startGame } from './api'
 import { Arena } from './arena'
 import { DURATION } from './engine'
 import { Leaderboard } from './leaderboard'
 import { useGameSession } from './use-game-session'
+import { WeeklyRewards } from './weekly-rewards'
 
 import './game-center.css'
 
@@ -61,6 +62,23 @@ export function GameCenter() {
     refetchOnWindowFocus: false,
     staleTime: 0,
   })
+  const rewards = useQuery({
+    queryKey: ['game-rewards'],
+    queryFn: getGameRewards,
+    staleTime: 0,
+    refetchInterval: 5000,
+    refetchOnWindowFocus: 'always',
+    meta: { errorToast: false },
+  })
+  const budgets = rewards.data?.budgets ?? status.data?.budgets
+  const weeklyPrizes = [
+    budgets?.weekly_first_quota ??
+      Math.floor((budgets?.weekly_pool ?? 0) * 0.3),
+    budgets?.weekly_second_quota ??
+      Math.floor((budgets?.weekly_pool ?? 0) * 0.2),
+    budgets?.weekly_third_quota ??
+      Math.floor((budgets?.weekly_pool ?? 0) * 0.15),
+  ]
   const session = useGameSession(() => {
     void queryClient.invalidateQueries({ queryKey: ['game-status'] })
     void queryClient.invalidateQueries({ queryKey: ['game-rankings'] })
@@ -81,7 +99,9 @@ export function GameCenter() {
   }, [active])
   const finished = !!run && !active
   const available =
-    !!status.data?.settings.enabled && status.data.budgets.can_start && !run
+    !!(rewards.data?.enabled ?? status.data?.settings.enabled) &&
+    !!budgets?.can_start &&
+    !run
   const start = useMutation({
     mutationFn: startGame,
     onSuccess: (next) => {
@@ -124,20 +144,25 @@ export function GameCenter() {
   if (run?.status === 'survived') runTitle = t('Challenge complete')
   if (run?.status === 'abandoned') runTitle = t('Run ended')
   let startLabel = t('Start today’s challenge')
-  if (!status.data?.settings.enabled) startLabel = t('Challenge closed')
-  if (status.data && !status.data.budgets.can_start) {
+  if (!(rewards.data?.enabled ?? status.data?.settings.enabled)) {
+    startLabel = t('Challenge closed')
+  }
+  if (budgets && !budgets.can_start) {
     startLabel = t('Daily reward budget exhausted')
   }
   if (status.isPending) startLabel = t('Loading...')
-  const firstReward =
-    run?.first_token_quota ?? status.data?.budgets.first_token_quota ?? 0
-  const additionalReward =
-    run?.subsequent_token_quota ??
-    status.data?.budgets.subsequent_token_quota ??
-    0
+  const firstReward = budgets?.first_token_quota ?? 0
+  const additionalReward = budgets?.subsequent_token_quota ?? 0
+  const runFirstReward = run?.first_token_quota ?? firstReward
+  const runAdditionalReward = run?.subsequent_token_quota ?? additionalReward
+  const hasDifferentRunRewards =
+    !!run &&
+    (runFirstReward !== firstReward || runAdditionalReward !== additionalReward)
   const pickupCount = run?.state.picked_tokens ?? 0
   const estimatedReward =
-    pickupCount > 0 ? firstReward + (pickupCount - 1) * additionalReward : 0
+    pickupCount > 0
+      ? runFirstReward + (pickupCount - 1) * runAdditionalReward
+      : 0
   let connectionLabel = t('Same arena. Same rules. Everyone starts equal.')
   if (active) {
     connectionLabel = t('{{count}} tokens · Reward {{reward}}', {
@@ -449,21 +474,32 @@ export function GameCenter() {
                   'Rewards are based on tokens collected, not token points. Your reward is credited when the run ends, including early exit.'
                 )}
               </p>
+              {hasDifferentRunRewards && (
+                <p className='text-muted-foreground mt-3 border-t pt-3 text-xs leading-relaxed'>
+                  {t(
+                    'This run keeps its starting rules: {{first}} for the first token, then {{additional}} each. The amounts above apply to new runs.',
+                    {
+                      first: formatQuota(runFirstReward),
+                      additional: formatQuota(runAdditionalReward),
+                    }
+                  )}
+                </p>
+              )}
               {run && (
                 <div className='mt-4 border-t pt-3 text-sm'>
                   {t('Tokens collected')}: {formatNumber(pickupCount)}
                 </div>
               )}
-              <div className='mt-5 flex items-center justify-between gap-2 border-t pt-4 text-xs'>
-                <span className='text-muted-foreground'>
-                  {t('Weekly prize pool')}
-                </span>
-                <span className='font-mono font-medium'>
-                  {formatQuota(status.data?.budgets.weekly_pool ?? 0)}
-                </span>
-              </div>
             </section>
-            <Leaderboard />
+            <WeeklyRewards
+              prizes={weeklyPrizes}
+              total={budgets?.weekly_pool ?? 0}
+              legacy={(budgets?.weekly_reward_version ?? 1) < 2}
+              enabled={budgets?.weekly_rewards_enabled}
+              unavailable={rewards.isError}
+              retry={() => void rewards.refetch()}
+            />
+            <Leaderboard weeklyPrizes={weeklyPrizes} />
           </aside>
         </div>
         <section
@@ -495,7 +531,9 @@ export function GameCenter() {
             <h3 className='text-sm font-semibold'>{t('Climb together')}</h3>
             <p className='text-muted-foreground mt-2 text-xs leading-6'>
               {t(
-                'Daily reset at 00:00 UTC+8. Weekly prizes settle after Monday 00:05: 30%, 20%, 15% for the top three; 5% each for ranks 4–10. Ties go to the earliest finish.'
+                (budgets?.weekly_reward_version ?? 1) >= 2
+                  ? 'Daily reset at 00:00 UTC+8. Weekly prizes settle after Monday 00:05 using the displayed first, second and third place amounts. Ties go to the earliest finish.'
+                  : 'Daily reset at 00:00 UTC+8. Weekly prizes settle after Monday 00:05: 30%, 20%, 15% for the top three; 5% each for ranks 4–10. Ties go to the earliest finish.'
               )}
             </p>
           </article>

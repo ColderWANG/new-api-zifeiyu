@@ -16,13 +16,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import type { TranslationSource, TranslationUnit } from '../types'
+import type {
+  TranslationFormat,
+  TranslationRegion,
+  TranslationSource,
+  TranslationUnit,
+} from '../types'
+import { groupTranslationSegments, readDocx } from './docx'
 
 export const MAX_FILE_BYTES = 10 * 1024 * 1024
 export const MAX_SOURCE_CHARACTERS = 60_000
 export const MAX_PDF_PAGES = 20
 const CHUNK_CHARACTERS = 4_000
-const MAX_DOCUMENT_XML_BYTES = 8 * 1024 * 1024
 
 export function splitTranslationText(text: string): TranslationUnit[] {
   const normalized = text.replaceAll('\r\n', '\n').trim()
@@ -48,58 +53,6 @@ export function splitTranslationText(text: string): TranslationUnit[] {
   }
   if (remaining) units.push({ text: remaining })
   return units
-}
-
-export async function extractDocxText(data: Uint8Array): Promise<string> {
-  const { unzipSync } = await import('fflate')
-  let documentXml: Uint8Array | undefined
-  try {
-    documentXml = unzipSync(data, {
-      filter: (file) =>
-        file.name === 'word/document.xml' &&
-        file.originalSize <= MAX_DOCUMENT_XML_BYTES,
-    })['word/document.xml']
-  } catch {
-    throw new Error('This DOCX file could not be read.')
-  }
-  if (!documentXml || documentXml.length > MAX_DOCUMENT_XML_BYTES) {
-    throw new Error(
-      'This DOCX file is invalid or its text content is too large.'
-    )
-  }
-  const xml = new TextDecoder('utf-8', { fatal: true }).decode(documentXml)
-  if (/<!DOCTYPE|<!ENTITY/i.test(xml)) {
-    throw new Error('This DOCX file contains unsupported XML declarations.')
-  }
-  const doc = new DOMParser().parseFromString(xml, 'application/xml')
-  if (doc.querySelector('parsererror')) {
-    throw new Error('This DOCX file could not be read.')
-  }
-  const namespace =
-    'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
-  const body = doc.getElementsByTagNameNS(namespace, 'body')[0]
-  if (!body) throw new Error('This DOCX file could not be read.')
-  return [...body.children]
-    .map((block) => {
-      if (block.localName === 'tbl') {
-        return [...block.getElementsByTagNameNS(namespace, 'tr')]
-          .map((row) =>
-            [...row.getElementsByTagNameNS(namespace, 'tc')]
-              .map((cell) =>
-                [...cell.getElementsByTagNameNS(namespace, 't')]
-                  .map((node) => node.textContent ?? '')
-                  .join('')
-              )
-              .join(' | ')
-          )
-          .join('\n')
-      }
-      return [...block.getElementsByTagNameNS(namespace, 't')]
-        .map((node) => node.textContent ?? '')
-        .join('')
-    })
-    .filter(Boolean)
-    .join('\n\n')
 }
 
 export async function readTranslationFile(
@@ -129,6 +82,7 @@ export async function readTranslationFile(
     units: [],
     pages: 0,
     imagePages: 0,
+    format: extension as TranslationFormat,
   }
   if (['png', 'jpg', 'jpeg', 'webp'].includes(extension)) {
     const isPng =
@@ -145,6 +99,9 @@ export async function readTranslationFile(
         'This image could not be read. Choose a PNG, JPG or WebP image.'
       )
     }
+    let mime = 'image/webp'
+    if (isPng) mime = 'image/png'
+    else if (isJpeg) mime = 'image/jpeg'
     const bitmap = await createImageBitmap(file)
     try {
       signal.throwIfAborted()
@@ -163,15 +120,34 @@ export async function readTranslationFile(
       context.fillRect(0, 0, canvas.width, canvas.height)
       context.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
       const image = canvas.toDataURL('image/jpeg', 0.92)
-      return { ...result, preview: image, imagePages: 1, units: [{ image }] }
+      let binary = ''
+      for (let offset = 0; offset < data.length; offset += 8192) {
+        binary += String.fromCharCode(...data.subarray(offset, offset + 8192))
+      }
+      return {
+        ...result,
+        preview: image,
+        imagePages: 1,
+        units: [{ image, page: 1, locateText: true }],
+        renderedPages: [
+          {
+            image: `data:${mime};base64,${btoa(binary)}`,
+            width: bitmap.width,
+            height: bitmap.height,
+            regions: [],
+          },
+        ],
+      }
     } finally {
       bitmap.close()
     }
   }
   if (extension === 'docx') {
-    result.text = await extractDocxText(data)
+    const document = await readDocx(data)
     signal.throwIfAborted()
-    result.units = splitTranslationText(result.text)
+    result.text = document.text
+    result.units = document.units
+    result.docx = document.template
     return result
   }
   if (extension !== 'pdf') {
@@ -224,6 +200,23 @@ export async function readTranslationFile(
         )
         .join('')
         .trim()
+      const base = page.getViewport({ scale: 1 })
+      const viewport = page.getViewport({
+        scale: Math.min(2, 2000 / Math.max(base.width, base.height)),
+      })
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.ceil(viewport.width)
+      canvas.height = Math.ceil(viewport.height)
+      await page.render({ canvas, viewport }).promise
+      signal.throwIfAborted()
+      const image = canvas.toDataURL('image/jpeg', 0.94)
+      imageBytes += image.length
+      if (imageBytes > 32 * 1024 * 1024) {
+        throw new Error(
+          'The scanned pages are too large. Split the PDF into smaller files.'
+        )
+      }
+      const regions: TranslationRegion[] = []
       if (text.length > 0) {
         textPages.push(text)
         if (textPages.join('\n').length > MAX_SOURCE_CHARACTERS) {
@@ -231,35 +224,83 @@ export async function readTranslationFile(
             'The source exceeds the 60,000 character limit. Split it into smaller files.'
           )
         }
+        for (const item of content.items) {
+          if (!('str' in item) || !item.str.trim()) continue
+          const m = pdfjs.Util.transform(viewport.transform, item.transform)
+          const baseline = Math.hypot(m[0], m[1]) || 1
+          const dx = (m[0] / baseline) * item.width * viewport.scale
+          const dy = (m[1] / baseline) * item.width * viewport.scale
+          const left = Math.max(
+            0,
+            Math.min(m[4], m[4] + dx, m[4] + m[2], m[4] + dx + m[2])
+          )
+          const top = Math.max(
+            0,
+            Math.min(m[5], m[5] + dy, m[5] + m[3], m[5] + dy + m[3])
+          )
+          const right = Math.min(
+            viewport.width,
+            Math.max(m[4], m[4] + dx, m[4] + m[2], m[4] + dx + m[2])
+          )
+          const bottom = Math.min(
+            viewport.height,
+            Math.max(m[5], m[5] + dy, m[5] + m[3], m[5] + dy + m[3]) +
+              Math.hypot(m[2], m[3]) * 0.22
+          )
+          if (right <= left || bottom <= top) continue
+          const region: TranslationRegion = {
+            id: `p${pageNumber}r${regions.length}`,
+            text: item.str,
+            box: [
+              (left / viewport.width) * 1000,
+              (top / viewport.height) * 1000,
+              ((right - left) / viewport.width) * 1000,
+              ((bottom - top) / viewport.height) * 1000,
+            ] as [number, number, number, number],
+          }
+          // Adjacent spans on one horizontal line are translated together.
+          const previous = regions.at(-1)
+          if (
+            previous &&
+            Math.abs(previous.box[1] - region.box[1]) < 2 &&
+            Math.abs(previous.box[3] - region.box[3]) < 2 &&
+            region.box[0] >= previous.box[0] &&
+            region.box[0] - previous.box[0] - previous.box[2] < 8 &&
+            previous.text.length + item.str.length < 2000
+          ) {
+            previous.text +=
+              item.str.startsWith(' ') || previous.text.endsWith(' ')
+                ? item.str
+                : ` ${item.str}`
+            previous.box[2] = Math.max(
+              previous.box[2],
+              region.box[0] + region.box[2] - previous.box[0]
+            )
+          } else regions.push(region)
+        }
         result.units.push(
-          ...splitTranslationText(text).map((unit) => ({
-            ...unit,
-            page: pageNumber,
-          }))
+          ...groupTranslationSegments(
+            regions.map((region) => ({
+              id: region.id,
+              text: region.text,
+              paragraph: region.id,
+            }))
+          ).map((unit) => ({ ...unit, page: pageNumber }))
         )
       } else {
-        const base = page.getViewport({ scale: 1 })
-        const viewport = page.getViewport({
-          scale: Math.min(2, 1600 / Math.max(base.width, base.height)),
-        })
-        const canvas = document.createElement('canvas')
-        canvas.width = Math.ceil(viewport.width)
-        canvas.height = Math.ceil(viewport.height)
-        await page.render({ canvas, viewport }).promise
-        signal.throwIfAborted()
-        const image = canvas.toDataURL('image/jpeg', 0.9)
-        imageBytes += image.length
-        if (imageBytes > 16 * 1024 * 1024) {
-          throw new Error(
-            'The scanned pages are too large. Split the PDF into smaller files.'
-          )
-        }
-        result.units.push({ image, page: pageNumber })
+        result.units.push({ image, page: pageNumber, locateText: true })
         result.imagePages += 1
-        result.preview ??= image
-        canvas.width = 0
-        canvas.height = 0
       }
+      result.renderedPages ??= []
+      result.renderedPages.push({
+        image,
+        width: base.width,
+        height: base.height,
+        regions,
+      })
+      result.preview ??= image
+      canvas.width = 0
+      canvas.height = 0
       page.cleanup()
     }
     result.text = textPages.join('\n\n')

@@ -36,7 +36,39 @@ export const TRANSLATION_LANGUAGES = [
 export type TranslationLanguage =
   (typeof TRANSLATION_LANGUAGES)[number]['value']
 
-export type TranslationUnit = { text?: string; image?: string; page?: number }
+export type TranslationFormat =
+  | 'txt'
+  | 'md'
+  | 'docx'
+  | 'pdf'
+  | 'png'
+  | 'jpg'
+  | 'jpeg'
+  | 'webp'
+export type TranslationSegment = { id: string; text: string; paragraph: string }
+// Coordinates are normalized to 0..1000 in the displayed page orientation.
+export type TranslationRegion = {
+  id: string
+  text: string
+  box: [number, number, number, number]
+}
+export type TranslationPage = {
+  image: string
+  width: number
+  height: number
+  regions: TranslationRegion[]
+}
+export type DocxTemplate = {
+  files: Record<string, Uint8Array>
+  nodes: { part: string; index: number; ids: string[] }[]
+}
+export type TranslationUnit = {
+  text?: string
+  image?: string
+  page?: number
+  segments?: TranslationSegment[]
+  locateText?: boolean
+}
 export type TranslationSource = {
   name: string
   size: number
@@ -45,11 +77,16 @@ export type TranslationSource = {
   pages: number
   imagePages: number
   preview?: string
+  format?: TranslationFormat
+  docx?: DocxTemplate
+  renderedPages?: TranslationPage[]
 }
 export type TranslationProgress = {
   completed: number
   total: number
   text: string
+  translations?: Record<string, string>
+  regions?: Record<number, TranslationRegion[]>
 }
 export type TranslationOptions = {
   model: string

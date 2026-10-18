@@ -73,25 +73,13 @@ func GetGameRankings(c *gin.Context) {
 }
 func UpdateGameSettings(c *gin.Context) {
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 4096)
-	var request struct {
-		model.GameSettings
-		ImageStudioEnabled       *bool `json:"image_studio_enabled"`
-		TranslationStudioEnabled *bool `json:"translation_studio_enabled"`
-	}
-	if err := c.ShouldBindJSON(&request); err != nil {
+	var settings model.GameSettings
+	if err := c.ShouldBindJSON(&settings); err != nil {
 		common.ApiErrorT(c, "Invalid game reward settings")
 		return
 	}
-	settings := request.GameSettings
 	settings.RewardVersion = 2
-	studios := map[string]bool{}
-	if request.ImageStudioEnabled != nil {
-		studios["image_studio"] = *request.ImageStudioEnabled
-	}
-	if request.TranslationStudioEnabled != nil {
-		studios["translation_studio"] = *request.TranslationStudioEnabled
-	}
-	if err := model.SaveWorkbenchSettings(settings, studios); err != nil {
+	if err := model.SaveGameSettings(settings); err != nil {
 		common.ApiErrorT(c, "Invalid game reward settings")
 		return
 	}
@@ -105,4 +93,21 @@ func GetGameSettings(c *gin.Context) {
 		return
 	}
 	common.ApiSuccess(c, settings)
+}
+
+// Reward polling does not reload or advance the player's active game state.
+func GetGameRewards(c *gin.Context) {
+	now := time.Now()
+	settings, err := model.GetGameSettings()
+	if err != nil {
+		common.ApiErrorT(c, "Unable to load game rewards")
+		return
+	}
+	budgets, err := model.GetGameBudgets(settings, now)
+	if err != nil {
+		common.ApiErrorT(c, "Unable to load game rewards")
+		return
+	}
+	_, week, _ := model.GameCalendar(now)
+	common.ApiSuccess(c, gin.H{"budgets": budgets, "week": week, "enabled": settings.Enabled, "rewards_enabled": settings.RewardsEnabled, "server_time": now.UnixMilli()})
 }

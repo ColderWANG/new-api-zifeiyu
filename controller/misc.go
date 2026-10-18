@@ -39,8 +39,6 @@ func TestStatus(c *gin.Context) {
 }
 
 func GetStatus(c *gin.Context) {
-	imageStudioEnabled := operation_setting.StudioEnabled("image_studio")
-	translationStudioEnabled := operation_setting.StudioEnabled("translation_studio")
 
 	cs := console_setting.GetConsoleSetting()
 	passkeySetting := system_setting.PasskeySettingsSnapshot()
@@ -113,11 +111,9 @@ func GetStatus(c *gin.Context) {
 		"faq_enabled":           cs.FAQEnabled,
 
 		// 模块管理配置
-		"HeaderNavModules":           common.OptionMap["HeaderNavModules"],
-		"SidebarModulesAdmin":        common.OptionMap["SidebarModulesAdmin"],
-		"game_center_enabled":        gameSettings.Enabled,
-		"image_studio_enabled":       imageStudioEnabled,
-		"translation_studio_enabled": translationStudioEnabled,
+		"HeaderNavModules":    common.OptionMap["HeaderNavModules"],
+		"SidebarModulesAdmin": common.OptionMap["SidebarModulesAdmin"],
+		"game_center_enabled": gameSettings.Enabled,
 
 		"oidc_enabled":                system_setting.GetOIDCSettings().Enabled,
 		"oidc_client_id":              system_setting.GetOIDCSettings().ClientId,

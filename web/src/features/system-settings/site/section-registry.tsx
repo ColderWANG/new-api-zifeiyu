@@ -1,15 +1,3 @@
-import { SystemInfoSection } from '../general/system-info-section'
-import {
-  parseHeaderNavModules,
-  parseSidebarModulesAdmin,
-  serializeHeaderNavModules,
-  serializeSidebarModulesAdmin,
-} from '../maintenance/config'
-import { HeaderNavigationSection } from '../maintenance/header-navigation-section'
-import { NoticeSection } from '../maintenance/notice-section'
-import { SidebarModulesSection } from '../maintenance/sidebar-modules-section'
-import type { SiteSettings } from '../types'
-import { createSectionRegistry } from '../utils/section-registry'
 /*
 Copyright (C) 2023-2026 QuantumNous
 
@@ -28,21 +16,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { WorkbenchSettingsSection } from './workbench-settings-section'
+import { SystemInfoSection } from '../general/system-info-section'
+import {
+  parseHeaderNavModules,
+  parseSidebarModulesAdmin,
+  serializeHeaderNavModules,
+  serializeSidebarModulesAdmin,
+} from '../maintenance/config'
+import { HeaderNavigationSection } from '../maintenance/header-navigation-section'
+import { NoticeSection } from '../maintenance/notice-section'
+import { SidebarModulesSection } from '../maintenance/sidebar-modules-section'
+import type { SiteSettings } from '../types'
+import { createSectionRegistry } from '../utils/section-registry'
+import { GameSettingsSection } from './game-settings-section'
 
 const SITE_SECTIONS = [
-  {
-    id: 'studios-games',
-    titleKey: 'Studios and games',
-    build: (settings: SiteSettings) => (
-      <WorkbenchSettingsSection
-        imageEnabled={settings['studio_setting.image_studio_enabled']}
-        translationEnabled={
-          settings['studio_setting.translation_studio_enabled']
-        }
-      />
-    ),
-  },
   {
     id: 'system-info',
     titleKey: 'System Information',
@@ -103,6 +91,11 @@ const SITE_SECTIONS = [
         />
       )
     },
+  },
+  {
+    id: 'game-center',
+    titleKey: 'Game Center',
+    build: () => <GameSettingsSection />,
   },
 ] as const
 

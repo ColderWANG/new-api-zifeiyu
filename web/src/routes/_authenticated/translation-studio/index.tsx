@@ -16,23 +16,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 
 import { Main } from '@/components/layout'
 import { TranslationStudio } from '@/features/translation-studio'
-import { isWorkbenchEnabledForGuard } from '@/lib/nav-modules'
 
 export const Route = createFileRoute('/_authenticated/translation-studio/')({
-  beforeLoad: async ({ context }) => {
-    if (
-      !(await isWorkbenchEnabledForGuard(
-        context.queryClient,
-        '/translation-studio'
-      ))
-    ) {
-      throw redirect({ to: '/dashboard' })
-    }
-  },
   component: () => (
     <Main className='overflow-y-auto'>
       <TranslationStudio />
