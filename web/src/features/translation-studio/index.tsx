@@ -585,7 +585,9 @@ function TranslationWorkspace() {
             (source?.docx || source?.renderedPages) && (
               <p className='translation-caption px-5 pb-3'>
                 {t(
-                  'Partial file: untranslated sections remain in the original language.'
+                  source?.docx
+                    ? 'Partial file: untranslated sections remain in the original language.'
+                    : 'Partial file: only completed translations are included.'
                 )}
               </p>
             )}
@@ -658,7 +660,7 @@ function TranslationWorkspace() {
       </div>
       <p className='translation-disclaimer'>
         {t(
-          'Downloads keep the uploaded file format. DOCX retains document structure; PDF and images place translations over the source pages as flattened images. Complex backgrounds and layouts may need review. PDF: up to 20 pages. Translation uses your account quota at the selected model rates.'
+          'Downloads keep the uploaded file format. PDF and images are rebuilt with a clean translation layout, without the original background or illustrations. PDF text can be selected and copied; long translations continue on new pages. DOCX retains its document structure. PDF input: up to 20 pages. Translation uses your account quota at the selected model rates.'
         )}
       </p>
     </div>

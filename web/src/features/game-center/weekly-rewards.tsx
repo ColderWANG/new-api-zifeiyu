@@ -25,7 +25,6 @@ import { formatQuota } from '@/lib/format'
 export function WeeklyRewards(props: {
   prizes: number[]
   total: number
-  legacy: boolean
   enabled?: boolean
   unavailable: boolean
   retry: () => void
@@ -49,9 +48,7 @@ export function WeeklyRewards(props: {
         ))}
       </div>
       <div className='mt-3 flex items-center justify-between gap-3 text-xs'>
-        <span className='text-muted-foreground'>
-          {t('Weekly prize pool')}
-        </span>
+        <span className='text-muted-foreground'>{t('Weekly prize pool')}</span>
         <strong className='font-mono'>{formatQuota(props.total)}</strong>
       </div>
       <p className='text-muted-foreground mt-3 text-xs leading-relaxed'>
@@ -62,13 +59,6 @@ export function WeeklyRewards(props: {
       {props.enabled === false && (
         <p className='text-muted-foreground mt-2 text-xs'>
           {t('Weekly rewards are not enabled for this week.')}
-        </p>
-      )}
-      {props.legacy && (
-        <p className='text-muted-foreground mt-2 text-xs'>
-          {t(
-            'This week still uses the previous percentage rules, including rewards for ranks 4–10.'
-          )}
         </p>
       )}
       {props.unavailable && (

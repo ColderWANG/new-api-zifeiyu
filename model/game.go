@@ -120,7 +120,7 @@ func (period GamePeriod) weeklyPrizes() []int {
 	if period.WeeklyRewardVersion >= 2 {
 		return []int{period.WeeklyFirstQuota, period.WeeklySecondQuota, period.WeeklyThirdQuota}
 	}
-	percentages := []int{30, 20, 15, 5, 5, 5, 5, 5, 5, 5}
+	percentages := []int{30, 20, 15}
 	prizes := make([]int, len(percentages))
 	for i, percentage := range percentages {
 		prizes[i] = int(int64(period.Budget) * int64(percentage) / 100)
@@ -200,7 +200,7 @@ func GetGameBudgets(settings GameSettings, now time.Time) (GameBudgetView, error
 		}
 	}
 	prizes := weekly.weeklyPrizes()
-	view.WeeklyPool = weekly.Budget
+	view.WeeklyPool = prizes[0] + prizes[1] + prizes[2]
 	view.WeeklyRewardVersion = max(1, weekly.WeeklyRewardVersion)
 	view.WeeklyFirstQuota, view.WeeklySecondQuota, view.WeeklyThirdQuota = prizes[0], prizes[1], prizes[2]
 	view.WeeklyRewardsEnabled = weekly.rewardRulesInitialized()

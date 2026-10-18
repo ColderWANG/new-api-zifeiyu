@@ -24,6 +24,8 @@ import type {
   TranslationSource,
 } from '../types'
 import { exportDocx } from './docx'
+import { canvasExportFontFamily } from './export-fonts'
+import { translatedPageBlocks, wrapTranslationLines } from './export-layout'
 
 export function translationDownloadName(
   source: TranslationSource | null,
@@ -36,111 +38,6 @@ export function translationDownloadName(
   return `${filename}-${language}${partial ? '-partial' : ''}.${source?.format ?? 'txt'}`
 }
 
-function wrapText(
-  context: CanvasRenderingContext2D,
-  text: string,
-  width: number,
-  language: string
-): string[] {
-  const lines: string[] = []
-  const words = new Intl.Segmenter(language, { granularity: 'word' })
-  const characters = new Intl.Segmenter(language, { granularity: 'grapheme' })
-  for (const paragraph of text.split('\n')) {
-    let line = ''
-    for (const { segment } of words.segment(paragraph)) {
-      if (context.measureText(line + segment).width <= width) {
-        line += segment
-        continue
-      }
-      if (line.trim()) lines.push(line.trimEnd())
-      line = ''
-      // Break long words only when necessary; never split surrogate pairs or combining marks.
-      for (const { segment: character } of characters.segment(
-        segment.trimStart()
-      )) {
-        if (line && context.measureText(line + character).width > width) {
-          lines.push(line)
-          line = ''
-        }
-        line += character
-      }
-    }
-    lines.push(line.trimEnd())
-  }
-  return lines
-}
-
-function paintRegion(
-  context: CanvasRenderingContext2D,
-  region: TranslationRegion,
-  language: string
-): void {
-  const width = context.canvas.width
-  const height = context.canvas.height
-  const x = Math.max(0, Math.floor((region.box[0] * width) / 1000))
-  const y = Math.max(0, Math.floor((region.box[1] * height) / 1000))
-  const w = Math.min(width - x, Math.ceil((region.box[2] * width) / 1000))
-  const h = Math.min(height - y, Math.ceil((region.box[3] * height) / 1000))
-  if (w <= 0 || h <= 0) {
-    throw new Error('The translation could not be placed on the source page.')
-  }
-  let fontSize = Math.min(48, h * 0.8)
-  let lines: string[] = []
-  let fits = false
-  while (fontSize >= 5) {
-    context.font = `${fontSize}px system-ui, "Microsoft YaHei", "Noto Sans", sans-serif`
-    lines = wrapText(context, region.text, w, language)
-    if (
-      lines.length * fontSize * 1.15 <= h &&
-      lines.every((line) => context.measureText(line).width <= w)
-    ) {
-      fits = true
-      break
-    }
-    fontSize -= 0.5
-  }
-  if (!fits) {
-    throw new Error(
-      'The translated text does not fit in its original area. Use a more concise translation and try again.'
-    )
-  }
-  // Match the surrounding background instead of covering every source with white.
-  const samples = [
-    [x - 2, y - 2],
-    [x + w + 1, y - 2],
-    [x - 2, y + h + 1],
-    [x + w + 1, y + h + 1],
-  ].map(
-    ([sx, sy]) =>
-      context.getImageData(
-        Math.max(0, Math.min(width - 1, sx)),
-        Math.max(0, Math.min(height - 1, sy)),
-        1,
-        1
-      ).data
-  )
-  const background = [0, 1, 2, 3].map(
-    (channel) => samples.map((pixel) => pixel[channel]).sort((a, b) => a - b)[2]
-  )
-  context.clearRect(x, y, w, h)
-  context.fillStyle = `rgba(${background[0]},${background[1]},${background[2]},${background[3] / 255})`
-  context.fillRect(x, y, w, h)
-  const luminance =
-    background[0] * 0.299 + background[1] * 0.587 + background[2] * 0.114
-  context.fillStyle =
-    background[3] < 128 || luminance > 140 ? '#171717' : '#ffffff'
-  context.textBaseline = 'top'
-  context.direction = language === 'ar' ? 'rtl' : 'ltr'
-  context.textAlign = language === 'ar' ? 'right' : 'left'
-  for (const [index, line] of lines.entries()) {
-    context.fillText(
-      line,
-      language === 'ar' ? x + w : x,
-      y + index * fontSize * 1.15
-    )
-  }
-}
-
 export async function renderTranslatedPage(
   page: TranslationPage,
   regions: TranslationRegion[],
@@ -148,28 +45,83 @@ export async function renderTranslatedPage(
   signal: AbortSignal
 ): Promise<HTMLCanvasElement> {
   signal.throwIfAborted()
-  const image = new Image()
-  image.src = page.image
-  await image.decode()
-  signal.throwIfAborted()
-  await document.fonts.ready
+  const blocks = translatedPageBlocks(
+    page,
+    { completed: 1, total: 1, text: '', regions: { 1: regions } },
+    1
+  )
+  const text = blocks.map((block) => block.text).join('\n')
+  if (!text.trim()) {
+    throw new Error('No translated text is available to export.')
+  }
+  if (text.length > 200_000) {
+    throw new Error(
+      'The translated document is too large to export. Split the source into smaller files.'
+    )
+  }
+  const family = await canvasExportFontFamily(text, signal)
+  const width = Math.max(480, Math.min(2048, Math.round(page.width)))
+  const margin = Math.round(width * 0.07)
+  const baseSize = Math.max(20, Math.min(36, width * 0.03))
   const canvas = document.createElement('canvas')
-  canvas.width = image.naturalWidth
-  canvas.height = image.naturalHeight
   const context = canvas.getContext('2d')
   if (!context) throw new Error('Your browser could not prepare this image.')
-  context.drawImage(image, 0, 0)
-  try {
-    for (const region of regions) {
-      signal.throwIfAborted()
-      paintRegion(context, region, language)
+  const layout = []
+  let y = margin
+  for (const block of blocks) {
+    const size = block.heading ? baseSize * 1.5 : baseSize
+    context.font = `${size}px ${family}`
+    const lines = wrapTranslationLines(
+      block.text,
+      width - margin * 2,
+      language,
+      (value) => context.measureText(value).width
+    )
+    for (const line of lines) {
+      const metrics = context.measureText(line || 'M')
+      const ascent = Math.max(
+        size,
+        metrics.fontBoundingBoxAscent || metrics.actualBoundingBoxAscent || size
+      )
+      const descent = Math.max(
+        size * 0.2,
+        metrics.fontBoundingBoxDescent ||
+          metrics.actualBoundingBoxDescent ||
+          size * 0.2
+      )
+      layout.push({ text: line, size, y: y + ascent })
+      y += Math.max(size * 1.55, ascent + descent + size * 0.15)
     }
-    return canvas
-  } catch (error) {
-    canvas.width = 0
-    canvas.height = 0
-    throw error
+    y += baseSize * 0.6
   }
+  const height = Math.max(
+    320,
+    Math.ceil((page.height * width) / Math.max(1, page.width)),
+    Math.ceil(y + margin)
+  )
+  if (height > 32760 || width * height > 40_000_000) {
+    throw new Error(
+      'The rebuilt image is too large. Split the source into smaller files.'
+    )
+  }
+  canvas.width = width
+  canvas.height = height
+  context.fillStyle = '#ffffff'
+  context.fillRect(0, 0, width, height)
+  context.fillStyle = '#171717'
+  context.textBaseline = 'alphabetic'
+  context.direction = language === 'ar' ? 'rtl' : 'ltr'
+  context.textAlign = language === 'ar' ? 'right' : 'left'
+  for (const line of layout) {
+    signal.throwIfAborted()
+    context.font = `${line.size}px ${family}`
+    context.fillText(
+      line.text,
+      language === 'ar' ? width - margin : margin,
+      line.y
+    )
+  }
+  return canvas
 }
 
 function canvasBlob(canvas: HTMLCanvasElement, type: string): Promise<Blob> {
@@ -213,45 +165,24 @@ export async function exportTranslation(
   if (!source?.renderedPages?.length) {
     throw new Error('Translate the document before downloading it.')
   }
-  const pdf =
-    format === 'pdf'
-      ? await (await import('pdf-lib')).PDFDocument.create()
-      : null
-  for (const [index, page] of source.renderedPages.entries()) {
-    signal.throwIfAborted()
-    const regions =
-      progress.regions?.[index + 1] ??
-      page.regions.flatMap((region) => {
-        const text = progress.translations?.[region.id]
-        return text === undefined ? [] : [{ ...region, text }]
-      })
-    const canvas = await renderTranslatedPage(page, regions, language, signal)
-    try {
-      if (pdf) {
-        const image = await pdf.embedJpg(
-          await (await canvasBlob(canvas, 'image/jpeg')).arrayBuffer()
-        )
-        pdf.addPage([page.width, page.height]).drawImage(image, {
-          x: 0,
-          y: 0,
-          width: page.width,
-          height: page.height,
-        })
-      } else {
-        const mime =
-          format === 'jpg' || format === 'jpeg'
-            ? 'image/jpeg'
-            : `image/${format}`
-        return await canvasBlob(canvas, mime)
-      }
-    } finally {
-      canvas.width = 0
-      canvas.height = 0
-    }
+  if (format === 'pdf') {
+    const { exportRebuiltPdf } = await import('./pdf-export')
+    return exportRebuiltPdf(source.renderedPages, progress, language, signal)
   }
-  signal.throwIfAborted()
-  if (!pdf) throw new Error('Translate the document before downloading it.')
-  return new Blob([new Uint8Array(await pdf.save())], {
-    type: 'application/pdf',
-  })
+  const page = source.renderedPages[0]
+  const regions =
+    progress.regions?.[1] ??
+    page.regions.flatMap((region) => {
+      const text = progress.translations?.[region.id]
+      return text === undefined ? [] : [{ ...region, text }]
+    })
+  const canvas = await renderTranslatedPage(page, regions, language, signal)
+  try {
+    const mime =
+      format === 'jpg' || format === 'jpeg' ? 'image/jpeg' : `image/${format}`
+    return await canvasBlob(canvas, mime)
+  } finally {
+    canvas.width = 0
+    canvas.height = 0
+  }
 }

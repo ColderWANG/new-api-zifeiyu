@@ -132,7 +132,7 @@ func TestGameDatabaseMatrix(t *testing.T) {
 					require.NoError(t, e)
 					budgets, e := GetGameBudgets(settings, now)
 					require.NoError(t, e)
-					require.Equal(t, GameBudgetView{DailyQuota: 200, DailyRemaining: 300, WeeklyPool: 1000, CanStart: true, WeeklyRewardVersion: 1, WeeklyFirstQuota: 300, WeeklySecondQuota: 200, WeeklyThirdQuota: 150, WeeklyRewardsEnabled: true}, budgets)
+					require.Equal(t, GameBudgetView{DailyQuota: 200, DailyRemaining: 300, WeeklyPool: 650, CanStart: true, WeeklyRewardVersion: 1, WeeklyFirstQuota: 300, WeeklySecondQuota: 200, WeeklyThirdQuota: 150, WeeklyRewardsEnabled: true}, budgets)
 
 					_, err = AdvanceGame(2, run.ID, 0, []int{1}, false, now)
 					require.Error(t, err, "cannot submit another user's run")

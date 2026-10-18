@@ -1,0 +1,48 @@
+[
+  {
+    "file": "NotoSans-Regular.ttf",
+    "source": "https://raw.githubusercontent.com/notofonts/noto-fonts/ffebf8c1ee449e544955a7e813c54f9b73848eac/hinted/ttf/NotoSans/NotoSans-Regular.ttf",
+    "bytes": 569208
+  },
+  {
+    "file": "NotoSansArabic-Regular.ttf",
+    "source": "https://raw.githubusercontent.com/notofonts/noto-fonts/ffebf8c1ee449e544955a7e813c54f9b73848eac/hinted/ttf/NotoSansArabic/NotoSansArabic-Regular.ttf",
+    "bytes": 240456
+  },
+  {
+    "file": "TranslationSymbols-Regular.ttf",
+    "source": "https://raw.githubusercontent.com/notofonts/noto-fonts/ffebf8c1ee449e544955a7e813c54f9b73848eac/hinted/ttf/NotoSansSymbols2/NotoSansSymbols2-Regular.ttf",
+    "bytes": 658120,
+    "sha256": "503706a1b148b58f12314e14609330fd00b969414c0505e954b10c9ec9047fcb",
+    "transformation": "fontTools 4.59.2; instantiate wght=400 when variable; two-byte glyf alignment; rename family and PostScript names to New API Translation Symbols; retain original copyright and OFL license"
+  },
+  {
+    "file": "LICENSE-NotoFonts.txt",
+    "source": "https://raw.githubusercontent.com/notofonts/noto-fonts/ffebf8c1ee449e544955a7e813c54f9b73848eac/LICENSE",
+    "bytes": 4377
+  },
+  {
+    "file": "LICENSE-NotoCJK.txt",
+    "source": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/LICENSE",
+    "bytes": 4301
+  },
+  {
+    "file": "TranslationEmoji-Regular.ttf",
+    "source": "https://raw.githubusercontent.com/google/fonts/47d54ca1ebb14fd864695f1d39dc734f39017c33/ofl/notoemoji/NotoEmoji%5Bwght%5D.ttf",
+    "bytes": 887464,
+    "sha256": "213761149a2a9a75b69f4566975225a0836e1da5c11be3017e9980bb3aed87e0",
+    "transformation": "fontTools 4.59.2; instantiate wght=400 when variable; two-byte glyf alignment; rename family and PostScript names to New API Translation Emoji; retain original copyright and OFL license"
+  },
+  {
+    "file": "LICENSE-NotoEmoji.txt",
+    "source": "https://raw.githubusercontent.com/google/fonts/47d54ca1ebb14fd864695f1d39dc734f39017c33/ofl/notoemoji/OFL.txt",
+    "bytes": 4330
+  },
+  {
+    "file": "TranslationCJK-Regular.ttf",
+    "source": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/Variable/TTF/NotoSansCJKsc-VF.ttf",
+    "transformation": "fontTools 4.59.2; instantiate wght=400; rename family and PostScript names to New API Translation CJK; retain original copyright and OFL license; align glyf records to two bytes for portable subsetting",
+    "bytes": 21692288,
+    "sha256": "4040fca05e6e0b7b38b519f231ba6883df1bff27c7a0e48db80b296cb5743a71"
+  }
+]

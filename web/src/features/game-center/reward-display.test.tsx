@@ -140,6 +140,12 @@ it('shows newly enabled rewards without changing an already completed zero-rewar
   expect(within(card as HTMLElement).getByText('$0.5')).toBeVisible()
   expect(screen.getByText(/Quota awarded:/)).toHaveTextContent('$0')
   expect(
+    screen.getByText(
+      /Only first, second and third place receive weekly rewards/
+    )
+  ).toBeVisible()
+  expect(screen.queryByText(/ranks 4/)).not.toBeInTheDocument()
+  expect(
     screen.queryByRole('button', { name: 'Start today’s challenge' })
   ).not.toBeInTheDocument()
 })

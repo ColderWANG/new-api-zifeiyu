@@ -494,7 +494,6 @@ export function GameCenter() {
             <WeeklyRewards
               prizes={weeklyPrizes}
               total={budgets?.weekly_pool ?? 0}
-              legacy={(budgets?.weekly_reward_version ?? 1) < 2}
               enabled={budgets?.weekly_rewards_enabled}
               unavailable={rewards.isError}
               retry={() => void rewards.refetch()}
@@ -531,9 +530,7 @@ export function GameCenter() {
             <h3 className='text-sm font-semibold'>{t('Climb together')}</h3>
             <p className='text-muted-foreground mt-2 text-xs leading-6'>
               {t(
-                (budgets?.weekly_reward_version ?? 1) >= 2
-                  ? 'Daily reset at 00:00 UTC+8. Weekly prizes settle after Monday 00:05 using the displayed first, second and third place amounts. Ties go to the earliest finish.'
-                  : 'Daily reset at 00:00 UTC+8. Weekly prizes settle after Monday 00:05: 30%, 20%, 15% for the top three; 5% each for ranks 4–10. Ties go to the earliest finish.'
+                'Daily reset at 00:00 UTC+8. Weekly prizes settle after Monday 00:05. Only first, second and third place receive weekly rewards. Ties go to the earliest finish.'
               )}
             </p>
           </article>
