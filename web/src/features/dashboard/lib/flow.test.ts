@@ -738,6 +738,31 @@ describe('dashboard flow data', () => {
     ])
   })
 
+  test('draws labels and the active node outline in the theme text color', () => {
+    const result = buildDashboardFlowData(rows.slice(0, 1), 'quota', {
+      role: 'root',
+      activeNode: { kind: 'user', id: 'user:1' },
+    })
+    const flowSpec = buildFlowSankeySpec(
+      result.flow,
+      'Flow',
+      undefined,
+      undefined,
+      'rgba(245, 245, 245, 1.00)'
+    )
+    const aliceNode = flowSpec.data[0].values[0].nodes.find(
+      (node: Record<string, unknown>) => node.key === 'user:1'
+    )
+
+    expect(flowSpec.label.style.fill).toBe('rgba(245, 245, 245, 1.00)')
+    expect(flowSpec.label.style.fontSize).toBe(12)
+    expect(flowSpec.label.style.fontWeight).toBe(700)
+    expect(flowSpec.label.style.fontFamily).toContain('var(--font-sans)')
+    expect(flowSpec.node.style.stroke({ datum: aliceNode })).toBe(
+      'rgba(245, 245, 245, 1.00)'
+    )
+  })
+
   test('maps active flow highlight states into the Sankey spec', () => {
     const result = buildDashboardFlowData(rows, 'quota', {
       role: 'root',

@@ -137,8 +137,9 @@ export function visualTextRuns<T>(
     const previous = runs.at(-1)
     if (previous && previous.level === level && previous.font === font) {
       previous.text += replacement
-    } else
-      {runs.push({ text: replacement, level, font, logicalIndex: cluster.index })}
+    } else {
+      runs.push({ text: replacement, level, font, logicalIndex: cluster.index })
+    }
   }
   const oddLevels = runs.filter((run) => run.level % 2).map((run) => run.level)
   if (!oddLevels.length) return runs

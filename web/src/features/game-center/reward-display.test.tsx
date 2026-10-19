@@ -207,15 +207,13 @@ it('updates weekly amounts without reinstalling or rewinding the active game', a
 })
 
 it('refreshes the account balance after settlement without reloading the page', async () => {
-  useAuthStore
-    .getState()
-    .auth.setUser({
-      id: 17,
-      username: 'player',
-      role: 1,
-      group: 'default',
-      quota: 500000,
-    })
+  useAuthStore.getState().auth.setUser({
+    id: 17,
+    username: 'player',
+    role: 1,
+    group: 'default',
+    quota: 500000,
+  })
   vi.mocked(getSelf).mockResolvedValue({
     success: true,
     data: {
@@ -233,15 +231,13 @@ it('refreshes the account balance after settlement without reloading the page', 
   expect(getSelf).toHaveBeenCalledTimes(1)
 })
 it('does not replace a different signed-in account with a delayed balance response', async () => {
-  useAuthStore
-    .getState()
-    .auth.setUser({
-      id: 17,
-      username: 'player',
-      role: 1,
-      group: 'default',
-      quota: 500000,
-    })
+  useAuthStore.getState().auth.setUser({
+    id: 17,
+    username: 'player',
+    role: 1,
+    group: 'default',
+    quota: 500000,
+  })
   let finish!: (value: unknown) => void
   vi.mocked(getSelf).mockImplementation(
     () =>

@@ -160,6 +160,7 @@ export function DataTableCardGrid<TData>(props: DataTableCardGridProps<TData>) {
           <div
             key={key}
             data-slot='data-table-card'
+            data-sortable-id={row.id}
             data-state={isSelected ? 'selected' : undefined}
             className={cn(
               'rounded-none border-2 border-black [--data-table-card-bg:var(--background)] bg-(--data-table-card-bg) px-3 py-2.5 transition-none data-[state=selected]:border-black data-[state=selected]:[--data-table-card-bg:var(--primary)] data-[state=selected]:text-primary-foreground',

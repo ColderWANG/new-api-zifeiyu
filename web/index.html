@@ -15,6 +15,15 @@
 
     <meta name="color-scheme" content="only light" />
     <meta name="theme-color" content="#fff" />
+    <!-- Keep the application in light mode before first paint so persisted or
+         system dark-mode preferences can never flash a dark UI. -->
+    <script>
+      ;(function () {
+        var root = document.documentElement
+        root.classList.remove('dark')
+        root.classList.add('light')
+      })()
+    </script>
     <!--umami-->
     <!--Google Analytics-->
   </head>

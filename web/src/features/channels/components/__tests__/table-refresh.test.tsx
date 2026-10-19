@@ -85,14 +85,17 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-async function renderChannelsPage(searchGate: () => Promise<void>) {
+async function renderChannelsPage(
+  searchGate: () => Promise<void>,
+  items: Channel[] = [channel('prod')]
+) {
   const get = vi.spyOn(api, 'get').mockImplementation(async (url) => {
     if (url === '/api/channel/search') {
       await searchGate()
       return {
         data: {
           success: true,
-          data: { items: [channel('prod')], total: 1, type_counts: {} },
+          data: { items, total: items.length, type_counts: {} },
         },
       }
     }
@@ -144,11 +147,40 @@ it('refetches the channel list with the current filters and marks Refresh busy w
   gate = new Promise((resolve) => {
     release = resolve
   })
-  await userEvent.click(refresh)
+  refresh.focus()
+  await userEvent.setup().keyboard('{Enter}')
 
   await waitFor(() => expect(searchCalls()).toHaveLength(2))
   expect(searchCalls()[1][1]?.params).toEqual(searchCalls()[0][1]?.params)
   expect(refresh).toHaveAttribute('aria-busy', 'true')
   release()
   await waitFor(() => expect(refresh).toHaveAttribute('aria-busy', 'false'))
+})
+
+it('preserves enabled, manually disabled and automatically disabled card surfaces', async () => {
+  await renderChannelsPage(
+    () => Promise.resolve(),
+    [
+      channel('prod'),
+      { ...channel('manual'), id: 4, status: 2 },
+      { ...channel('automatic'), id: 5, status: 3 },
+    ]
+  )
+
+  const enabled = screen
+    .getByText('prod')
+    .closest('[data-slot="data-table-card"]')
+  const manual = screen
+    .getByText('manual')
+    .closest('[data-slot="data-table-card"]')
+  const automatic = screen
+    .getByText('automatic')
+    .closest('[data-slot="data-table-card"]')
+  expect(enabled).toHaveClass('channel-row')
+  expect(manual).toHaveClass('channel-row', 'channel-manual-disabled')
+  expect(automatic).toHaveClass(
+    'channel-row',
+    'channel-auto-disabled',
+    'border-dashed'
+  )
 })
