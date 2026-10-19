@@ -1,5 +1,8 @@
 {
   "translation": {
+    "360": "360",
+    "1000": "1000",
+    "10000": "10000",
     "The model declined or blocked image generation. Review its reply and adjust your request to comply with the provider's requirements.": "模型拒绝或拦截了本次生图。请查看返回说明，并根据上游服务的要求调整请求。",
     "The model returned text instead of an image. Read its reply below; this alone does not indicate a content-policy violation.": "模型只返回了文字，没有返回图片。请查看下方回复；仅凭文字回复不能判定内容违规。",
     "Image data was returned, but its format could not be read. Ask the administrator to check the upstream response format.": "检测到图片数据，但无法解析其格式。请联系管理员检查上游返回的图片格式。",
@@ -86,9 +89,6 @@
     "A minimalist white building by the sea, afternoon sunlight crossing an archway, quiet shadows, architectural photography, restrained composition.": "海边的极简白色建筑，午后阳光穿过拱门，安静的阴影，建筑摄影，克制的构图。",
     "A clear glass perfume bottle on a stone plinth, soft side lighting, delicate reflections, an uncluttered backdrop, editorial product photography.": "石质展台上的透明玻璃香水瓶，柔和的侧光，细腻的反射，干净的背景，杂志风格产品摄影。",
     "A single branch in a ceramic vase, fine leaf details, natural window light, generous negative space, black and white fine art photography.": "陶瓷花器中的一枝植物，精细的叶片纹理，窗边自然光，大面积留白，黑白艺术摄影。",
-    "360": "360",
-    "1000": "1000",
-    "10000": "10000",
     "_copy": "_复制",
     "，": "，",
     ", and": "，和",
@@ -7581,6 +7581,24 @@
     "No translated text is available to export.": "暂无可导出的译文。",
     "The translated document is too large to export. Split the source into smaller files.": "译文过大，无法导出，请将原文拆分为较小文件。",
     "The rebuilt image is too large. Split the source into smaller files.": "重新排版后的译文图片过大，请拆分原文件后重试。",
-    "Some characters could not be rendered in the PDF. The translation is still available to copy.": "部分字符无法写入 PDF，译文仍可在页面上复制。"
+    "Some characters could not be rendered in the PDF. The translation is still available to copy.": "部分字符无法写入 PDF，译文仍可在页面上复制。",
+    "Survive 90 seconds. Three upgrades. A tougher final wave.": "坚持 90 秒，选择三次升级，迎战更强的最终波次。",
+    "At 20, 40 and 60 seconds, combat pauses for an upgrade. Choose with 1, 2 or 3 within 10 seconds; Repair is selected automatically. Leaving or refreshing does not reset your run.": "第 20、40、60 秒暂停战斗并选择升级，按 1、2、3 或点击选择。10 秒未选将自动修复。离开或刷新页面不会重置对局。",
+    "Starting uses today’s only attempt. Survive 90 seconds, with up to three 10-second upgrade pauses. Leaving or refreshing does not reset your run.": "开始后消耗今日唯一挑战机会。战斗持续 90 秒，另有三次升级暂停，每次最多 10 秒。离开或刷新页面不会重置对局。",
+    "Choose your upgrade": "选择本次升级",
+    "Combat paused": "战斗已暂停",
+    "Upgrade ready": "可以升级",
+    "Seconds to choose": "选择剩余秒数",
+    "Combat resumes after your choice. Repair is selected when time runs out.": "选择后继续战斗；超时将自动选择修复。",
+    "Based on at most 129 collected tokens. No token means no reward; points and boss token values do not multiply payouts.": "按最多拾取 129 个 Token 计算。未拾取则无奖励；积分和 Boss Token 分值不会放大奖励。",
+    "Move +25% · fire +25%": "移速、攻速各 +25%",
+    "Multishot": "多目标",
+    "Targets {{from}} → {{to}}": "同时攻击 {{from}} → {{to}} 个",
+    "Bonuses stack from base stats. Multishot is selected when time runs out.": "百分比加成按基础值叠加；超时自动选择多目标。",
+    "Combat upgrades": "战斗属性",
+    "Damage {{value}}": "伤害 {{value}}",
+    "Move/fire {{value}}%": "移速／攻速 {{value}}%",
+    "Targets {{count}}": "同时攻击 {{count}} 个目标",
+    "Upgrade at 20, 40 and 60 seconds: damage +2, move and fire rate +25% of base, or one extra target. Combat pauses for up to 10 seconds; Multishot is selected automatically.": "第 20、40、60 秒选择升级：伤害 +2，移速与攻速各增加基础值的 25%，或同时攻击目标 +1。战斗暂停最多 10 秒，超时自动选择多目标。"
   }
 }

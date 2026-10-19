@@ -22,7 +22,6 @@ import {
   Crosshair,
   Gamepad2,
   Move,
-  Shield,
   Timer,
   Trophy,
   Zap,
@@ -34,12 +33,16 @@ import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { PublicLayout } from '@/components/layout/components/public-layout'
 import { Button } from '@/components/ui/button'
+import { getSelf } from '@/lib/api'
 import { formatNumber, formatQuota } from '@/lib/format'
+import { requireServerSuccess } from '@/lib/server-error-message'
+import { useAuthStore } from '@/stores/auth-store'
 
 import { getGameRewards, getGameStatus, startGame } from './api'
 import { Arena } from './arena'
-import { DURATION } from './engine'
+import { gameDuration, upgradePending } from './engine'
 import { Leaderboard } from './leaderboard'
+import { UpgradePanel } from './upgrade-panel'
 import { useGameSession } from './use-game-session'
 import { WeeklyRewards } from './weekly-rewards'
 
@@ -83,6 +86,8 @@ export function GameCenter() {
     void queryClient.invalidateQueries({ queryKey: ['game-status'] })
     void queryClient.invalidateQueries({ queryKey: ['game-rankings'] })
     void queryClient.invalidateQueries({ queryKey: ['user'] })
+    void queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+    void queryClient.invalidateQueries({ queryKey: ['game-rewards'] })
   })
   const { run, display, input, install } = session
   const { data: statusData, refetch: refetchStatus } = status
@@ -98,6 +103,24 @@ export function GameCenter() {
     }
   }, [active])
   const finished = !!run && !active
+  const userId = useAuthStore((state) => state.auth.user?.id)
+  const balance = useQuery({
+    queryKey: ['game-balance', userId, run?.id],
+    queryFn: async () => requireServerSuccess(await getSelf()).data,
+    enabled: finished && !!userId,
+    retry: 1,
+    staleTime: 0,
+  })
+  useEffect(() => {
+    const auth = useAuthStore.getState().auth
+    if (
+      balance.data?.id === userId &&
+      auth.user?.id === userId &&
+      balance.data
+    ) {
+      auth.setUser(balance.data)
+    }
+  }, [balance.data, userId])
   const available =
     !!(rewards.data?.enabled ?? status.data?.settings.enabled) &&
     !!budgets?.can_start &&
@@ -136,9 +159,28 @@ export function GameCenter() {
   useEffect(() => {
     if (statusData && resetIn <= 0 && !active) void refetchStatus()
   }, [resetIn, active, statusData, refetchStatus])
-  const seconds = Math.max(0, Math.ceil((DURATION - display.tick) / 10))
+  const seconds = Math.max(
+    0,
+    Math.ceil((gameDuration(display) - display.tick) / 10)
+  )
   const canUpgrade =
-    active && display.upgrades < Math.min(5, Math.floor(display.tick / 300))
+    active &&
+    (display.version >= 2
+      ? upgradePending(display)
+      : display.upgrades < Math.min(5, Math.floor(display.tick / 300)))
+  let upgradeRules = t(
+    'Choose an upgrade every 30 seconds with 1, 2 or 3. Stronger enemies arrive as time passes. Refreshing does not pause or reset your run.'
+  )
+  if (display.version >= 2) {
+    upgradeRules = t(
+      'At 20, 40 and 60 seconds, combat pauses for an upgrade. Choose with 1, 2 or 3 within 10 seconds; Repair is selected automatically. Leaving or refreshing does not reset your run.'
+    )
+  }
+  if (display.version >= 3) {
+    upgradeRules = t(
+      'Upgrade at 20, 40 and 60 seconds: damage +2, move and fire rate +25% of base, or one extra target. Combat pauses for up to 10 seconds; Multishot is selected automatically.'
+    )
+  }
   let runTitle = t('One chance. Your best run.')
   if (finished) runTitle = t('Well played')
   if (run?.status === 'survived') runTitle = t('Challenge complete')
@@ -174,7 +216,13 @@ export function GameCenter() {
     connectionLabel = t('Reconnecting. The challenge clock keeps running.')
   }
   function moveStick(e: React.PointerEvent<HTMLDivElement>) {
-    if (!active || !e.currentTarget.hasPointerCapture(e.pointerId)) return
+    if (
+      !active ||
+      canUpgrade ||
+      !e.currentTarget.hasPointerCapture(e.pointerId)
+    ) {
+      return
+    }
     const rect = e.currentTarget.getBoundingClientRect(),
       dx = e.clientX - rect.left - rect.width / 2,
       dy = e.clientY - rect.top - rect.height / 2
@@ -202,7 +250,9 @@ export function GameCenter() {
             </h1>
             <p className='text-muted-foreground mt-2 text-sm sm:text-base'>
               {t(
-                'Survive 180 seconds. Make your mark on the global leaderboard.'
+                display.version < 2
+                  ? 'Survive 180 seconds. Make your mark on the global leaderboard.'
+                  : 'Survive 90 seconds. Three upgrades. A tougher final wave.'
               )}
             </p>
           </div>
@@ -287,8 +337,31 @@ export function GameCenter() {
                 </div>
               </div>
             </div>
+            {display.version >= 3 && (
+              <div
+                aria-label={t('Combat upgrades')}
+                className='text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 border-b px-4 py-2 text-[11px] sm:px-5'
+              >
+                <span>{t('Damage {{value}}', { value: display.power })}</span>
+                <span>
+                  {t('Move/fire {{value}}%', {
+                    value: 100 + 25 * (display.haste ?? 0),
+                  })}
+                </span>
+                <span>
+                  {t('Targets {{count}}', {
+                    count: 1 + (display.extra_targets ?? 0),
+                  })}
+                </span>
+              </div>
+            )}
             <div className='relative overflow-hidden'>
-              <Arena state={session.state} input={input} active={!!run} />
+              <Arena
+                state={session.state}
+                input={input}
+                active={!!run}
+                controlsDisabled={!!canUpgrade}
+              />
               {!active && (
                 <div className='absolute inset-0 flex items-center justify-center bg-white/35 p-4'>
                   <div className='bg-background/95 w-full max-w-[340px] border p-5 text-center shadow-sm sm:p-7'>
@@ -335,50 +408,12 @@ export function GameCenter() {
                 </div>
               )}
               {canUpgrade && (
-                <div className='bg-background/95 absolute inset-x-3 bottom-3 z-10 border p-3 shadow-sm'>
-                  <p className='mb-3 text-sm font-medium'>
-                    {t('Choose an upgrade. The clock keeps running.')}
-                  </p>
-                  <div className='grid grid-cols-3 gap-2'>
-                    {[
-                      {
-                        id: 1,
-                        icon: Crosshair,
-                        label: t('Power'),
-                        detail: t('+2 damage'),
-                      },
-                      {
-                        id: 2,
-                        icon: Zap,
-                        label: t('Agility'),
-                        detail: t('+20 speed'),
-                      },
-                      {
-                        id: 3,
-                        icon: Shield,
-                        label: t('Repair'),
-                        detail: t('+35 health'),
-                      },
-                    ].map((item) => (
-                      <Button
-                        key={item.id}
-                        variant='outline'
-                        className='h-auto min-h-20 flex-col gap-1 px-2 py-3 whitespace-normal'
-                        onClick={() => {
-                          input.current.upgrade = item.id
-                        }}
-                      >
-                        <item.icon className='size-4' />
-                        <span>
-                          {item.id}. {item.label}
-                        </span>
-                        <span className='text-muted-foreground text-[10px] font-normal'>
-                          {item.detail}
-                        </span>
-                      </Button>
-                    ))}
-                  </div>
-                </div>
+                <UpgradePanel
+                  state={display}
+                  onChoose={(choice) => {
+                    input.current.upgrade = choice
+                  }}
+                />
               )}
             </div>
             <div
@@ -395,7 +430,7 @@ export function GameCenter() {
                   {t('End run')}
                 </Button>
               ) : (
-                <span className='font-mono'>180s</span>
+                <span className='font-mono'>{gameDuration(display) / 10}s</span>
               )}
             </div>
             {active && (
@@ -431,7 +466,7 @@ export function GameCenter() {
                 <div className='text-center'>
                   <Button
                     className='h-14 min-w-24 touch-manipulation'
-                    disabled={display.tick < display.dash_ready}
+                    disabled={!!canUpgrade || display.tick < display.dash_ready}
                     onPointerDown={() => {
                       input.current.dash = true
                     }}
@@ -450,6 +485,40 @@ export function GameCenter() {
                 </div>
               </div>
             )}
+            <section
+              className='grid border-t px-4 sm:grid-cols-3 sm:px-5'
+              aria-label={t('How to play')}
+            >
+              <article className='py-6 sm:pr-6'>
+                <Move className='mb-3 size-5 stroke-[1.5]' />
+                <h3 className='text-sm font-semibold'>
+                  {t('Move with intent')}
+                </h3>
+                <p className='text-muted-foreground mt-2 text-xs leading-6'>
+                  {t(
+                    'WASD or arrow keys to move. Space to dash. On mobile, use the joystick and dash button.'
+                  )}
+                </p>
+              </article>
+              <article className='border-t py-6 sm:border-t-0 sm:border-l sm:px-6'>
+                <Timer className='mb-3 size-5 stroke-[1.5]' />
+                <h3 className='text-sm font-semibold'>
+                  {t('Every second counts')}
+                </h3>
+                <p className='text-muted-foreground mt-2 text-xs leading-6'>
+                  {upgradeRules}
+                </p>
+              </article>
+              <article className='border-t py-6 sm:border-t-0 sm:border-l sm:pl-6'>
+                <Trophy className='mb-3 size-5 stroke-[1.5]' />
+                <h3 className='text-sm font-semibold'>{t('Climb together')}</h3>
+                <p className='text-muted-foreground mt-2 text-xs leading-6'>
+                  {t(
+                    'Daily reset at 00:00 UTC+8. Weekly prizes settle after Monday 00:05. Only first, second and third place receive weekly rewards. Ties go to the earliest finish.'
+                  )}
+                </p>
+              </article>
+            </section>
           </section>
           <aside className='space-y-5'>
             <section className='border p-5'>
@@ -501,40 +570,6 @@ export function GameCenter() {
             <Leaderboard weeklyPrizes={weeklyPrizes} />
           </aside>
         </div>
-        <section
-          className='mt-6 grid border-t sm:grid-cols-3'
-          aria-label={t('How to play')}
-        >
-          <article className='py-6 sm:pr-6'>
-            <Move className='mb-3 size-5 stroke-[1.5]' />
-            <h3 className='text-sm font-semibold'>{t('Move with intent')}</h3>
-            <p className='text-muted-foreground mt-2 text-xs leading-6'>
-              {t(
-                'WASD or arrow keys to move. Space to dash. On mobile, use the joystick and dash button.'
-              )}
-            </p>
-          </article>
-          <article className='border-t py-6 sm:border-t-0 sm:border-l sm:px-6'>
-            <Timer className='mb-3 size-5 stroke-[1.5]' />
-            <h3 className='text-sm font-semibold'>
-              {t('Every second counts')}
-            </h3>
-            <p className='text-muted-foreground mt-2 text-xs leading-6'>
-              {t(
-                'Choose an upgrade every 30 seconds with 1, 2 or 3. Stronger enemies arrive as time passes. Refreshing does not pause or reset your run.'
-              )}
-            </p>
-          </article>
-          <article className='border-t py-6 sm:border-t-0 sm:border-l sm:pl-6'>
-            <Trophy className='mb-3 size-5 stroke-[1.5]' />
-            <h3 className='text-sm font-semibold'>{t('Climb together')}</h3>
-            <p className='text-muted-foreground mt-2 text-xs leading-6'>
-              {t(
-                'Daily reset at 00:00 UTC+8. Weekly prizes settle after Monday 00:05. Only first, second and third place receive weekly rewards. Ties go to the earliest finish.'
-              )}
-            </p>
-          </article>
-        </section>
         <ConfirmDialog
           open={confirm === 'start'}
           onOpenChange={(open) => {
@@ -542,7 +577,7 @@ export function GameCenter() {
           }}
           title={t('Start your daily run?')}
           desc={t(
-            'Starting uses today’s only attempt. You have 180 seconds. Leaving or refreshing keeps the timer running. There is no retry today.'
+            'Starting uses today’s only attempt. Survive 90 seconds, with up to three 10-second upgrade pauses. Leaving or refreshing does not reset your run.'
           )}
           confirmText={t('Start challenge')}
           isLoading={start.isPending}

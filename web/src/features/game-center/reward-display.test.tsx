@@ -28,6 +28,9 @@ import {
 import type { ReactNode } from 'react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 
+import { getSelf } from '@/lib/api'
+import { useAuthStore } from '@/stores/auth-store'
+
 import { GameCenter } from '.'
 import {
   getGameStatus,
@@ -37,6 +40,7 @@ import {
 } from './api'
 import { newGame } from './engine'
 
+vi.mock('@/lib/api', () => ({ getSelf: vi.fn() }))
 vi.mock('@/components/layout/components/public-layout', () => ({
   PublicLayout: (props: { children: ReactNode }) => props.children,
 }))
@@ -63,6 +67,7 @@ let run: GameRun
 let status: GameStatus
 const install = vi.fn()
 beforeEach(() => {
+  useAuthStore.getState().auth.setUser(null)
   client = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 } },
   })
@@ -199,4 +204,88 @@ it('updates weekly amounts without reinstalling or rewinding the active game', a
   expect(within(prizes).getByText('$10')).toBeVisible()
   expect(install).toHaveBeenCalledTimes(1)
   expect(screen.getByText(/101 tokens/)).toHaveTextContent('Reward $0')
+})
+
+it('refreshes the account balance after settlement without reloading the page', async () => {
+  useAuthStore
+    .getState()
+    .auth.setUser({
+      id: 17,
+      username: 'player',
+      role: 1,
+      group: 'default',
+      quota: 500000,
+    })
+  vi.mocked(getSelf).mockResolvedValue({
+    success: true,
+    data: {
+      id: 17,
+      username: 'player',
+      role: 1,
+      group: 'default',
+      quota: 3500000,
+    },
+  })
+  show()
+  await waitFor(() =>
+    expect(useAuthStore.getState().auth.user?.quota).toBe(3500000)
+  )
+  expect(getSelf).toHaveBeenCalledTimes(1)
+})
+it('does not replace a different signed-in account with a delayed balance response', async () => {
+  useAuthStore
+    .getState()
+    .auth.setUser({
+      id: 17,
+      username: 'player',
+      role: 1,
+      group: 'default',
+      quota: 500000,
+    })
+  let finish!: (value: unknown) => void
+  vi.mocked(getSelf).mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve
+      })
+  )
+  show()
+  await waitFor(() => expect(getSelf).toHaveBeenCalledTimes(1))
+  await act(async () => {
+    useAuthStore.getState().auth.setUser(null)
+    finish({
+      success: true,
+      data: {
+        id: 17,
+        username: 'player',
+        role: 1,
+        group: 'default',
+        quota: 3500000,
+      },
+    })
+  })
+  expect(useAuthStore.getState().auth.user).toBeNull()
+})
+it('places the rules inside the game section before the rewards and rankings', async () => {
+  show()
+  const rules = await screen.findByRole('region', { name: 'How to play' })
+  const arena = screen.getByRole('region', { name: 'Daily challenge' })
+  expect(arena).toContainElement(rules)
+  expect(
+    rules.compareDocumentPosition(screen.getByText('Pickup rewards')) &
+      Node.DOCUMENT_POSITION_FOLLOWING
+  ).toBeTruthy()
+})
+it('shows the upgrade choice in the arena with the paused-combat explanation', async () => {
+  run.status = 'running'
+  run.state.hp = 100
+  run.state.tick = 200
+  run.state.clock_tick = 200
+  show()
+  const panel = await screen.findByRole('dialog', {
+    name: 'Choose your upgrade',
+  })
+  expect(within(panel).getByText('Combat paused')).toBeVisible()
+  expect(within(panel).getAllByRole('button')).toHaveLength(3)
+  expect(screen.getByText('1:10')).toBeVisible()
 })

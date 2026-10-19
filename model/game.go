@@ -205,7 +205,7 @@ func GetGameBudgets(settings GameSettings, now time.Time) (GameBudgetView, error
 	view.WeeklyFirstQuota, view.WeeklySecondQuota, view.WeeklyThirdQuota = prizes[0], prizes[1], prizes[2]
 	view.WeeklyRewardsEnabled = weekly.rewardRulesInitialized()
 	if settings.RewardVersion >= 2 {
-		view.MaxRunReward = GameTokenReward(tokengame.MaxTokens, view.FirstTokenQuota, view.SubsequentTokenQuota)
+		view.MaxRunReward = GameTokenReward(tokengame.SprintMaxTokens, view.FirstTokenQuota, view.SubsequentTokenQuota)
 		view.CanStart = view.Unlimited || view.DailyRemaining >= view.MaxRunReward
 	}
 
@@ -314,7 +314,7 @@ func gameView(run *GameRun, now time.Time) (*GameView, error) {
 	if err == nil && view.State.PickedTokens == 0 && view.State.Collected > 0 {
 		view.State.PickedTokens = view.State.Kills - len(view.State.Tokens)
 	}
-	if err == nil && view.State.Version != tokengame.Version {
+	if err == nil && (view.State.Version < 1 || view.State.Version > tokengame.Version) {
 		err = ErrGameInput
 	}
 	return view, err
@@ -414,7 +414,7 @@ func StartGame(userID int, now time.Time) (*GameView, error) {
 				run.FirstTokenQuota = 0
 				run.SubsequentTokenQuota = 0
 			}
-			maximum := GameTokenReward(tokengame.MaxTokens, run.FirstTokenQuota, run.SubsequentTokenQuota)
+			maximum := GameTokenReward(tokengame.SprintMaxTokens, run.FirstTokenQuota, run.SubsequentTokenQuota)
 			if daily.Budget > 0 {
 				if daily.Budget-daily.Spent-daily.Reserved < maximum {
 					return ErrGameBudget
@@ -462,12 +462,12 @@ func AdvanceGame(userID int, id string, from int, inputs []int, quit bool, now t
 			return nil
 		}
 		state := &view.State
-		allowed := min(tokengame.Duration, max(0, int((now.UnixMilli()-run.StartedAt)/tokengame.TickMillis)))
-		if from == -1 || allowed-state.Tick > 50 || quit {
-			for state.Tick < allowed && !state.Done() {
+		allowed := min(state.ClockLimit(), max(0, int((now.UnixMilli()-run.StartedAt)/tokengame.TickMillis)))
+		if from == -1 || allowed-state.Cursor() > 50 || quit {
+			for state.Cursor() < allowed && !state.Done() {
 				state.Step(0)
 			}
-		} else if from == state.Tick {
+		} else if from == state.Cursor() {
 			if from+len(inputs) > allowed+2 {
 				return ErrGameInput
 			}
@@ -479,7 +479,7 @@ func AdvanceGame(userID int, id string, from int, inputs []int, quit bool, now t
 		}
 		if state.Done() || quit {
 			run.Status = "defeated"
-			if state.Tick >= tokengame.Duration && state.HP > 0 {
+			if state.Tick >= state.Duration() && state.HP > 0 {
 				run.Status = "survived"
 			}
 			if quit {
@@ -666,7 +666,7 @@ func SettleGameWeek(week string, now time.Time) error {
 }
 func MaintainGames(now time.Time) error {
 	var runs []GameRun
-	if err := DB.Where("status = ? AND started_at < ?", "running", now.Add(-3*time.Minute).UnixMilli()).Order("started_at ASC").Limit(200).Find(&runs).Error; err != nil {
+	if err := DB.Where("status = ? AND started_at < ?", "running", now.Add(-time.Duration(tokengame.SprintDuration*tokengame.TickMillis)*time.Millisecond).UnixMilli()).Order("started_at ASC").Limit(200).Find(&runs).Error; err != nil {
 		return err
 	}
 	for _, run := range runs {

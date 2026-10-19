@@ -1,5 +1,8 @@
 {
   "translation": {
+    "360": "360",
+    "1000": "1000",
+    "10000": "10000",
     "The model declined or blocked image generation. Review its reply and adjust your request to comply with the provider's requirements.": "モデルが画像生成を拒否またはブロックしました。応答を確認し、提供元の要件に従ってリクエストを調整してください。",
     "The model returned text instead of an image. Read its reply below; this alone does not indicate a content-policy violation.": "モデルは画像ではなくテキストを返しました。以下の応答を確認してください。テキストの応答だけではコンテンツポリシー違反とは判断できません。",
     "Image data was returned, but its format could not be read. Ask the administrator to check the upstream response format.": "画像データが返されましたが、形式を読み取れませんでした。管理者に提供元の応答形式の確認を依頼してください。",
@@ -86,9 +89,6 @@
     "A minimalist white building by the sea, afternoon sunlight crossing an archway, quiet shadows, architectural photography, restrained composition.": "海辺のミニマルな白い建築。アーチを通る午後の日差しと静かな影。建築写真、抑制された構図。",
     "A clear glass perfume bottle on a stone plinth, soft side lighting, delicate reflections, an uncluttered backdrop, editorial product photography.": "石の台座に置かれた透明な香水瓶。柔らかいサイドライト、繊細な反射、すっきりした背景。雑誌風の製品写真。",
     "A single branch in a ceramic vase, fine leaf details, natural window light, generous negative space, black and white fine art photography.": "陶器の花瓶に一枝の植物。繊細な葉の質感、窓からの自然光、大きな余白。モノクロのアート写真。",
-    "360": "360",
-    "1000": "1000",
-    "10000": "10000",
     "_copy": "_copy",
     "，": "、",
     ", and": "、および",
@@ -7581,6 +7581,24 @@
     "No translated text is available to export.": "出力できる訳文がありません。",
     "The translated document is too large to export. Split the source into smaller files.": "訳文が大きすぎて出力できません。元のファイルを分割してください。",
     "The rebuilt image is too large. Split the source into smaller files.": "再配置した画像が大きすぎます。元のファイルを分割してください。",
-    "Some characters could not be rendered in the PDF. The translation is still available to copy.": "一部の文字をPDFに出力できません。ページ上の訳文はコピーできます。"
+    "Some characters could not be rendered in the PDF. The translation is still available to copy.": "一部の文字をPDFに出力できません。ページ上の訳文はコピーできます。",
+    "Survive 90 seconds. Three upgrades. A tougher final wave.": "90秒を生き残ろう。強化は3回、最後はさらに激しい戦い。",
+    "At 20, 40 and 60 seconds, combat pauses for an upgrade. Choose with 1, 2 or 3 within 10 seconds; Repair is selected automatically. Leaving or refreshing does not reset your run.": "20・40・60秒で戦闘が一時停止します。10秒以内に1・2・3キーかタップで強化を選択。時間切れは自動で修復。ページを離れたり更新しても対戦はリセットされません。",
+    "Starting uses today’s only attempt. Survive 90 seconds, with up to three 10-second upgrade pauses. Leaving or refreshing does not reset your run.": "開始すると本日1回の挑戦権を消費します。戦闘は90秒、強化選択の一時停止は最大10秒×3回。ページを離れたり更新してもリセットされません。",
+    "Choose your upgrade": "強化を選択",
+    "Combat paused": "戦闘を一時停止中",
+    "Upgrade ready": "強化可能",
+    "Seconds to choose": "選択の残り秒数",
+    "Combat resumes after your choice. Repair is selected when time runs out.": "選択後に戦闘再開。時間切れで自動修復。",
+    "Based on at most 129 collected tokens. No token means no reward; points and boss token values do not multiply payouts.": "最大129個のTokenで計算。未取得は報酬なし。スコアやBoss Tokenの点数による報酬倍率はありません。",
+    "Move +25% · fire +25%": "移動・攻撃速度 +25%",
+    "Multishot": "マルチターゲット",
+    "Targets {{from}} → {{to}}": "同時攻撃 {{from}} → {{to}} 体",
+    "Bonuses stack from base stats. Multishot is selected when time runs out.": "割合ボーナスは基礎値に加算。時間切れでマルチターゲットを選択。",
+    "Combat upgrades": "戦闘能力",
+    "Damage {{value}}": "ダメージ {{value}}",
+    "Move/fire {{value}}%": "移動・攻撃速度 {{value}}%",
+    "Targets {{count}}": "同時攻撃 {{count}} 体",
+    "Upgrade at 20, 40 and 60 seconds: damage +2, move and fire rate +25% of base, or one extra target. Combat pauses for up to 10 seconds; Multishot is selected automatically.": "20・40・60秒で強化：ダメージ+2、移動と攻撃速度を基礎値の25%加算、または同時攻撃対象+1。最大10秒停止し、時間切れでマルチターゲットを選択。"
   }
 }

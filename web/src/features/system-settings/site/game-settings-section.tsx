@@ -121,7 +121,7 @@ function GameSettingsForm({ settings }: { settings: GameSettings }) {
     additional = form.watch('additional')
   const maximum =
     parseQuotaFromDollars(Number(first)) +
-    186 * parseQuotaFromDollars(Number(additional))
+    128 * parseQuotaFromDollars(Number(additional))
   const weeklyTotal =
     parseQuotaFromDollars(Number(form.watch('weeklyFirst'))) +
     parseQuotaFromDollars(Number(form.watch('weeklySecond'))) +
@@ -318,7 +318,7 @@ function GameSettingsForm({ settings }: { settings: GameSettings }) {
             </p>
             <p className='text-muted-foreground mt-2 text-xs'>
               {t(
-                'Based on at most 187 collected tokens. No token means no reward; points and boss token values do not multiply payouts.'
+                'Based on at most 129 collected tokens. No token means no reward; points and boss token values do not multiply payouts.'
               )}
             </p>
           </div>

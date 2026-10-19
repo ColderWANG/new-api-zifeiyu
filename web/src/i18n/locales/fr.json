@@ -1,5 +1,8 @@
 {
   "translation": {
+    "360": "360",
+    "1000": "1000",
+    "10000": "10000",
     "The model declined or blocked image generation. Review its reply and adjust your request to comply with the provider's requirements.": "Le modèle a refusé ou bloqué la génération d’image. Consultez sa réponse et adaptez votre demande aux exigences du fournisseur.",
     "The model returned text instead of an image. Read its reply below; this alone does not indicate a content-policy violation.": "Le modèle a renvoyé du texte au lieu d’une image. Consultez sa réponse ci-dessous ; cela ne signifie pas à lui seul une violation des règles de contenu.",
     "Image data was returned, but its format could not be read. Ask the administrator to check the upstream response format.": "Des données d’image ont été reçues, mais leur format n’a pas pu être lu. Demandez à l’administrateur de vérifier le format de réponse du fournisseur.",
@@ -86,9 +89,6 @@
     "A minimalist white building by the sea, afternoon sunlight crossing an archway, quiet shadows, architectural photography, restrained composition.": "Un bâtiment blanc minimaliste en bord de mer, lumière de l’après-midi traversant une arche, ombres paisibles, photographie architecturale, composition épurée.",
     "A clear glass perfume bottle on a stone plinth, soft side lighting, delicate reflections, an uncluttered backdrop, editorial product photography.": "Un flacon de parfum transparent sur un socle en pierre, lumière latérale douce, reflets délicats, fond épuré, photographie éditoriale.",
     "A single branch in a ceramic vase, fine leaf details, natural window light, generous negative space, black and white fine art photography.": "Une branche dans un vase en céramique, feuilles finement détaillées, lumière naturelle, grands espaces vides, photographie d’art en noir et blanc.",
-    "360": "360",
-    "1000": "1000",
-    "10000": "10000",
     "_copy": "_copie",
     "，": ", ",
     ", and": ", et",
@@ -7581,6 +7581,24 @@
     "No translated text is available to export.": "Aucun texte traduit à exporter.",
     "The translated document is too large to export. Split the source into smaller files.": "La traduction est trop volumineuse. Divisez la source en fichiers plus petits.",
     "The rebuilt image is too large. Split the source into smaller files.": "L’image recomposée est trop grande. Divisez le fichier source.",
-    "Some characters could not be rendered in the PDF. The translation is still available to copy.": "Certains caractères ne peuvent pas être intégrés au PDF. La traduction reste disponible à la copie."
+    "Some characters could not be rendered in the PDF. The translation is still available to copy.": "Certains caractères ne peuvent pas être intégrés au PDF. La traduction reste disponible à la copie.",
+    "Survive 90 seconds. Three upgrades. A tougher final wave.": "Survivez 90 secondes. Trois améliorations. Une dernière vague plus intense.",
+    "At 20, 40 and 60 seconds, combat pauses for an upgrade. Choose with 1, 2 or 3 within 10 seconds; Repair is selected automatically. Leaving or refreshing does not reset your run.": "À 20, 40 et 60 secondes, le combat est suspendu. Choisissez avec 1, 2 ou 3 sous 10 secondes ; Réparation est choisie par défaut. Quitter ou actualiser ne réinitialise pas la partie.",
+    "Starting uses today’s only attempt. Survive 90 seconds, with up to three 10-second upgrade pauses. Leaving or refreshing does not reset your run.": "Vous utilisez votre unique tentative du jour. Survivez 90 secondes, avec trois pauses de 10 secondes maximum pour les améliorations. Quitter ou actualiser ne réinitialise pas la partie.",
+    "Choose your upgrade": "Choisissez votre amélioration",
+    "Combat paused": "Combat en pause",
+    "Upgrade ready": "Amélioration disponible",
+    "Seconds to choose": "Secondes restantes pour choisir",
+    "Combat resumes after your choice. Repair is selected when time runs out.": "Le combat reprend après votre choix. Réparation est sélectionnée à la fin du délai.",
+    "Based on at most 129 collected tokens. No token means no reward; points and boss token values do not multiply payouts.": "Calculé pour 129 jetons maximum. Aucun jeton, aucune récompense ; les points et les jetons de boss ne multiplient pas les gains.",
+    "Move +25% · fire +25%": "Déplacement et cadence +25 %",
+    "Multishot": "Multicible",
+    "Targets {{from}} → {{to}}": "Cibles {{from}} → {{to}}",
+    "Bonuses stack from base stats. Multishot is selected when time runs out.": "Les bonus se cumulent sur les valeurs de base. Multicible est choisi à la fin du délai.",
+    "Combat upgrades": "Améliorations de combat",
+    "Damage {{value}}": "Dégâts {{value}}",
+    "Move/fire {{value}}%": "Vitesse/cadence {{value}} %",
+    "Targets {{count}}": "Cibles {{count}}",
+    "Upgrade at 20, 40 and 60 seconds: damage +2, move and fire rate +25% of base, or one extra target. Combat pauses for up to 10 seconds; Multishot is selected automatically.": "À 20, 40 et 60 secondes : dégâts +2, vitesse et cadence +25 % de base, ou une cible supplémentaire. Pause de 10 secondes maximum ; Multicible est choisi par défaut."
   }
 }

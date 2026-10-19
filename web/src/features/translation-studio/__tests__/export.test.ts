@@ -233,3 +233,26 @@ describe('structured model response validation', () => {
     ).toThrow('document structure')
   })
 })
+
+it('accepts bare OCR arrays returned by Ministral while retaining all region validation', () => {
+  const regions = [{ box: [100, 120, 300, 50], text: 'Order AW-2026-041' }]
+  const expected = readImageTranslations(JSON.stringify({ regions }), 1)
+  expect(readImageTranslations(JSON.stringify(regions), 1)).toEqual(expected)
+  expect(
+    readImageTranslations(
+      ['```json', JSON.stringify(regions), '```'].join('\n'),
+      1
+    )
+  ).toEqual(expected)
+  expect(() =>
+    readImageTranslations('[{"box":[900,0,300,50],"text":"bad"}]', 1)
+  ).toThrow('structure')
+  expect(() =>
+    readImageTranslations('[{"box":[0,0,300,50],"text":""}]', 1)
+  ).toThrow('structure')
+  expect(() =>
+    readSegmentTranslations('[{"id":"s0","text":"Hello"}]', [
+      { id: 's0', paragraph: 'p0', text: 'Hello' },
+    ])
+  ).toThrow('structure')
+})

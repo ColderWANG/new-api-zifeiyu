@@ -21,12 +21,16 @@ import type { TranslationRegion, TranslationSegment } from '../types'
 const STRUCTURE_ERROR =
   'The model did not preserve the document structure. Try another model; completed sections are retained.'
 
-function readStructuredResponse(text: string): Record<string, unknown> {
+function readStructuredResponse(
+  text: string,
+  arrayKey?: 'regions'
+): Record<string, unknown> {
   try {
     const content = text
       .trim()
       .replace(/^```(?:json)?\s*\n([\s\S]*?)\n```$/i, '$1')
     const value: unknown = JSON.parse(content)
+    if (Array.isArray(value) && arrayKey) return { [arrayKey]: value }
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
       throw new Error()
     }
@@ -94,7 +98,7 @@ export function readImageTranslations(
   text: string,
   page: number
 ): TranslationRegion[] {
-  const data = readStructuredResponse(text)
+  const data = readStructuredResponse(text, 'regions')
   if (!Array.isArray(data.regions) || data.regions.length > 250) {
     throw new Error(STRUCTURE_ERROR)
   }

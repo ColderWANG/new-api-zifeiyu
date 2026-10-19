@@ -1,5 +1,8 @@
 {
   "translation": {
+    "360": "360",
+    "1000": "1000",
+    "10000": "10000",
     "The model declined or blocked image generation. Review its reply and adjust your request to comply with the provider's requirements.": "Mô hình đã từ chối hoặc chặn việc tạo ảnh. Hãy đọc phản hồi và điều chỉnh yêu cầu theo quy định của nhà cung cấp.",
     "The model returned text instead of an image. Read its reply below; this alone does not indicate a content-policy violation.": "Mô hình trả về văn bản thay vì ảnh. Hãy đọc phản hồi bên dưới; chỉ riêng phản hồi văn bản không chứng minh nội dung vi phạm chính sách.",
     "Image data was returned, but its format could not be read. Ask the administrator to check the upstream response format.": "Đã nhận dữ liệu ảnh nhưng không đọc được định dạng. Hãy nhờ quản trị viên kiểm tra định dạng phản hồi của nhà cung cấp.",
@@ -86,9 +89,6 @@
     "A minimalist white building by the sea, afternoon sunlight crossing an archway, quiet shadows, architectural photography, restrained composition.": "Tòa nhà trắng tối giản bên biển, nắng chiều xuyên qua vòm cửa, bóng đổ yên tĩnh, nhiếp ảnh kiến trúc, bố cục tinh giản.",
     "A clear glass perfume bottle on a stone plinth, soft side lighting, delicate reflections, an uncluttered backdrop, editorial product photography.": "Chai nước hoa thủy tinh trong trên bệ đá, ánh sáng bên dịu nhẹ, phản chiếu tinh tế, nền gọn gàng, ảnh sản phẩm phong cách tạp chí.",
     "A single branch in a ceramic vase, fine leaf details, natural window light, generous negative space, black and white fine art photography.": "Một cành cây trong bình gốm, chi tiết lá tinh tế, ánh sáng tự nhiên bên cửa sổ, nhiều khoảng trống, ảnh nghệ thuật đen trắng.",
-    "360": "360",
-    "1000": "1000",
-    "10000": "10000",
     "_copy": "_bản sao",
     "，": ", ",
     ", and": ", và",
@@ -7581,6 +7581,24 @@
     "No translated text is available to export.": "Không có bản dịch để xuất.",
     "The translated document is too large to export. Split the source into smaller files.": "Bản dịch quá lớn để xuất. Hãy chia nguồn thành các tệp nhỏ hơn.",
     "The rebuilt image is too large. Split the source into smaller files.": "Ảnh bản dịch sau dàn trang quá lớn. Hãy chia tệp nguồn.",
-    "Some characters could not be rendered in the PDF. The translation is still available to copy.": "Một số ký tự không thể hiển thị trong PDF. Bạn vẫn có thể sao chép bản dịch."
+    "Some characters could not be rendered in the PDF. The translation is still available to copy.": "Một số ký tự không thể hiển thị trong PDF. Bạn vẫn có thể sao chép bản dịch.",
+    "Survive 90 seconds. Three upgrades. A tougher final wave.": "Sống sót 90 giây. Ba lần nâng cấp. Đợt cuối khó hơn.",
+    "At 20, 40 and 60 seconds, combat pauses for an upgrade. Choose with 1, 2 or 3 within 10 seconds; Repair is selected automatically. Leaving or refreshing does not reset your run.": "Trận đấu tạm dừng ở giây 20, 40 và 60. Chọn bằng phím 1, 2 hoặc 3 trong 10 giây; hết giờ sẽ tự chọn Sửa chữa. Rời hoặc tải lại trang không đặt lại lượt chơi.",
+    "Starting uses today’s only attempt. Survive 90 seconds, with up to three 10-second upgrade pauses. Leaving or refreshing does not reset your run.": "Bắt đầu sẽ dùng lượt chơi duy nhất hôm nay. Chiến đấu 90 giây, cộng ba lần tạm dừng nâng cấp tối đa 10 giây. Rời hoặc tải lại trang không đặt lại lượt chơi.",
+    "Choose your upgrade": "Chọn nâng cấp",
+    "Combat paused": "Trận đấu đã tạm dừng",
+    "Upgrade ready": "Có thể nâng cấp",
+    "Seconds to choose": "Số giây còn lại để chọn",
+    "Combat resumes after your choice. Repair is selected when time runs out.": "Chọn xong sẽ tiếp tục chiến đấu. Hết giờ sẽ tự chọn Sửa chữa.",
+    "Based on at most 129 collected tokens. No token means no reward; points and boss token values do not multiply payouts.": "Tính theo tối đa 129 Token. Không nhặt Token thì không có thưởng; điểm và giá trị Token Boss không nhân thưởng.",
+    "Move +25% · fire +25%": "Tốc chạy và tốc đánh +25%",
+    "Multishot": "Đa mục tiêu",
+    "Targets {{from}} → {{to}}": "Mục tiêu {{from}} → {{to}}",
+    "Bonuses stack from base stats. Multishot is selected when time runs out.": "Cộng dồn theo chỉ số cơ bản. Hết giờ tự chọn Đa mục tiêu.",
+    "Combat upgrades": "Chỉ số chiến đấu",
+    "Damage {{value}}": "Sát thương {{value}}",
+    "Move/fire {{value}}%": "Tốc chạy/đánh {{value}}%",
+    "Targets {{count}}": "Mục tiêu {{count}}",
+    "Upgrade at 20, 40 and 60 seconds: damage +2, move and fire rate +25% of base, or one extra target. Combat pauses for up to 10 seconds; Multishot is selected automatically.": "Nâng cấp ở giây 20, 40 và 60: sát thương +2, tốc chạy và tốc đánh +25% chỉ số cơ bản, hoặc thêm một mục tiêu. Tạm dừng tối đa 10 giây; hết giờ tự chọn Đa mục tiêu."
   }
 }

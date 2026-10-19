@@ -19,7 +19,14 @@ For commercial licensing, please contact support@quantumnous.com
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { sendInputs, getGameStatus, type GameRun } from './api'
-import { isDone, newGame, step, TICK_MS, type GameState } from './engine'
+import {
+  gameCursor,
+  isDone,
+  newGame,
+  step,
+  TICK_MS,
+  type GameState,
+} from './engine'
 
 export function useGameSession(onFinish: () => void) {
   const [run, setRun] = useState<GameRun | null>(null)
@@ -56,10 +63,13 @@ export function useGameSession(onFinish: () => void) {
           (Date.now() - offset.current - current.started_at) / TICK_MS
         ) - 1
       // A long gap is recovered from the server, never replayed as a paused game.
-      if (target - state.current.tick > 50 || pending.current.length >= 50) {
+      if (
+        target - gameCursor(state.current) > 50 ||
+        pending.current.length >= 50
+      ) {
         return
       }
-      while (state.current.tick < target && !isDone(state.current)) {
+      while (gameCursor(state.current) < target && !isDone(state.current)) {
         const value =
           input.current.direction |
           (input.current.dash ? 16 : 0) |
@@ -82,7 +92,7 @@ export function useGameSession(onFinish: () => void) {
         return
       }
       busy.current = true
-      const from = state.current.tick - pending.current.length
+      const from = gameCursor(state.current) - pending.current.length
       const batch = [...pending.current]
       try {
         const next = await sendInputs(
@@ -93,7 +103,7 @@ export function useGameSession(onFinish: () => void) {
         )
         if (session.current?.id !== current.id) return
         const remaining = pending.current.slice(
-          Math.max(0, next.state.tick - from)
+          Math.max(0, gameCursor(next.state) - from)
         )
         pending.current = remaining
         state.current = structuredClone(next.state)
@@ -146,7 +156,7 @@ export function useGameSession(onFinish: () => void) {
     try {
       const next = await sendInputs(
         current.id,
-        state.current.tick - pending.current.length,
+        gameCursor(state.current) - pending.current.length,
         [],
         true
       )

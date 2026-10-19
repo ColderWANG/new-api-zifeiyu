@@ -16,7 +16,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-export const DURATION = 1800
+export const DURATION = 900
+export const UPGRADE_PAUSE_TICKS = 100
 export const TICK_MS = 100
 export type Enemy = {
   id: number
@@ -29,6 +30,8 @@ export type Token = { x: number; y: number; value: number }
 export type GameState = {
   version: number
   tick: number
+  clock_tick?: number
+  pause_ticks?: number
   rng: number
   x: number
   y: number
@@ -41,6 +44,10 @@ export type GameState = {
   power: number
   speed: number
   upgrades: number
+  haste?: number
+  extra_targets?: number
+  attack_charge?: number
+  beam_targets?: { x: number; y: number }[]
   dash_until: number
   dash_ready: number
   hurt_until: number
@@ -51,9 +58,10 @@ export type GameState = {
   enemies: Enemy[]
   tokens: Token[]
 }
-export function newGame(seed: number): GameState {
+export function newGame(seed: number, version = 3): GameState {
   return {
-    version: 1,
+    version,
+    ...(version >= 2 ? { clock_tick: 0, pause_ticks: 0 } : {}),
     tick: 0,
     rng: seed,
     x: 5000,
@@ -93,15 +101,59 @@ function random(s: GameState, n: number) {
   s.rng = (Math.imul(s.rng, 1664525) + 1013904223) >>> 0
   return s.rng % n
 }
+export function gameDuration(s: GameState) {
+  return s.version >= 2 ? DURATION : 1800
+}
+export function gameCursor(s: GameState) {
+  return s.version >= 2 ? (s.clock_tick ?? 0) : s.tick
+}
+export function upgradePending(s: GameState) {
+  return (
+    s.version >= 2 &&
+    !isDone(s) &&
+    s.upgrades < Math.min(3, Math.floor(s.tick / 200))
+  )
+}
 export function isDone(s: GameState) {
-  return s.hp <= 0 || s.tick >= DURATION
+  return s.hp <= 0 || s.tick >= gameDuration(s)
 }
 // Kept in lockstep with pkg/tokengame/engine.go; shared replay fixtures verify parity.
 export function step(s: GameState, input: number) {
   if (isDone(s)) return
+  if (s.version >= 2) {
+    s.clock_tick = (s.clock_tick ?? 0) + 1
+    if (upgradePending(s)) {
+      s.pause_ticks = (s.pause_ticks ?? 0) + 1
+      let choice = input >> 5
+      if (choice === 0 && s.pause_ticks >= UPGRADE_PAUSE_TICKS) choice = 3
+      if (choice > 0) {
+        s.upgrades++
+        s.pause_ticks = 0
+        if (choice === 1) s.power += 2
+        if (choice === 2) {
+          if (s.version >= 3) {
+            s.haste = (s.haste ?? 0) + 1
+            s.speed = 140 + 35 * s.haste
+          } else s.speed += 20
+        }
+        if (choice === 3) {
+          if (s.version >= 3) s.extra_targets = (s.extra_targets ?? 0) + 1
+          else {
+            s.max_hp += 15
+            s.hp = Math.min(s.max_hp, s.hp + 35)
+          }
+        }
+      }
+      return
+    }
+  }
   s.tick++
   const upgrade = input >> 5
-  if (upgrade > 0 && s.upgrades < Math.min(5, Math.floor(s.tick / 300))) {
+  if (
+    s.version < 2 &&
+    upgrade > 0 &&
+    s.upgrades < Math.min(5, Math.floor(s.tick / 300))
+  ) {
     s.upgrades++
     if (upgrade === 1) s.power += 2
     if (upgrade === 2) s.speed += 20
@@ -120,8 +172,13 @@ export function step(s: GameState, input: number) {
   if (d[0] && d[1]) speed = Math.trunc((speed * 707) / 1000)
   s.x = Math.max(200, Math.min(9800, s.x + d[0] * speed))
   s.y = Math.max(200, Math.min(6800, s.y + d[1] * speed))
-  const interval = Math.max(5, 15 - Math.floor(s.tick / 180))
-  const boss = [600, 1200, 1650].includes(s.tick)
+  const interval =
+    s.version >= 2
+      ? Math.max(4, 10 - Math.floor(s.tick / 150))
+      : Math.max(5, 15 - Math.floor(s.tick / 180))
+  const boss = (s.version >= 2 ? [250, 550, 800] : [600, 1200, 1650]).includes(
+    s.tick
+  )
   if ((s.tick % interval === 0 || boss) && s.enemies.length < 100) {
     let kind = random(s, 10)
     if (kind < 6) kind = 0
@@ -144,26 +201,51 @@ export function step(s: GameState, input: number) {
         y = 7000
         break
     }
-    s.enemies.push({ id: ++s.next_id, x, y, hp: [3, 2, 12, 100][kind], kind })
-  }
-  if (s.tick % 5 === 0 && s.enemies.length) {
-    let closest = -1,
-      dist = 2200 * 2200
-    s.enemies.forEach((e, i) => {
-      const dd = (e.x - s.x) ** 2 + (e.y - s.y) ** 2
-      if (dd < dist) {
-        closest = i
-        dist = dd
-      }
+    s.enemies.push({
+      id: ++s.next_id,
+      x,
+      y,
+      hp: (s.version >= 2 ? [4, 3, 14, 70] : [3, 2, 12, 100])[kind],
+      kind,
     })
-    if (closest >= 0) {
+  }
+  let attackReady = s.tick % (s.version >= 2 ? 4 : 5) === 0
+  if (s.version >= 3) {
+    s.attack_charge = (s.attack_charge ?? 0) + 100 + 25 * (s.haste ?? 0)
+    attackReady = s.attack_charge >= 400
+    if (attackReady) s.attack_charge -= 400
+  }
+  if (attackReady && s.enemies.length) {
+    const targetCount = s.version >= 3 ? 1 + (s.extra_targets ?? 0) : 1
+    if (s.version >= 3) delete s.beam_targets
+    const selected = new Set<number>()
+    for (let shot = 0; shot < targetCount; shot++) {
+      let closest = -1,
+        dist = 2200 * 2200
+      s.enemies.forEach((e, i) => {
+        if (s.version >= 3 && (selected.has(i) || e.hp <= 0)) return
+        const dd = (e.x - s.x) ** 2 + (e.y - s.y) ** 2
+        if (dd < dist) {
+          closest = i
+          dist = dd
+        }
+      })
+      if (closest < 0) break
+      selected.add(closest)
       const e = s.enemies[closest]
       e.hp -= s.power
-      s.beam_x = e.x
-      s.beam_y = e.y
+      if (shot === 0) {
+        s.beam_x = e.x
+        s.beam_y = e.y
+      }
       s.beam_until = s.tick + 2
+      if (s.version >= 3) {
+        s.beam_targets ??= []
+        s.beam_targets.push({ x: e.x, y: e.y })
+      }
     }
   }
+
   s.enemies = s.enemies.filter((e) => {
     if (e.hp <= 0) {
       s.kills++
@@ -175,7 +257,10 @@ export function step(s: GameState, input: number) {
     const dx = s.x - e.x,
       dy = s.y - e.y,
       dist = Math.max(1, Math.floor(Math.sqrt(dx * dx + dy * dy)))
-    const velocity = [48, 85, 32, 38][e.kind] + Math.floor(s.tick / 120)
+    const velocity =
+      s.version >= 2
+        ? [105, 155, 70, 90][e.kind] + Math.floor(s.tick / 30)
+        : [48, 85, 32, 38][e.kind] + Math.floor(s.tick / 120)
     e.x += Math.trunc((dx * velocity) / dist)
     e.y += Math.trunc((dy * velocity) / dist)
     if (dist < 330 && s.tick >= s.hurt_until && s.tick >= s.dash_until) {

@@ -1,5 +1,8 @@
 {
   "translation": {
+    "360": "360",
+    "1000": "1000",
+    "10000": "10000",
     "The model declined or blocked image generation. Review its reply and adjust your request to comply with the provider's requirements.": "Модель отказалась генерировать изображение или заблокировала генерацию. Прочитайте ответ и скорректируйте запрос в соответствии с требованиями провайдера.",
     "The model returned text instead of an image. Read its reply below; this alone does not indicate a content-policy violation.": "Модель вернула текст вместо изображения. Прочитайте ответ ниже; сам по себе текстовый ответ не означает нарушения правил контента.",
     "Image data was returned, but its format could not be read. Ask the administrator to check the upstream response format.": "Получены данные изображения, но их формат не удалось прочитать. Попросите администратора проверить формат ответа провайдера.",
@@ -86,9 +89,6 @@
     "A minimalist white building by the sea, afternoon sunlight crossing an archway, quiet shadows, architectural photography, restrained composition.": "Минималистичное белое здание у моря, послеполуденный свет сквозь арку, спокойные тени, архитектурная фотография, сдержанная композиция.",
     "A clear glass perfume bottle on a stone plinth, soft side lighting, delicate reflections, an uncluttered backdrop, editorial product photography.": "Прозрачный флакон духов на каменном постаменте, мягкий боковой свет, тонкие отражения, чистый фон, журнальная предметная съёмка.",
     "A single branch in a ceramic vase, fine leaf details, natural window light, generous negative space, black and white fine art photography.": "Ветка в керамической вазе, тонкие детали листьев, естественный свет из окна, свободное пространство, художественная чёрно-белая фотография.",
-    "360": "360",
-    "1000": "1000",
-    "10000": "10000",
     "_copy": "_копировать",
     "，": ", ",
     ", and": ", и",
@@ -7581,6 +7581,24 @@
     "No translated text is available to export.": "Нет переведённого текста для экспорта.",
     "The translated document is too large to export. Split the source into smaller files.": "Перевод слишком велик для экспорта. Разделите исходный файл.",
     "The rebuilt image is too large. Split the source into smaller files.": "Новое изображение слишком велико. Разделите исходный файл.",
-    "Some characters could not be rendered in the PDF. The translation is still available to copy.": "Некоторые символы не удалось отобразить в PDF. Перевод по-прежнему можно скопировать."
+    "Some characters could not be rendered in the PDF. The translation is still available to copy.": "Некоторые символы не удалось отобразить в PDF. Перевод по-прежнему можно скопировать.",
+    "Survive 90 seconds. Three upgrades. A tougher final wave.": "Продержитесь 90 секунд. Три улучшения и сложная финальная волна.",
+    "At 20, 40 and 60 seconds, combat pauses for an upgrade. Choose with 1, 2 or 3 within 10 seconds; Repair is selected automatically. Leaving or refreshing does not reset your run.": "На 20-й, 40-й и 60-й секунде бой приостанавливается. Выберите улучшение клавишей 1, 2 или 3 за 10 секунд; иначе включится ремонт. Выход и обновление не сбрасывают игру.",
+    "Starting uses today’s only attempt. Survive 90 seconds, with up to three 10-second upgrade pauses. Leaving or refreshing does not reset your run.": "Старт использует единственную попытку дня. Бой длится 90 секунд, плюс три паузы для улучшений до 10 секунд каждая. Выход и обновление не сбрасывают игру.",
+    "Choose your upgrade": "Выберите улучшение",
+    "Combat paused": "Бой приостановлен",
+    "Upgrade ready": "Улучшение доступно",
+    "Seconds to choose": "Секунд на выбор",
+    "Combat resumes after your choice. Repair is selected when time runs out.": "После выбора бой продолжится. По истечении времени включится ремонт.",
+    "Based on at most 129 collected tokens. No token means no reward; points and boss token values do not multiply payouts.": "Расчёт для максимум 129 токенов. Без токенов нет награды; очки и стоимость токенов боссов не увеличивают выплаты.",
+    "Move +25% · fire +25%": "Скорость и темп огня +25%",
+    "Multishot": "Несколько целей",
+    "Targets {{from}} → {{to}}": "Целей {{from}} → {{to}}",
+    "Bonuses stack from base stats. Multishot is selected when time runs out.": "Бонусы складываются от базовых значений. По таймеру выбирается несколько целей.",
+    "Combat upgrades": "Боевые улучшения",
+    "Damage {{value}}": "Урон {{value}}",
+    "Move/fire {{value}}%": "Скорость/темп {{value}}%",
+    "Targets {{count}}": "Целей {{count}}",
+    "Upgrade at 20, 40 and 60 seconds: damage +2, move and fire rate +25% of base, or one extra target. Combat pauses for up to 10 seconds; Multishot is selected automatically.": "На 20-й, 40-й и 60-й секунде: урон +2, скорость и темп огня +25% от базовых или ещё одна цель. Пауза до 10 секунд; по таймеру выбирается несколько целей."
   }
 }

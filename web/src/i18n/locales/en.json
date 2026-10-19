@@ -1,5 +1,8 @@
 {
   "translation": {
+    "360": "360",
+    "1000": "1000",
+    "10000": "10000",
     "The model declined or blocked image generation. Review its reply and adjust your request to comply with the provider's requirements.": "The model declined or blocked image generation. Review its reply and adjust your request to comply with the provider's requirements.",
     "The model returned text instead of an image. Read its reply below; this alone does not indicate a content-policy violation.": "The model returned text instead of an image. Read its reply below; this alone does not indicate a content-policy violation.",
     "Image data was returned, but its format could not be read. Ask the administrator to check the upstream response format.": "Image data was returned, but its format could not be read. Ask the administrator to check the upstream response format.",
@@ -86,9 +89,6 @@
     "A minimalist white building by the sea, afternoon sunlight crossing an archway, quiet shadows, architectural photography, restrained composition.": "A minimalist white building by the sea, afternoon sunlight crossing an archway, quiet shadows, architectural photography, restrained composition.",
     "A clear glass perfume bottle on a stone plinth, soft side lighting, delicate reflections, an uncluttered backdrop, editorial product photography.": "A clear glass perfume bottle on a stone plinth, soft side lighting, delicate reflections, an uncluttered backdrop, editorial product photography.",
     "A single branch in a ceramic vase, fine leaf details, natural window light, generous negative space, black and white fine art photography.": "A single branch in a ceramic vase, fine leaf details, natural window light, generous negative space, black and white fine art photography.",
-    "360": "360",
-    "1000": "1000",
-    "10000": "10000",
     "_copy": "_copy",
     "，": ", ",
     ", and": ", and",
@@ -7581,6 +7581,24 @@
     "No translated text is available to export.": "No translated text is available to export.",
     "The translated document is too large to export. Split the source into smaller files.": "The translated document is too large to export. Split the source into smaller files.",
     "The rebuilt image is too large. Split the source into smaller files.": "The rebuilt image is too large. Split the source into smaller files.",
-    "Some characters could not be rendered in the PDF. The translation is still available to copy.": "Some characters could not be rendered in the PDF. The translation is still available to copy."
+    "Some characters could not be rendered in the PDF. The translation is still available to copy.": "Some characters could not be rendered in the PDF. The translation is still available to copy.",
+    "Survive 90 seconds. Three upgrades. A tougher final wave.": "Survive 90 seconds. Three upgrades. A tougher final wave.",
+    "At 20, 40 and 60 seconds, combat pauses for an upgrade. Choose with 1, 2 or 3 within 10 seconds; Repair is selected automatically. Leaving or refreshing does not reset your run.": "At 20, 40 and 60 seconds, combat pauses for an upgrade. Choose with 1, 2 or 3 within 10 seconds; Repair is selected automatically. Leaving or refreshing does not reset your run.",
+    "Starting uses today’s only attempt. Survive 90 seconds, with up to three 10-second upgrade pauses. Leaving or refreshing does not reset your run.": "Starting uses today’s only attempt. Survive 90 seconds, with up to three 10-second upgrade pauses. Leaving or refreshing does not reset your run.",
+    "Choose your upgrade": "Choose your upgrade",
+    "Combat paused": "Combat paused",
+    "Upgrade ready": "Upgrade ready",
+    "Seconds to choose": "Seconds to choose",
+    "Combat resumes after your choice. Repair is selected when time runs out.": "Combat resumes after your choice. Repair is selected when time runs out.",
+    "Based on at most 129 collected tokens. No token means no reward; points and boss token values do not multiply payouts.": "Based on at most 129 collected tokens. No token means no reward; points and boss token values do not multiply payouts.",
+    "Move +25% · fire +25%": "Move +25% · fire +25%",
+    "Multishot": "Multishot",
+    "Targets {{from}} → {{to}}": "Targets {{from}} → {{to}}",
+    "Bonuses stack from base stats. Multishot is selected when time runs out.": "Bonuses stack from base stats. Multishot is selected when time runs out.",
+    "Combat upgrades": "Combat upgrades",
+    "Damage {{value}}": "Damage {{value}}",
+    "Move/fire {{value}}%": "Move/fire {{value}}%",
+    "Targets {{count}}": "Targets {{count}}",
+    "Upgrade at 20, 40 and 60 seconds: damage +2, move and fire rate +25% of base, or one extra target. Combat pauses for up to 10 seconds; Multishot is selected automatically.": "Upgrade at 20, 40 and 60 seconds: damage +2, move and fire rate +25% of base, or one extra target. Combat pauses for up to 10 seconds; Multishot is selected automatically."
   }
 }

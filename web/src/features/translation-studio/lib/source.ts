@@ -216,6 +216,22 @@ export async function readTranslationFile(
           'The scanned pages are too large. Split the PDF into smaller files.'
         )
       }
+      const operations = await page.getOperatorList()
+      signal.throwIfAborted()
+      // A digital heading does not mean the rest of the page is searchable.
+      // Send mixed pages as a whole image so text inside scans/figures is included.
+      const imageOperations = new Set([
+        pdfjs.OPS.paintImageXObject,
+        pdfjs.OPS.paintInlineImageXObject,
+        pdfjs.OPS.paintImageMaskXObject,
+        pdfjs.OPS.paintImageXObjectRepeat,
+        pdfjs.OPS.paintInlineImageXObjectGroup,
+        pdfjs.OPS.paintImageMaskXObjectGroup,
+        pdfjs.OPS.paintImageMaskXObjectRepeat,
+      ])
+      const hasImages = operations.fnArray.some((operation) =>
+        imageOperations.has(operation)
+      )
       const regions: TranslationRegion[] = []
       if (text.length > 0) {
         textPages.push(text)
@@ -224,6 +240,8 @@ export async function readTranslationFile(
             'The source exceeds the 60,000 character limit. Split it into smaller files.'
           )
         }
+      }
+      if (text.length > 0 && !hasImages) {
         for (const item of content.items) {
           if (!('str' in item) || !item.str.trim()) continue
           const m = pdfjs.Util.transform(viewport.transform, item.transform)

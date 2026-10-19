@@ -25,8 +25,14 @@ type Props = {
   state: MutableRefObject<GameState>
   input: MutableRefObject<{ direction: number; dash: boolean; upgrade: number }>
   active: boolean
+  controlsDisabled?: boolean
 }
-export function Arena({ state, input, active }: Props) {
+export function Arena({
+  state,
+  input,
+  active,
+  controlsDisabled = false,
+}: Props) {
   const { t } = useTranslation()
   const canvas = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
@@ -149,8 +155,14 @@ export function Arena({ state, input, active }: Props) {
         ctx.strokeStyle = '#343b30'
         ctx.lineWidth = 22
         ctx.beginPath()
-        ctx.moveTo(px, py)
-        ctx.lineTo(s.beam_x, s.beam_y)
+        const targets =
+          s.version >= 3
+            ? (s.beam_targets ?? [])
+            : [{ x: s.beam_x, y: s.beam_y }]
+        for (const target of targets) {
+          ctx.moveTo(px, py)
+          ctx.lineTo(target.x, target.y)
+        }
         ctx.stroke()
       }
       if (active && s.dash_until > s.tick) {
@@ -170,7 +182,7 @@ export function Arena({ state, input, active }: Props) {
     return () => cancelAnimationFrame(frame)
   }, [active, state])
   useEffect(() => {
-    if (!active) return
+    if (!active || controlsDisabled) return
     canvas.current?.focus({ preventScroll: true })
     const keys = new Set<string>()
     const update = () => {
@@ -235,7 +247,7 @@ export function Arena({ state, input, active }: Props) {
       window.removeEventListener('blur', blur)
       blur()
     }
-  }, [active, input])
+  }, [active, controlsDisabled, input])
   return (
     <canvas
       ref={canvas}
