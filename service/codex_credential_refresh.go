@@ -28,7 +28,7 @@ type CodexOAuthKey struct {
 	Expired     string `json:"expired,omitempty"`
 }
 
-func parseCodexOAuthKey(raw string) (*CodexOAuthKey, error) {
+func ParseCodexOAuthKey(raw string) (*CodexOAuthKey, error) {
 	if strings.TrimSpace(raw) == "" {
 		return nil, errors.New("codex channel: empty oauth key")
 	}
@@ -60,7 +60,7 @@ func RefreshCodexChannelCredential(ctx context.Context, channelID int, opts Code
 		return nil, nil, fmt.Errorf("channel type is not Codex")
 	}
 
-	oauthKey, err := parseCodexOAuthKey(strings.TrimSpace(ch.Key))
+	oauthKey, err := ParseCodexOAuthKey(strings.TrimSpace(ch.Key))
 	if err != nil {
 		return nil, nil, err
 	}

@@ -85,6 +85,45 @@ func TestValidateChannelProxy(t *testing.T) {
 	}
 }
 
+func TestValidateCodexChannelAcceptsAuthJSON(t *testing.T) {
+	tests := []struct {
+		name    string
+		key     string
+		wantErr string
+	}{
+		{
+			name: "Codex CLI auth.json",
+			key:  `{"auth_mode":"chatgpt","OPENAI_API_KEY":null,"tokens":{"access_token":"access","refresh_token":"refresh","account_id":"account"},"last_refresh":"2026-10-21T00:00:00Z"}`,
+		},
+		{
+			name: "flat OAuth credential",
+			key:  `{"access_token":"access","account_id":"account"}`,
+		},
+		{
+			name:    "missing nested account ID",
+			key:     `{"tokens":{"access_token":"access"}}`,
+			wantErr: "account_id",
+		},
+		{
+			name:    "malformed nested tokens",
+			key:     `{"tokens":"secret-value"}`,
+			wantErr: "valid JSON object",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			channel := &model.Channel{Type: constant.ChannelTypeCodex, Key: test.key}
+			err := validateChannel(channel, true)
+			if test.wantErr != "" {
+				require.ErrorContains(t, err, test.wantErr)
+				return
+			}
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestValidateChannelRequiresNewAPIBaseURL(t *testing.T) {
 	tests := []struct {
 		name    string

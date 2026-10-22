@@ -642,14 +642,14 @@ func validateChannel(channel *model.Channel, isAdd bool) error {
 			if !strings.HasPrefix(trimmedKey, "{") {
 				return fmt.Errorf("Codex key must be a valid JSON object")
 			}
-			var keyMap map[string]any
-			if err := common.Unmarshal([]byte(trimmedKey), &keyMap); err != nil {
+			key, err := service.ParseCodexOAuthKey(trimmedKey)
+			if err != nil {
 				return fmt.Errorf("Codex key must be a valid JSON object")
 			}
-			if v, ok := keyMap["access_token"]; !ok || v == nil || strings.TrimSpace(fmt.Sprintf("%v", v)) == "" {
+			if strings.TrimSpace(key.AccessToken) == "" {
 				return fmt.Errorf("Codex key JSON must include access_token")
 			}
-			if v, ok := keyMap["account_id"]; !ok || v == nil || strings.TrimSpace(fmt.Sprintf("%v", v)) == "" {
+			if strings.TrimSpace(key.AccountID) == "" {
 				return fmt.Errorf("Codex key JSON must include account_id")
 			}
 		}
