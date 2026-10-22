@@ -30,6 +30,31 @@ func GetLatestCodexClientVersion(ctx context.Context, client *http.Client) (stri
 	return latestCodexClientVersion.get(ctx, client, codexLatestReleaseURL, time.Now())
 }
 
+// GetLatestCodexClientVersionWithFallback keeps a channel proxy for the
+// ChatGPT API while allowing the unrelated GitHub release lookup to use a
+// direct connection if that proxy cannot reach GitHub.
+func GetLatestCodexClientVersionWithFallback(ctx context.Context, primary, fallback *http.Client) (string, error) {
+	return latestCodexClientVersion.getWithFallback(ctx, primary, fallback, codexLatestReleaseURL, time.Now())
+}
+
+func (cache *codexClientVersionCache) getWithFallback(ctx context.Context, primary, fallback *http.Client, releaseURL string, now time.Time) (string, error) {
+	primaryCtx := ctx
+	cancel := func() {}
+	if fallback != nil {
+		primaryCtx, cancel = context.WithTimeout(ctx, 6*time.Second)
+	}
+	version, err := cache.get(primaryCtx, primary, releaseURL, now)
+	cancel()
+	if err == nil || fallback == nil || ctx.Err() != nil {
+		return version, err
+	}
+	version, fallbackErr := cache.get(ctx, fallback, releaseURL, now)
+	if fallbackErr != nil {
+		return "", fmt.Errorf("proxied Codex release lookup: %v; direct fallback: %w", err, fallbackErr)
+	}
+	return version, nil
+}
+
 func (cache *codexClientVersionCache) get(ctx context.Context, client *http.Client, releaseURL string, now time.Time) (string, error) {
 	cache.Lock()
 	defer cache.Unlock()

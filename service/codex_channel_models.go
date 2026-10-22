@@ -29,7 +29,14 @@ func FetchCodexChannelModels(channel *model.Channel) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	clientVersion, err := GetLatestCodexClientVersion(ctx, releaseClient)
+	var directReleaseClient *http.Client
+	if strings.TrimSpace(setting.Proxy) != "" {
+		directReleaseClient, err = GetHttpClientWithProxy("")
+		if err != nil {
+			return nil, err
+		}
+	}
+	clientVersion, err := GetLatestCodexClientVersionWithFallback(ctx, releaseClient, directReleaseClient)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get Codex client version: %w", err)
 	}
