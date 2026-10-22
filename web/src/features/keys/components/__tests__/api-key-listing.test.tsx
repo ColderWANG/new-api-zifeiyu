@@ -53,6 +53,7 @@ import {
 import { apiKeySchema, type ApiKey } from '../../types'
 import { ApiKeyQuotaCell } from '../api-key-quota-cell'
 import { useApiKeysColumns } from '../api-keys-columns'
+import { ApiKeysDialogs } from '../api-keys-dialogs'
 import { ApiKeysProvider } from '../api-keys-provider'
 import { ApiKeysTable } from '../api-keys-table'
 
@@ -298,6 +299,7 @@ function KeysPage() {
   return (
     <ApiKeysProvider>
       <ApiKeysTable />
+      <ApiKeysDialogs />
       <Toaster />
     </ApiKeysProvider>
   )
@@ -306,6 +308,9 @@ function KeysPage() {
 async function renderKeysPage(status = 1, overrides: Partial<ApiKey> = {}) {
   let currentKey = { ...key, status, ...overrides }
   vi.mocked(api.get).mockImplementation(async (url) => {
+    if (url === '/api/user/models') {
+      return { data: { success: true, data: ['gpt-5-codex'] } }
+    }
     if (url.startsWith('/api/token/')) {
       return {
         data: { success: true, data: { items: [currentKey], total: 1 } },
@@ -445,6 +450,56 @@ it.each([true, false])(
     }
   }
 )
+
+it('copies a ready-to-run Codex or OpenCode command only after the full key is authorized', async () => {
+  const user = userEvent.setup()
+  const { post } = await renderKeysPage(1, {
+    model_limits_enabled: true,
+    model_limits: 'gpt-5-codex',
+  })
+  const copy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
+
+  await user.click(screen.getByRole('button', { name: 'Open menu' }))
+  expect(post).not.toHaveBeenCalled()
+  await user.click(screen.getByRole('menuitem', { name: 'Copy client setup' }))
+  await waitFor(() => expect(post).toHaveBeenCalledWith('/api/token/7/key'))
+  const dialog = await screen.findByRole('dialog', {
+    name: 'Copy client setup',
+  })
+  expect(dialog).not.toHaveTextContent('sk-fake-key-for-test-only')
+  await user.click(
+    within(dialog).getByRole('button', { name: 'Copy setup command' })
+  )
+  await waitFor(() =>
+    expect(copy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "NEWAPI_API_KEY='sk-fake-key-for-test-only' codex"
+      )
+    )
+  )
+
+  await user.click(within(dialog).getByRole('radio', { name: 'OpenCode' }))
+  await user.click(
+    within(dialog).getByRole('button', { name: 'Copy setup command' })
+  )
+  await waitFor(() =>
+    expect(copy).toHaveBeenCalledWith(
+      expect.stringContaining('OPENCODE_CONFIG_CONTENT=')
+    )
+  )
+})
+
+it('does not open the setup dialog when key disclosure is refused', async () => {
+  const user = userEvent.setup()
+  const { post } = await renderKeysPage()
+  post.mockResolvedValue({
+    data: { success: false, message: 'Verification required' },
+  })
+  await user.click(screen.getByRole('button', { name: 'Open menu' }))
+  await user.click(screen.getByRole('menuitem', { name: 'Copy client setup' }))
+  await screen.findByText('Verification required')
+  expect(screen.queryByRole('dialog', { name: 'Copy client setup' })).toBeNull()
+})
 
 it('keeps full mobile information without group or quota section headings', async () => {
   const matchMedia = window.matchMedia

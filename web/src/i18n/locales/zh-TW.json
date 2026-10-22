@@ -1,5 +1,15 @@
 {
   "translation": {
+    "Copy client setup": "複製用戶端設定",
+    "Choose a model, then copy the command into a macOS or Linux terminal.": "選擇模型，然後將命令複製到 macOS 或 Linux 終端機執行。",
+    "Copy setup command": "複製啟動命令",
+    "API address": "API 位址",
+    "Enter a valid HTTPS API address.": "請輸入有效的 HTTPS API 位址。",
+    "OpenCode API mode": "OpenCode API 模式",
+    "Responses API": "Responses API",
+    "Chat Completions": "聊天補全",
+    "Command preview": "命令預覽",
+    "The copied command contains your API key. Keep it private.": "複製的命令包含你的 API 金鑰，請妥善保管。",
     "360": "360",
     "1000": "1000",
     "10000": "10000",

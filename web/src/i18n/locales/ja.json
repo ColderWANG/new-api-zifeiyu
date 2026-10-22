@@ -1,5 +1,15 @@
 {
   "translation": {
+    "Copy client setup": "クライアント設定をコピー",
+    "Choose a model, then copy the command into a macOS or Linux terminal.": "モデルを選び、コマンドを macOS または Linux のターミナルに貼り付けてください。",
+    "Copy setup command": "起動コマンドをコピー",
+    "API address": "API アドレス",
+    "Enter a valid HTTPS API address.": "有効な HTTPS API アドレスを入力してください。",
+    "OpenCode API mode": "OpenCode API モード",
+    "Responses API": "Responses API",
+    "Chat Completions": "チャット補完",
+    "Command preview": "コマンドのプレビュー",
+    "The copied command contains your API key. Keep it private.": "コピーしたコマンドには API キーが含まれます。安全に保管してください。",
     "360": "360",
     "1000": "1000",
     "10000": "10000",

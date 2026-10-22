@@ -20,6 +20,7 @@ import { ApiKeysDeleteDialog } from './api-keys-delete-dialog'
 import { ApiKeysMutateDrawer } from './api-keys-mutate-drawer'
 import { useApiKeys } from './api-keys-provider'
 import { CCSwitchDialog } from './dialogs/cc-switch-dialog'
+import { ClientConfigDialog } from './dialogs/client-config-dialog'
 
 export function ApiKeysDialogs() {
   const { open, setOpen, currentRow, resolvedKey } = useApiKeys()
@@ -37,6 +38,14 @@ export function ApiKeysDialogs() {
         onOpenChange={(isOpen) => !isOpen && setOpen(null)}
         tokenKey={resolvedKey}
       />
+      {open === 'client-config' && currentRow && (
+        <ClientConfigDialog
+          open
+          onOpenChange={(isOpen) => !isOpen && setOpen(null)}
+          apiKey={currentRow}
+          tokenKey={resolvedKey}
+        />
+      )}
     </>
   )
 }

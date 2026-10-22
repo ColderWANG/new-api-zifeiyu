@@ -1,5 +1,15 @@
 {
   "translation": {
+    "Copy client setup": "Sao chép cấu hình ứng dụng",
+    "Choose a model, then copy the command into a macOS or Linux terminal.": "Chọn mô hình, rồi dán lệnh vào terminal macOS hoặc Linux.",
+    "Copy setup command": "Sao chép lệnh khởi chạy",
+    "API address": "Địa chỉ API",
+    "Enter a valid HTTPS API address.": "Nhập địa chỉ API HTTPS hợp lệ.",
+    "OpenCode API mode": "Chế độ API OpenCode",
+    "Responses API": "Responses API",
+    "Chat Completions": "Hoàn thành hội thoại",
+    "Command preview": "Xem trước lệnh",
+    "The copied command contains your API key. Keep it private.": "Lệnh đã sao chép chứa khóa API của bạn. Hãy giữ bí mật.",
     "360": "360",
     "1000": "1000",
     "10000": "10000",

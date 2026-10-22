@@ -1,5 +1,15 @@
 {
   "translation": {
+    "Copy client setup": "Copier la configuration du client",
+    "Choose a model, then copy the command into a macOS or Linux terminal.": "Choisissez un modèle, puis collez la commande dans un terminal macOS ou Linux.",
+    "Copy setup command": "Copier la commande de lancement",
+    "API address": "Adresse API",
+    "Enter a valid HTTPS API address.": "Saisissez une adresse API HTTPS valide.",
+    "OpenCode API mode": "Mode API OpenCode",
+    "Responses API": "API Responses",
+    "Chat Completions": "Complétions de chat",
+    "Command preview": "Aperçu de la commande",
+    "The copied command contains your API key. Keep it private.": "La commande copiée contient votre clé API. Gardez-la privée.",
     "360": "360",
     "1000": "1000",
     "10000": "10000",
