@@ -18,6 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 export type ClientApp = 'codex' | 'opencode'
+export type CodexCredentialMode = 'environment' | 'embedded'
 export type OpenCodeApiMode = 'responses' | 'chat'
 
 function shellQuote(value: string): string {
@@ -47,10 +48,19 @@ export function normalizeClientApiBaseUrl(address: string): string | null {
   }
 }
 
-export function buildCodexConfigToml(input: {
-  apiBaseUrl: string
-  model: string
-}): string {
+export function buildCodexConfigToml(
+  input: {
+    apiBaseUrl: string
+    model: string
+  } & (
+    | { credentialMode: 'environment' }
+    | { credentialMode: 'embedded'; apiKey: string }
+  )
+): string {
+  const credential =
+    input.credentialMode === 'embedded'
+      ? `experimental_bearer_token = ${JSON.stringify(input.apiKey)}`
+      : 'env_key = "NEWAPI_API_KEY"'
   return [
     `model = ${JSON.stringify(input.model)}`,
     'model_provider = "newapi"',
@@ -58,7 +68,7 @@ export function buildCodexConfigToml(input: {
     '[model_providers.newapi]',
     'name = "New API"',
     `base_url = ${JSON.stringify(input.apiBaseUrl)}`,
-    'env_key = "NEWAPI_API_KEY"',
+    credential,
     'wire_api = "responses"',
     '',
   ].join('\n')

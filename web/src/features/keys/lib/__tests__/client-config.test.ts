@@ -32,6 +32,7 @@ describe('client setup commands', () => {
     const config = buildCodexConfigToml({
       apiBaseUrl: 'https://gateway.example.com/proxy/v1',
       model: 'gpt-5-codex',
+      credentialMode: 'environment',
     })
     expect(config).toBe(
       'model = "gpt-5-codex"\n' +
@@ -43,6 +44,21 @@ describe('client setup commands', () => {
         'wire_api = "responses"\n'
     )
     expect(config).not.toContain('sk-')
+  })
+
+  it('generates a standalone Codex config.toml with the exact escaped API key', () => {
+    const apiKey = 'sk-test"\\private'
+    const config = buildCodexConfigToml({
+      apiBaseUrl: 'https://gateway.example.com/v1',
+      model: 'gpt-5-codex',
+      credentialMode: 'embedded',
+      apiKey,
+    })
+    expect(config).toContain(
+      `experimental_bearer_token = ${JSON.stringify(apiKey)}`
+    )
+    expect(config).not.toContain('env_key =')
+    expect(config).toContain('wire_api = "responses"')
   })
 
   it('exports an API key without executing shell metacharacters', () => {

@@ -528,6 +528,48 @@ it('copies a Codex config.toml without exposing the key in its preview or file',
   )
 })
 
+it('copies an embedded-key Codex config only after explicitly selecting that mode', async () => {
+  const user = userEvent.setup()
+  const { post } = await renderKeysPage(1, {
+    model_limits_enabled: true,
+    model_limits: 'gpt-5-codex',
+  })
+  const copy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
+
+  await user.click(screen.getByRole('button', { name: 'Open menu' }))
+  await user.click(screen.getByRole('menuitem', { name: 'Copy client setup' }))
+  await waitFor(() => expect(post).toHaveBeenCalledWith('/api/token/7/key'))
+  const dialog = await screen.findByRole('dialog', {
+    name: 'Copy client setup',
+  })
+  expect(
+    within(dialog).getByRole('radio', {
+      name: 'Environment variable (recommended)',
+    })
+  ).toBeChecked()
+
+  await user.click(
+    within(dialog).getByRole('radio', { name: 'Put key in config.toml' })
+  )
+  expect(dialog).toHaveTextContent('experimental_bearer_token = "sk-••••••••"')
+  expect(dialog).not.toHaveTextContent('sk-fake-key-for-test-only')
+  expect(
+    within(dialog).queryByRole('button', { name: 'Copy key export command' })
+  ).toBeNull()
+  await user.click(
+    within(dialog).getByRole('button', { name: 'Copy config.toml' })
+  )
+  await waitFor(() =>
+    expect(copy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'experimental_bearer_token = "sk-fake-key-for-test-only"'
+      )
+    )
+  )
+  const config = copy.mock.lastCall?.[0] as string
+  expect(config).not.toContain('env_key =')
+})
+
 it('does not open the setup dialog when key disclosure is refused', async () => {
   const user = userEvent.setup()
   const { post } = await renderKeysPage()

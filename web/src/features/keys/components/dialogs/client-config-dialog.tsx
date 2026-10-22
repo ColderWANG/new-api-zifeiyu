@@ -37,6 +37,7 @@ import {
   buildClientLaunchCommand,
   normalizeClientApiBaseUrl,
   type ClientApp,
+  type CodexCredentialMode,
   type OpenCodeApiMode,
 } from '../../lib/client-config'
 import type { ApiKey } from '../../types'
@@ -59,6 +60,8 @@ export function ClientConfigDialog(props: ClientConfigDialogProps) {
       window.location.origin
   )
   const [apiMode, setApiMode] = useState<OpenCodeApiMode | null>(null)
+  const [codexCredentialMode, setCodexCredentialMode] =
+    useState<CodexCredentialMode>('environment')
 
   const { data: modelsData } = useQuery({
     queryKey: ['user-models-client-config', props.apiKey.group],
@@ -116,8 +119,20 @@ export function ClientConfigDialog(props: ClientConfigDialogProps) {
     ? buildCodexConfigToml({
         apiBaseUrl: apiBaseUrl || '',
         model: selectedModel,
+        ...(codexCredentialMode === 'embedded'
+          ? { credentialMode: 'embedded' as const, apiKey: props.tokenKey }
+          : { credentialMode: 'environment' as const }),
       })
     : ''
+  const codexPreview =
+    canCopy && codexCredentialMode === 'embedded'
+      ? buildCodexConfigToml({
+          apiBaseUrl: apiBaseUrl || '',
+          model: selectedModel,
+          credentialMode: 'embedded',
+          apiKey: 'sk-••••••••',
+        })
+      : codexConfig
   const previewCommand = canCopy
     ? buildClientLaunchCommand({
         app,
@@ -127,7 +142,7 @@ export function ClientConfigDialog(props: ClientConfigDialogProps) {
         openCodeApiMode: selectedApiMode,
       })
     : ''
-  const preview = app === 'codex' ? codexConfig : previewCommand
+  const preview = app === 'codex' ? codexPreview : previewCommand
 
   return (
     <Dialog
@@ -194,6 +209,35 @@ export function ClientConfigDialog(props: ClientConfigDialogProps) {
           </div>
         </RadioGroup>
       </div>
+
+      {app === 'codex' && (
+        <div className='space-y-2'>
+          <Label>{t('Codex credential mode')}</Label>
+          <RadioGroup
+            value={codexCredentialMode}
+            onValueChange={(value) =>
+              setCodexCredentialMode(value as CodexCredentialMode)
+            }
+            className='flex flex-wrap gap-5'
+          >
+            <div className='flex items-center gap-2'>
+              <RadioGroupItem
+                value='environment'
+                id='codex-credential-environment'
+              />
+              <Label htmlFor='codex-credential-environment'>
+                {t('Environment variable (recommended)')}
+              </Label>
+            </div>
+            <div className='flex items-center gap-2'>
+              <RadioGroupItem value='embedded' id='codex-credential-embedded' />
+              <Label htmlFor='codex-credential-embedded'>
+                {t('Put key in config.toml')}
+              </Label>
+            </div>
+          </RadioGroup>
+        </div>
+      )}
 
       <div className='space-y-2'>
         <Label htmlFor='client-config-model' required>
@@ -267,25 +311,33 @@ export function ClientConfigDialog(props: ClientConfigDialogProps) {
               'Save to ~/.codex/config.toml. If it already exists, place the top-level settings before any [section] and add the provider section at the end.'
             )}
           </p>
-          <p className='text-muted-foreground text-xs'>
-            {t(
-              'This file reads NEWAPI_API_KEY from your environment. Run the copied export command before starting Codex.'
-            )}
-          </p>
-          {canCopy && (
-            <CopyButton
-              value={buildCodexEnvCommand(props.tokenKey)}
-              variant='outline'
-              size='sm'
-              aria-label={t('Copy key export command')}
-            >
-              {t('Copy key export command')}
-            </CopyButton>
+          {codexCredentialMode === 'environment' && (
+            <>
+              <p className='text-muted-foreground text-xs'>
+                {t(
+                  'This file reads NEWAPI_API_KEY from your environment. Run the copied export command before starting Codex.'
+                )}
+              </p>
+              {canCopy && (
+                <CopyButton
+                  value={buildCodexEnvCommand(props.tokenKey)}
+                  variant='outline'
+                  size='sm'
+                  aria-label={t('Copy key export command')}
+                >
+                  {t('Copy key export command')}
+                </CopyButton>
+              )}
+            </>
           )}
         </div>
       ) : null}
       <p className='text-muted-foreground text-xs'>
-        {t('The copied command contains your API key. Keep it private.')}
+        {app === 'codex' && codexCredentialMode === 'embedded'
+          ? t(
+              'Codex discourages direct token storage. This config.toml contains your API key; keep it private and run chmod 600 ~/.codex/config.toml.'
+            )
+          : t('The copied command contains your API key. Keep it private.')}
       </p>
     </Dialog>
   )
