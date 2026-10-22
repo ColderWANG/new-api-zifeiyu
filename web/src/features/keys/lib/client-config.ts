@@ -47,6 +47,27 @@ export function normalizeClientApiBaseUrl(address: string): string | null {
   }
 }
 
+export function buildCodexConfigToml(input: {
+  apiBaseUrl: string
+  model: string
+}): string {
+  return [
+    `model = ${JSON.stringify(input.model)}`,
+    'model_provider = "newapi"',
+    '',
+    '[model_providers.newapi]',
+    'name = "New API"',
+    `base_url = ${JSON.stringify(input.apiBaseUrl)}`,
+    'env_key = "NEWAPI_API_KEY"',
+    'wire_api = "responses"',
+    '',
+  ].join('\n')
+}
+
+export function buildCodexEnvCommand(apiKey: string): string {
+  return `export NEWAPI_API_KEY=${shellQuote(apiKey)}`
+}
+
 export function buildClientLaunchCommand(input: {
   app: ClientApp
   apiKey: string

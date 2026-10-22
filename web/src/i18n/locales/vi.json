@@ -2,6 +2,12 @@
   "translation": {
     "Copy client setup": "Sao chép cấu hình ứng dụng",
     "Choose a model, then copy the command into a macOS or Linux terminal.": "Chọn mô hình, rồi dán lệnh vào terminal macOS hoặc Linux.",
+    "Choose a model, then copy the config.toml settings for Codex.": "Chọn mô hình, rồi sao chép cấu hình config.toml cho Codex.",
+    "Copy config.toml": "Sao chép config.toml",
+    "config.toml preview": "Xem trước config.toml",
+    "Save to ~/.codex/config.toml. If it already exists, place the top-level settings before any [section] and add the provider section at the end.": "Lưu vào ~/.codex/config.toml. Nếu tệp đã tồn tại, đặt các cài đặt cấp cao nhất trước mọi [section] và thêm phần nhà cung cấp vào cuối tệp.",
+    "This file reads NEWAPI_API_KEY from your environment. Run the copied export command before starting Codex.": "Tệp này đọc NEWAPI_API_KEY từ môi trường. Chạy lệnh export đã sao chép trước khi khởi động Codex.",
+    "Copy key export command": "Sao chép lệnh export khóa",
     "Copy setup command": "Sao chép lệnh khởi chạy",
     "API address": "Địa chỉ API",
     "Enter a valid HTTPS API address.": "Nhập địa chỉ API HTTPS hợp lệ.",

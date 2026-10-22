@@ -32,6 +32,8 @@ import { getUserModels } from '@/lib/api'
 import { requireServerSuccess } from '@/lib/server-error-message'
 
 import {
+  buildCodexConfigToml,
+  buildCodexEnvCommand,
   buildClientLaunchCommand,
   normalizeClientApiBaseUrl,
   type ClientApp,
@@ -110,7 +112,13 @@ export function ClientConfigDialog(props: ClientConfigDialogProps) {
         openCodeApiMode: selectedApiMode,
       })
     : ''
-  const preview = canCopy
+  const codexConfig = canCopy
+    ? buildCodexConfigToml({
+        apiBaseUrl: apiBaseUrl || '',
+        model: selectedModel,
+      })
+    : ''
+  const previewCommand = canCopy
     ? buildClientLaunchCommand({
         app,
         apiKey: 'sk-••••••••',
@@ -119,26 +127,45 @@ export function ClientConfigDialog(props: ClientConfigDialogProps) {
         openCodeApiMode: selectedApiMode,
       })
     : ''
+  const preview = app === 'codex' ? codexConfig : previewCommand
 
   return (
     <Dialog
       open={props.open}
       onOpenChange={props.onOpenChange}
       title={t('Copy client setup')}
-      description={t(
-        'Choose a model, then copy the command into a macOS or Linux terminal.'
-      )}
+      description={
+        app === 'codex'
+          ? t('Choose a model, then copy the config.toml settings for Codex.')
+          : t(
+              'Choose a model, then copy the command into a macOS or Linux terminal.'
+            )
+      }
       contentClassName='sm:max-w-xl'
       bodyClassName='space-y-4'
+      footerClassName='flex-wrap'
       footer={
         <>
           <Button variant='outline' onClick={() => props.onOpenChange(false)}>
             {t('Cancel')}
           </Button>
+          {app === 'codex' &&
+            (canCopy ? (
+              <CopyButton
+                value={codexConfig}
+                variant='default'
+                size='sm'
+                aria-label={t('Copy config.toml')}
+              >
+                {t('Copy config.toml')}
+              </CopyButton>
+            ) : (
+              <Button disabled>{t('Copy config.toml')}</Button>
+            ))}
           {canCopy ? (
             <CopyButton
               value={command}
-              variant='default'
+              variant={app === 'codex' ? 'outline' : 'default'}
               size='sm'
               aria-label={t('Copy setup command')}
             >
@@ -225,12 +252,38 @@ export function ClientConfigDialog(props: ClientConfigDialogProps) {
 
       {preview && (
         <div className='space-y-2'>
-          <Label>{t('Command preview')}</Label>
+          <Label>
+            {app === 'codex' ? t('config.toml preview') : t('Command preview')}
+          </Label>
           <pre className='border-border bg-muted max-h-32 overflow-auto rounded-none border p-3 font-mono text-xs break-all whitespace-pre-wrap'>
             {preview}
           </pre>
         </div>
       )}
+      {app === 'codex' ? (
+        <div className='space-y-2'>
+          <p className='text-muted-foreground text-xs'>
+            {t(
+              'Save to ~/.codex/config.toml. If it already exists, place the top-level settings before any [section] and add the provider section at the end.'
+            )}
+          </p>
+          <p className='text-muted-foreground text-xs'>
+            {t(
+              'This file reads NEWAPI_API_KEY from your environment. Run the copied export command before starting Codex.'
+            )}
+          </p>
+          {canCopy && (
+            <CopyButton
+              value={buildCodexEnvCommand(props.tokenKey)}
+              variant='outline'
+              size='sm'
+              aria-label={t('Copy key export command')}
+            >
+              {t('Copy key export command')}
+            </CopyButton>
+          )}
+        </div>
+      ) : null}
       <p className='text-muted-foreground text-xs'>
         {t('The copied command contains your API key. Keep it private.')}
       </p>

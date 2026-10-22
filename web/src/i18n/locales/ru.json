@@ -2,6 +2,12 @@
   "translation": {
     "Copy client setup": "Скопировать настройку клиента",
     "Choose a model, then copy the command into a macOS or Linux terminal.": "Выберите модель и вставьте команду в терминал macOS или Linux.",
+    "Choose a model, then copy the config.toml settings for Codex.": "Выберите модель и скопируйте настройки config.toml для Codex.",
+    "Copy config.toml": "Скопировать config.toml",
+    "config.toml preview": "Предпросмотр config.toml",
+    "Save to ~/.codex/config.toml. If it already exists, place the top-level settings before any [section] and add the provider section at the end.": "Сохраните в ~/.codex/config.toml. Если файл уже существует, поместите параметры верхнего уровня перед любым [section], а раздел поставщика добавьте в конец.",
+    "This file reads NEWAPI_API_KEY from your environment. Run the copied export command before starting Codex.": "Этот файл считывает NEWAPI_API_KEY из окружения. Перед запуском Codex выполните скопированную команду export.",
+    "Copy key export command": "Скопировать команду экспорта ключа",
     "Copy setup command": "Скопировать команду запуска",
     "API address": "Адрес API",
     "Enter a valid HTTPS API address.": "Введите действительный HTTPS-адрес API.",

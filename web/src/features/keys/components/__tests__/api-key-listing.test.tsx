@@ -489,6 +489,45 @@ it('copies a ready-to-run Codex or OpenCode command only after the full key is a
   )
 })
 
+it('copies a Codex config.toml without exposing the key in its preview or file', async () => {
+  const user = userEvent.setup()
+  const { post } = await renderKeysPage(1, {
+    model_limits_enabled: true,
+    model_limits: 'gpt-5-codex',
+  })
+  const copy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
+
+  await user.click(screen.getByRole('button', { name: 'Open menu' }))
+  await user.click(screen.getByRole('menuitem', { name: 'Copy client setup' }))
+  await waitFor(() => expect(post).toHaveBeenCalledWith('/api/token/7/key'))
+  const dialog = await screen.findByRole('dialog', {
+    name: 'Copy client setup',
+  })
+  expect(dialog).toHaveTextContent('config.toml preview')
+  expect(dialog).not.toHaveTextContent('sk-fake-key-for-test-only')
+
+  await user.click(
+    within(dialog).getByRole('button', { name: 'Copy config.toml' })
+  )
+  await waitFor(() =>
+    expect(copy).toHaveBeenCalledWith(
+      expect.stringContaining('env_key = "NEWAPI_API_KEY"')
+    )
+  )
+  const config = copy.mock.lastCall?.[0] as string
+  expect(config).toContain('model = "gpt-5-codex"')
+  expect(config).not.toContain('sk-fake-key-for-test-only')
+
+  await user.click(
+    within(dialog).getByRole('button', { name: 'Copy key export command' })
+  )
+  await waitFor(() =>
+    expect(copy).toHaveBeenCalledWith(
+      "export NEWAPI_API_KEY='sk-fake-key-for-test-only'"
+    )
+  )
+})
+
 it('does not open the setup dialog when key disclosure is refused', async () => {
   const user = userEvent.setup()
   const { post } = await renderKeysPage()

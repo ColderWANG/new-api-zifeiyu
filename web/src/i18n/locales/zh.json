@@ -2,6 +2,12 @@
   "translation": {
     "Copy client setup": "复制客户端配置",
     "Choose a model, then copy the command into a macOS or Linux terminal.": "选择模型，然后将命令复制到 macOS 或 Linux 终端运行。",
+    "Choose a model, then copy the config.toml settings for Codex.": "选择模型，然后复制 Codex 的 config.toml 配置。",
+    "Copy config.toml": "复制 config.toml",
+    "config.toml preview": "config.toml 预览",
+    "Save to ~/.codex/config.toml. If it already exists, place the top-level settings before any [section] and add the provider section at the end.": "保存到 ~/.codex/config.toml。如果文件已存在，请将顶层设置放在所有 [section] 之前，并在末尾添加模型服务配置。",
+    "This file reads NEWAPI_API_KEY from your environment. Run the copied export command before starting Codex.": "此文件从环境变量 NEWAPI_API_KEY 读取密钥。启动 Codex 前，请运行复制的 export 命令。",
+    "Copy key export command": "复制密钥 export 命令",
     "Copy setup command": "复制启动命令",
     "API address": "API 地址",
     "Enter a valid HTTPS API address.": "请输入有效的 HTTPS API 地址。",

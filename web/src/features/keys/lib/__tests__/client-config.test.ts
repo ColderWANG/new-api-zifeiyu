@@ -21,11 +21,40 @@ import { execFileSync } from 'node:child_process'
 import { describe, expect, it } from 'vitest'
 
 import {
+  buildCodexConfigToml,
+  buildCodexEnvCommand,
   buildClientLaunchCommand,
   normalizeClientApiBaseUrl,
 } from '../client-config'
 
 describe('client setup commands', () => {
+  it('generates Codex config.toml with the selected model and an environment-backed key', () => {
+    const config = buildCodexConfigToml({
+      apiBaseUrl: 'https://gateway.example.com/proxy/v1',
+      model: 'gpt-5-codex',
+    })
+    expect(config).toBe(
+      'model = "gpt-5-codex"\n' +
+        'model_provider = "newapi"\n\n' +
+        '[model_providers.newapi]\n' +
+        'name = "New API"\n' +
+        'base_url = "https://gateway.example.com/proxy/v1"\n' +
+        'env_key = "NEWAPI_API_KEY"\n' +
+        'wire_api = "responses"\n'
+    )
+    expect(config).not.toContain('sk-')
+  })
+
+  it('exports an API key without executing shell metacharacters', () => {
+    const key = "sk-test'$(printf injected)"
+    const command = buildCodexEnvCommand(key)
+    const output = execFileSync('sh', [
+      '-c',
+      `${command}; printf '%s' "$NEWAPI_API_KEY"`,
+    ]).toString()
+    expect(output).toBe(key)
+  })
+
   it.each([
     ['https://gateway.example.com/', 'https://gateway.example.com/v1'],
     [
