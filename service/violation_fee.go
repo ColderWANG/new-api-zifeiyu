@@ -122,8 +122,25 @@ func ChargeViolationFeeIfNeeded(ctx *gin.Context, relayInfo *relaycommon.RelayIn
 		return false
 	}
 
-	if err := PostConsumeQuota(relayInfo, feeQuota, 0, true); err != nil {
+	if err := bindDailyWalletRequest(relayInfo); err != nil {
 		logger.LogError(ctx, common.LogText("failed to charge violation fee: %s", err.Error()))
+		return false
+	}
+	feeInfo := relayInfo
+	if relayInfo.DailyWalletPeriodID > 0 {
+		// The additional fee has its own idempotency identity in the original day.
+		dailyFeeInfo := *relayInfo
+		dailyFeeInfo.DailyWalletRequestID += ":violation-fee"
+		dailyFeeInfo.DailyWalletReservedQuota = 0
+		dailyFeeInfo.DailyWalletPending = false
+		feeInfo = &dailyFeeInfo
+	}
+	result, err := postConsumeQuotaWithResult(feeInfo, feeQuota, 0, true)
+	if err != nil {
+		logger.LogError(ctx, common.LogText("failed to charge violation fee: %s", err.Error()))
+		return false
+	}
+	if result.AlreadyApplied {
 		return false
 	}
 

@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"time"
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/shopspring/decimal"
@@ -41,6 +42,9 @@ func AdjustUserQuota(userID, operatorRole int, mode string, value int) (*UserQuo
 		}
 		if operatorRole != common.RoleRootUser && operatorRole <= user.Role {
 			return ErrUserQuotaPermission
+		}
+		if _, err := ensureDailyWalletTx(tx, &user, time.Now(), 0); err != nil {
+			return err
 		}
 		if user.Quota > common.MaxWalletQuota || user.Quota < -common.MaxWalletQuota {
 			return ErrWalletQuotaLimitExceeded

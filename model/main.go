@@ -323,6 +323,9 @@ func is64BitIntegerType(dbType common.DatabaseType, dataType string) bool {
 }
 
 func migrateDB() error {
+	if err := MigrateDailyWalletSchema(DB); err != nil {
+		return err
+	}
 	if err := migrateTokenKeyUniqueness(DB); err != nil {
 		return err
 	}
@@ -401,7 +404,7 @@ func migrateDB() error {
 			return err
 		}
 	}
-	return nil
+	return InitializeDailyQuotaPolicies()
 }
 
 func migrateLOGDB() error {

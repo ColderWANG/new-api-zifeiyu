@@ -686,6 +686,7 @@ func settleTaskBillingOnComplete(ctx context.Context, adaptor TaskPollingAdaptor
 		result, usageFacts, err := EvaluateTaskCompletionUsage(bc.TieredSnapshot, taskResult.UsageFacts)
 		if err != nil {
 			logger.LogWarn(ctx, common.LogText("task %s expression settlement failed, keeping the pre-consumed quota: %v", task.TaskID, err))
+			RecalculateTaskQuota(ctx, task, task.Quota, common.NewMessage("Retained the reserved task quota"))
 			return true
 		}
 		if result.Clamp != nil {
@@ -699,6 +700,9 @@ func settleTaskBillingOnComplete(ctx context.Context, adaptor TaskPollingAdaptor
 	// 按次计费的成功任务保持预扣；失败任务由调用方全额退款。
 	if bc := task.PrivateData.BillingContext; bc != nil && bc.PerCallBilling {
 		logger.LogInfo(ctx, common.LogText("task %s is billed per request, skipping difference settlement", task.TaskID))
+		if task.Status == model.TaskStatusSuccess && task.PrivateData.DailyWalletPeriodID > 0 {
+			RecalculateTaskQuota(ctx, task, task.Quota, common.NewMessage("Retained the reserved task quota"))
+		}
 		return false
 	}
 	// 优先让 adaptor 决定最终额度。
@@ -711,8 +715,11 @@ func settleTaskBillingOnComplete(ctx context.Context, adaptor TaskPollingAdaptor
 	if tokens == 0 && taskResult.CompletionTokens > 0 {
 		tokens = taskResult.CompletionTokens
 	}
-	if tokens > 0 {
-		return RecalculateTaskQuotaByTokens(ctx, task, tokens)
+	if tokens > 0 && RecalculateTaskQuotaByTokens(ctx, task, tokens) {
+		return true
+	}
+	if task.Status == model.TaskStatusSuccess && task.PrivateData.DailyWalletPeriodID > 0 {
+		RecalculateTaskQuota(ctx, task, task.Quota, common.NewMessage("Retained the reserved task quota"))
 	}
 	return false
 }

@@ -38,6 +38,8 @@ func PrepareMidjourneyTaskBilling(relayInfo *relaycommon.RelayInfo, task *model.
 	task.Quota = 0
 	task.TokenId = 0
 	task.BillingChannelId = 0
+	task.DailyWalletPeriodID = 0
+	task.DailyWalletRequestID = ""
 	if !shouldBill {
 		return false, nil
 	}
@@ -46,6 +48,14 @@ func PrepareMidjourneyTaskBilling(relayInfo *relaycommon.RelayInfo, task *model.
 	}
 	if quota < 0 {
 		return false, errors.New("quota cannot be negative")
+	}
+	if err := bindDailyWalletRequest(relayInfo); err != nil {
+		return false, err
+	}
+	if relayInfo.DailyWalletPeriodID > 0 {
+		relayInfo.BillingSource = BillingSourceWallet
+		task.DailyWalletPeriodID = relayInfo.DailyWalletPeriodID
+		task.DailyWalletRequestID = relayInfo.DailyWalletRequestID
 	}
 	if relayInfo.BillingSource == BillingSourceSubscription {
 		return false, errors.New("legacy Midjourney billing does not support subscriptions")
@@ -71,7 +81,17 @@ func SettleMidjourneyTaskBilling(relayInfo *relaycommon.RelayInfo, task *model.M
 		return false, errors.New("Midjourney task must be persisted before billing")
 	}
 
-	result, billingErr := postConsumeQuotaWithResult(relayInfo, task.Quota, 0, true)
+	billingInfo := relayInfo
+	if task.DailyWalletPeriodID > 0 {
+		requestInfo := *relayInfo
+		requestInfo.DailyWalletPending = task.Status != "SUCCESS" && task.Status != "FAILURE"
+		requestInfo.DailyWalletReservedQuota = 0
+		billingInfo = &requestInfo
+	}
+	result, billingErr := postConsumeQuotaWithResult(billingInfo, task.Quota, 0, true)
+	if result.AlreadyApplied {
+		return false, billingErr
+	}
 	if !result.FundingApplied {
 		task.Quota = 0
 		task.TokenId = 0
@@ -95,11 +115,25 @@ func SettleMidjourneyTaskBilling(relayInfo *relaycommon.RelayInfo, task *model.M
 // RefundMidjourneyQuota reverses every accounting element recorded for a billed legacy task.
 func RefundMidjourneyQuota(ctx context.Context, task *model.Midjourney, reason string) bool {
 	quota := task.Quota
-	if quota == 0 {
+	managed := task.DailyWalletPeriodID > 0 && task.DailyWalletRequestID != ""
+	if quota == 0 && !managed {
 		return true
 	}
-
-	if err := model.IncreaseUserQuota(task.UserId, quota, false); err != nil {
+	var err error
+	if managed {
+		var applied bool
+		applied, err = model.AdjustDailyWalletRequest(task.UserId, task.DailyWalletRequestID, task.DailyWalletPeriodID, quota, 0, true)
+		if err == nil && !applied {
+			task.Quota = 0
+			if err := task.UpdateBillingState(); err != nil {
+				logger.LogError(ctx, common.LogText("failed to persist refunded Midjourney task quota, task %s: %s", task.MjId, err.Error()))
+			}
+			return true
+		}
+	} else {
+		err = model.IncreaseUserQuota(task.UserId, quota, false)
+	}
+	if err != nil {
 		logger.LogWarn(ctx, common.LogText("failed to refund Midjourney user quota, task %s: %s", task.MjId, err.Error()))
 		return false
 	}
@@ -134,6 +168,16 @@ func RefundMidjourneyQuota(ctx context.Context, task *model.Midjourney, reason s
 		logger.LogError(ctx, common.LogText("Midjourney refund succeeded but clearing the quota failed, task %s: %s", task.MjId, err.Error()))
 	}
 	return true
+}
+
+// FinalizeMidjourneyTaskBilling closes a completed request without a price adjustment.
+func FinalizeMidjourneyTaskBilling(ctx context.Context, task *model.Midjourney) {
+	if task.DailyWalletPeriodID == 0 || task.DailyWalletRequestID == "" {
+		return
+	}
+	if _, err := model.AdjustDailyWalletRequest(task.UserId, task.DailyWalletRequestID, task.DailyWalletPeriodID, task.Quota, task.Quota, false); err != nil {
+		logger.LogError(ctx, common.LogText("failed to finalize Midjourney billing, task %s: %s", task.MjId, err.Error()))
+	}
 }
 
 func GetMjRequestModel(relayMode int, midjRequest *dto.MidjourneyRequest) (string, *dto.MidjourneyResponse, bool) {

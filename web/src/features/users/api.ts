@@ -20,6 +20,7 @@ import type { AxiosRequestConfig } from 'axios'
 
 import type { PermissionCatalog } from '@/lib/admin-permissions'
 import { api } from '@/lib/api'
+import type { GroupQuotaPolicy } from '@/lib/daily-quota'
 import type { CustomOAuthBinding } from '@/lib/oauth'
 import { requireServerSuccess } from '@/lib/server-error-message'
 
@@ -266,4 +267,25 @@ export async function adminUnbindCustomOAuth(
     securityProofConfig(proofToken)
   )
   return res.data
+}
+
+/** Daily wallet policies are visible to administrators; only root can change them. */
+export async function getGroupQuotaPolicies(): Promise<
+  ApiResponse<GroupQuotaPolicy[]>
+> {
+  const res = await api.get('/api/group/quota-policies')
+  return requireServerSuccess(res.data)
+}
+
+export async function updateGroupQuotaPolicy(
+  group: string,
+  dailyQuota: number
+): Promise<ApiResponse<GroupQuotaPolicy>> {
+  const res = await api.put(
+    `/api/group/quota-policies/${encodeURIComponent(group)}`,
+    {
+      daily_quota: dailyQuota,
+    }
+  )
+  return requireServerSuccess(res.data)
 }

@@ -24,8 +24,10 @@ type Midjourney struct {
 	Buttons     string `json:"buttons"`
 	Properties  string `json:"properties"`
 
-	TokenId          int `json:"-" gorm:"default:0"`
-	BillingChannelId int `json:"-" gorm:"default:0"`
+	DailyWalletPeriodID  int64  `json:"-"`
+	DailyWalletRequestID string `json:"-" gorm:"type:varchar(128)"`
+	TokenId              int    `json:"-" gorm:"default:0"`
+	BillingChannelId     int    `json:"-" gorm:"default:0"`
 }
 
 // TaskQueryParams 用于包含所有搜索条件的结构体，可以根据需求添加更多字段
@@ -175,7 +177,7 @@ func (midjourney *Midjourney) Update() error {
 
 func (midjourney *Midjourney) UpdateBillingState() error {
 	return DB.Model(midjourney).
-		Select("quota", "token_id", "billing_channel_id").
+		Select("quota", "token_id", "billing_channel_id", "daily_wallet_period_id", "daily_wallet_request_id").
 		Updates(midjourney).Error
 }
 

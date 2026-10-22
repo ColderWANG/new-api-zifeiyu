@@ -100,6 +100,9 @@ func userCheckinWithTransaction(checkin *Checkin, userId int, quotaAwarded int) 
 		}
 
 		// 步骤2: 在事务中增加用户额度
+		if _, err := reconcileDailyWalletBeforeMutationTx(tx, userId); err != nil {
+			return err
+		}
 		if err := tx.Model(&User{}).Where("id = ?", userId).
 			Update("quota", gorm.Expr("quota + ?", quotaAwarded)).Error; err != nil {
 			return common.NewMessage("Check-in failed: quota update error")

@@ -52,8 +52,11 @@ func (s *BillingSession) Settle(actualQuota int) error {
 	}
 	delta := actualQuota - s.preConsumedQuota
 	if delta == 0 {
-		s.settled = true
-		return nil
+		wallet, managed := s.funding.(*WalletFunding)
+		if !managed || wallet.periodID == 0 {
+			s.settled = true
+			return nil
+		}
 	}
 	// 1) 调整资金来源（仅在尚未提交时执行，防止重复调用）
 	if !s.fundingSettled {
@@ -64,7 +67,7 @@ func (s *BillingSession) Settle(actualQuota int) error {
 	}
 	// 2) 调整令牌额度
 	var tokenErr error
-	if !s.relayInfo.IsPlayground {
+	if delta != 0 && !s.relayInfo.IsPlayground {
 		if delta > 0 {
 			tokenErr = model.DecreaseTokenQuota(s.relayInfo.TokenId, s.relayInfo.TokenKey, delta)
 		} else {
@@ -141,6 +144,9 @@ func (s *BillingSession) needsRefundLocked() bool {
 		return false
 	}
 	if s.tokenConsumed > 0 {
+		return true
+	}
+	if wallet, ok := s.funding.(*WalletFunding); ok && wallet.periodID > 0 {
 		return true
 	}
 	// 订阅可能在 tokenConsumed=0 时仍预扣了额度
@@ -256,6 +262,17 @@ func (s *BillingSession) preConsume(c *gin.Context, quota int) *types.NewAPIErro
 func (s *BillingSession) reserveFunding(delta int, requireAvailableQuota bool) error {
 	switch funding := s.funding.(type) {
 	case *WalletFunding:
+		if funding.periodID > 0 {
+			err := model.ReserveDailyWalletRequest(funding.userId, funding.requestID, funding.periodID, funding.consumed+delta, requireAvailableQuota)
+			if errors.Is(err, model.ErrDailyWalletInsufficient) {
+				return types.NewErrorWithStatusCode(err, types.ErrorCodeInsufficientUserQuota, http.StatusForbidden, types.ErrOptionWithSkipRetry(), types.ErrOptionWithNoRecordErrorLog())
+			}
+			if err != nil {
+				return types.NewError(err, types.ErrorCodeUpdateDataError, types.ErrOptionWithSkipRetry())
+			}
+			funding.consumed += delta
+			return nil
+		}
 		if requireAvailableQuota {
 			// Image quantity is known before submission, including retries and
 			// overrides. Reserve atomically instead of admitting wallet debt.
@@ -295,6 +312,14 @@ func (s *BillingSession) reserveFunding(delta int, requireAvailableQuota bool) e
 func (s *BillingSession) rollbackFundingReserve(delta int) {
 	switch funding := s.funding.(type) {
 	case *WalletFunding:
+		if funding.periodID > 0 {
+			if err := model.ReserveDailyWalletRequest(funding.userId, funding.requestID, funding.periodID, funding.consumed-delta, false); err != nil {
+				common.SysError(common.LogText("error rolling back wallet funding reserve: %s", err.Error()))
+			} else {
+				funding.consumed -= delta
+			}
+			return
+		}
 		if err := model.IncreaseUserQuota(funding.userId, delta, false); err != nil {
 			common.SysLog(common.LogText("error rolling back wallet funding reserve: %s", err.Error()))
 		} else {
@@ -320,7 +345,7 @@ func (s *BillingSession) reserveToken(delta int) error {
 // shouldTrust 统一信任额度检查，适用于钱包和订阅。
 func (s *BillingSession) shouldTrust(c *gin.Context) bool {
 	// 异步任务（ForcePreConsume=true）必须预扣全额，不允许信任旁路
-	if s.relayInfo.ForcePreConsume {
+	if s.relayInfo.ForcePreConsume || s.relayInfo.DailyWalletPeriodID > 0 {
 		return false
 	}
 
@@ -358,6 +383,11 @@ func (s *BillingSession) syncRelayInfo() {
 	info := s.relayInfo
 	info.FinalPreConsumedQuota = s.preConsumedQuota
 	info.BillingSource = s.funding.Source()
+	if wallet, ok := s.funding.(*WalletFunding); ok && wallet.periodID > 0 {
+		info.DailyWalletPeriodID = wallet.periodID
+		info.DailyWalletRequestID = wallet.requestID
+		info.DailyWalletReservedQuota = wallet.consumed
+	}
 
 	if sub, ok := s.funding.(*SubscriptionFunding); ok {
 		info.SubscriptionId = sub.subscriptionId
@@ -384,12 +414,22 @@ func NewBillingSession(c *gin.Context, relayInfo *relaycommon.RelayInfo, preCons
 	}
 
 	pref := common.NormalizeBillingPreference(relayInfo.UserSetting.BillingPreference)
+	if err := bindDailyWalletRequest(relayInfo); err != nil {
+		return nil, types.NewError(err, types.ErrorCodeQueryDataError, types.ErrOptionWithSkipRetry())
+	}
+	if relayInfo.DailyWalletPeriodID > 0 {
+		pref = "wallet_only"
+	}
 
 	// 钱包路径需要先检查用户额度
 	tryWallet := func() (*BillingSession, *types.NewAPIError) {
-		userQuota, err := model.GetUserQuota(relayInfo.UserId, false)
-		if err != nil {
-			return nil, types.NewError(err, types.ErrorCodeQueryDataError, types.ErrOptionWithSkipRetry())
+		userQuota := relayInfo.UserQuota
+		if relayInfo.DailyWalletPeriodID == 0 {
+			var err error
+			userQuota, err = model.GetUserQuota(relayInfo.UserId, false)
+			if err != nil {
+				return nil, types.NewError(err, types.ErrorCodeQueryDataError, types.ErrOptionWithSkipRetry())
+			}
 		}
 		if userQuota <= 0 {
 			return nil, types.NewErrorWithStatusCode(
@@ -407,7 +447,7 @@ func NewBillingSession(c *gin.Context, relayInfo *relaycommon.RelayInfo, preCons
 
 		session := &BillingSession{
 			relayInfo: relayInfo,
-			funding:   &WalletFunding{userId: relayInfo.UserId},
+			funding:   &WalletFunding{userId: relayInfo.UserId, periodID: relayInfo.DailyWalletPeriodID, requestID: relayInfo.DailyWalletRequestID, relayInfo: relayInfo},
 			lang:      i18n.StatedLang(c),
 		}
 		if apiErr := session.preConsume(c, preConsumedQuota); apiErr != nil {

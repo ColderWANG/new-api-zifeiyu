@@ -138,6 +138,14 @@ func RelayMidjourneyNotify(c *gin.Context) *dto.MidjourneyResponse {
 		}
 	}
 
+	if midjourneyTask.DailyWalletPeriodID > 0 {
+		if midjourneyTask.Status == "SUCCESS" {
+			service.FinalizeMidjourneyTaskBilling(c, midjourneyTask)
+		} else if midjourneyTask.Status == "FAILURE" {
+			service.RefundMidjourneyQuota(c, midjourneyTask, "Composition failed")
+		}
+	}
+
 	return nil
 }
 

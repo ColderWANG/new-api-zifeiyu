@@ -259,11 +259,13 @@ var accessTokenRouteRules = map[string]accessTokenRouteRule{
 	"GET /api/data/flow/self":                   accessTokenScopeRule("usage:read"),
 
 	// router/api-router.go: /api/group, /api/prefill_group
-	"GET /api/group/":               accessTokenScopeRule("group:read"),
-	"GET /api/prefill_group/":       accessTokenScopeRule("group:read"),
-	"POST /api/prefill_group/":      accessTokenScopeRule("group:write"),
-	"PUT /api/prefill_group/":       accessTokenScopeRule("group:write"),
-	"DELETE /api/prefill_group/:id": accessTokenScopeRule("group:write"),
+	"GET /api/group/":                      accessTokenScopeRule("group:read"),
+	"GET /api/group/quota-policies":        accessTokenScopeRule("group:read"),
+	"PUT /api/group/quota-policies/:group": accessTokenScopeRule("group:write"),
+	"GET /api/prefill_group/":              accessTokenScopeRule("group:read"),
+	"POST /api/prefill_group/":             accessTokenScopeRule("group:write"),
+	"PUT /api/prefill_group/":              accessTokenScopeRule("group:write"),
+	"DELETE /api/prefill_group/:id":        accessTokenScopeRule("group:write"),
 
 	// router/api-router.go: /api/mj, /api/task
 	"GET /api/mj/self":                 accessTokenScopeRule("usage:read"),

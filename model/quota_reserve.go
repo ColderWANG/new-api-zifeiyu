@@ -168,6 +168,12 @@ func TryReserveUserQuota(id int, quota int) (bool, error) {
 	if quota == 0 {
 		return true, nil
 	}
+	if handled, err := applyManagedWalletDelta(id, -quota, true); handled || err != nil {
+		if errors.Is(err, ErrDailyWalletInsufficient) {
+			return false, nil
+		}
+		return err == nil, err
+	}
 	if !common.RedisEnabled {
 		return reserveUserQuotaDB(id, quota)
 	}

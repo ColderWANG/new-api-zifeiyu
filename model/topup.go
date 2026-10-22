@@ -92,6 +92,9 @@ func creditTopUpQuota(tx *gorm.DB, userId int, creditedQuota int, updates map[st
 	if err != nil {
 		return err
 	}
+	if _, err := reconcileDailyWalletBeforeMutationTx(tx, userId); err != nil {
+		return err
+	}
 
 	updateFields := make(map[string]any, len(updates)+1)
 	maps.Copy(updateFields, updates)

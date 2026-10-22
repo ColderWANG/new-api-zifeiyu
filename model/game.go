@@ -563,6 +563,9 @@ func creditGameReward(tx *gorm.DB, key string, userID, amount int, now time.Time
 		}
 		return false, err
 	}
+	if _, err := ensureDailyWalletTx(tx, &user, now, 0); err != nil {
+		return false, err
+	}
 	if user.Status != common.UserStatusEnabled || user.Quota > common.MaxWalletQuota-amount || user.Quota < -common.MaxWalletQuota {
 		return false, nil
 	}

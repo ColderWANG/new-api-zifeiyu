@@ -4,6 +4,8 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"net/http"
+	"net/http/httptest"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -11,6 +13,7 @@ import (
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/middleware"
+	"github.com/QuantumNous/new-api/model"
 	"github.com/QuantumNous/new-api/service"
 	"github.com/QuantumNous/new-api/service/authz"
 	"github.com/gin-gonic/gin"
@@ -166,6 +169,65 @@ func TestAccessTokenCatalogCoversEveryPermission(t *testing.T) {
 	}
 	for resource, count := range resources {
 		assert.Equal(t, 1, count, "resource %s appears in more than one catalog entry", resource)
+	}
+}
+
+func TestDailyQuotaPolicyAccessTokenScopes(t *testing.T) {
+	for key, scope := range map[string]string{
+		"GET /api/group/quota-policies":        "group:read",
+		"PUT /api/group/quota-policies/:group": "group:write",
+	} {
+		rule, ok := middleware.AccessTokenRouteRule(key)
+		require.True(t, ok, key)
+		assert.Equal(t, "scope", rule.Kind(), key)
+		assert.Equal(t, scope, rule.Scope(), key)
+	}
+}
+
+func TestDailyQuotaPolicyRoutesEnforceRoleBoundaries(t *testing.T) {
+	setupRelayRouterTestDB(t)
+	require.NoError(t, model.DB.AutoMigrate(&model.UserSession{}, &model.AuditLog{}))
+	require.NoError(t, model.MigrateDailyWalletSchema(model.DB))
+	require.NoError(t, model.InitializeDailyQuotaPolicies())
+	previousSecret := common.SessionSecret
+	common.SessionSecret = "daily-quota-route-test-secret"
+	t.Cleanup(func() { common.SessionSecret = previousSecret })
+	engine := newAccessTokenScopeTestEngine(t)
+	for _, tc := range []struct {
+		name      string
+		role      int
+		getStatus int
+		putStatus int
+	}{
+		{name: "common", role: common.RoleCommonUser, getStatus: http.StatusForbidden, putStatus: http.StatusForbidden},
+		{name: "admin", role: common.RoleAdminUser, getStatus: http.StatusOK, putStatus: http.StatusForbidden},
+		{name: "root", role: common.RoleRootUser, getStatus: http.StatusOK, putStatus: http.StatusOK},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			user := model.User{Username: "quota-route-" + tc.name, AffCode: "quota-route-" + tc.name, Role: tc.role, Status: common.UserStatusEnabled, Group: "default", AuthVersion: 1}
+			require.NoError(t, model.DB.Create(&user).Error)
+			bundle, err := service.CreateLoginSession(user.Id, "password", "127.0.0.1", "daily-quota-route-test")
+			require.NoError(t, err)
+			for _, operation := range []struct {
+				method string
+				path   string
+				status int
+			}{
+				{method: http.MethodGet, path: "/api/group/quota-policies", status: tc.getStatus},
+				{method: http.MethodPut, path: "/api/group/quota-policies/workmate", status: tc.putStatus},
+			} {
+				recorder := httptest.NewRecorder()
+				request := httptest.NewRequest(operation.method, operation.path, strings.NewReader(`{"daily_quota":0}`))
+				request.Header.Set("Authorization", "Bearer "+bundle.AccessToken)
+				request.Header.Set("X-Auth-Session", bundle.Session.SID)
+				request.Header.Set("Content-Type", "application/json")
+				engine.ServeHTTP(recorder, request)
+				assert.Equal(t, operation.status, recorder.Code, recorder.Body.String())
+				if operation.status == http.StatusOK {
+					assert.Contains(t, recorder.Body.String(), `"success":true`)
+				}
+			}
+		})
 	}
 }
 

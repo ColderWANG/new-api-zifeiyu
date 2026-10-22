@@ -112,15 +112,19 @@ func taskIsSubscription(task *model.Task) bool {
 	return task.PrivateData.BillingSource == BillingSourceSubscription && task.PrivateData.SubscriptionId > 0
 }
 
-// taskAdjustFunding 调整任务的资金来源（钱包或订阅），delta > 0 表示扣费，delta < 0 表示退还。
-func taskAdjustFunding(task *model.Task, delta int) error {
+// taskAdjustFunding applies the target task charge and reports whether accounting must change.
+func taskAdjustFunding(task *model.Task, actualQuota int, refunded bool) (bool, error) {
+	if task.PrivateData.DailyWalletPeriodID > 0 && task.PrivateData.DailyWalletRequestID != "" {
+		return model.AdjustDailyWalletRequest(task.UserId, task.PrivateData.DailyWalletRequestID, task.PrivateData.DailyWalletPeriodID, task.Quota, actualQuota, refunded)
+	}
+	delta := actualQuota - task.Quota
 	if taskIsSubscription(task) {
-		return model.PostConsumeUserSubscriptionDelta(task.PrivateData.SubscriptionId, int64(delta))
+		return true, model.PostConsumeUserSubscriptionDelta(task.PrivateData.SubscriptionId, int64(delta))
 	}
 	if delta > 0 {
-		return model.DecreaseUserQuota(task.UserId, delta, false)
+		return true, model.DecreaseUserQuota(task.UserId, delta, false)
 	}
-	return model.IncreaseUserQuota(task.UserId, -delta, false)
+	return true, model.IncreaseUserQuota(task.UserId, -delta, false)
 }
 
 // taskAdjustTokenQuota 调整任务的令牌额度，delta > 0 表示扣费，delta < 0 表示退还。
@@ -262,14 +266,23 @@ func taskModelName(task *model.Task) string {
 // 返回资金来源是否已成功退还；失败时保留 quota，供显式重试或人工对账。
 func RefundTaskQuota(ctx context.Context, task *model.Task, reason string) bool {
 	quota := task.Quota
-	if quota == 0 {
+	if quota == 0 && task.PrivateData.DailyWalletPeriodID == 0 {
 		return true
 	}
 
 	// 1. 退还资金来源（钱包或订阅）
-	if err := taskAdjustFunding(task, -quota); err != nil {
+	applied, err := taskAdjustFunding(task, 0, true)
+	if err != nil {
 		logger.LogWarn(ctx, common.LogText("failed to refund the funding source, task %s: %s", task.TaskID, err.Error()))
 		return false
+	}
+
+	if !applied {
+		task.Quota = 0
+		if err := task.UpdateQuota(); err != nil {
+			logger.LogError(ctx, common.LogText("failed to persist refunded task quota, task %s: %s", task.TaskID, err.Error()))
+		}
+		return true
 	}
 
 	// 2. 退还令牌额度
@@ -314,6 +327,18 @@ func RecalculateTaskQuota(ctx context.Context, task *model.Task, actualQuota int
 	preConsumedQuota := task.Quota
 	quotaDelta := actualQuota - preConsumedQuota
 
+	managed := task.PrivateData.DailyWalletPeriodID > 0 && task.PrivateData.DailyWalletRequestID != ""
+	if managed {
+		applied, err := taskAdjustFunding(task, actualQuota, false)
+		if err != nil {
+			logger.LogError(ctx, common.LogText("failed to adjust funding for the difference, task %s: %s", task.TaskID, err.Error()))
+			return
+		}
+		if !applied {
+			return
+		}
+	}
+
 	if quotaDelta == 0 {
 		logger.LogInfo(ctx, common.LogText("task %s pre-consumed quota matches the actual quota (%s, %s)",
 			task.TaskID, logger.LogQuota(actualQuota), reason.Error()))
@@ -329,9 +354,11 @@ func RecalculateTaskQuota(ctx context.Context, task *model.Task, actualQuota int
 	))
 
 	// 调整资金来源
-	if err := taskAdjustFunding(task, quotaDelta); err != nil {
-		logger.LogError(ctx, common.LogText("failed to adjust funding for the difference, task %s: %s", task.TaskID, err.Error()))
-		return
+	if !managed {
+		if _, err := taskAdjustFunding(task, actualQuota, false); err != nil {
+			logger.LogError(ctx, common.LogText("failed to adjust funding for the difference, task %s: %s", task.TaskID, err.Error()))
+			return
+		}
 	}
 
 	// 调整令牌额度

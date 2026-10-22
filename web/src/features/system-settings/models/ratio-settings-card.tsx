@@ -42,6 +42,7 @@ import { SettingsPageTitleStatusPortal } from '../components/settings-page-conte
 import { SettingsSection } from '../components/settings-section'
 import { useUpdateOption } from '../hooks/use-update-option'
 import { positiveIntegerSchema } from '../utils/numeric-field'
+import { GroupDailyQuota } from './group-daily-quota'
 import { GroupRatioForm } from './group-ratio-form'
 import { ModelRatioForm } from './model-ratio-form'
 import { ToolPriceSettings } from './tool-price-settings'
@@ -510,11 +511,14 @@ export function RatioSettingsCard({
     }
     if (tab === 'groups') {
       return (
-        <GroupRatioForm
-          form={groupForm}
-          onSave={saveGroupRatios}
-          isSaving={updateOption.isPending}
-        />
+        <div className='space-y-6'>
+          <GroupDailyQuota />
+          <GroupRatioForm
+            form={groupForm}
+            onSave={saveGroupRatios}
+            isSaving={updateOption.isPending}
+          />
+        </div>
       )
     }
     if (tab === 'tool-prices') {

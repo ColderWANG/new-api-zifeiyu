@@ -20,6 +20,7 @@ import { create } from 'zustand'
 
 import type { LoginChallenge } from '@/features/auth/secure-verification/types'
 import type { AdminCapabilities } from '@/lib/admin-permissions'
+import type { DailyQuota } from '@/lib/daily-quota'
 
 export type UserPermissions = {
   sidebar_settings?: boolean
@@ -37,6 +38,8 @@ export interface AuthUser {
   status?: number
   group?: string
   quota?: number
+  daily_quota?: DailyQuota | null
+  daily_quota_override?: number | null
   used_quota?: number
   request_count?: number
   aff_code?: string

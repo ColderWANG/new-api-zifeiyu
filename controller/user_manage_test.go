@@ -467,9 +467,9 @@ func TestManageUserQuotaTargetsAndWalletBounds(t *testing.T) {
 
 func TestManageUserQuotaMiddlewareKeepsOneOperationPerRequest(t *testing.T) {
 	db := setupManageUserTestDB(t)
-	pat := "quota-middleware-test-token"
-	operator := model.User{Id: 9999, Username: "root-operator", Role: common.RoleRootUser, Status: common.UserStatusEnabled, AuthVersion: 1, AccessToken: &pat, Quota: 1000}
+	operator := model.User{Id: 9999, Username: "root-operator", Role: common.RoleRootUser, Status: common.UserStatusEnabled, AuthVersion: 1, Quota: 1000}
 	require.NoError(t, db.Create(&operator).Error)
+	pat, _ := createScopedAccessToken(t, operator.Id, time.Now().Add(time.Hour).Unix(), "user:write")
 	router := gin.New()
 	router.Use(middleware.RequestId(), middleware.AccessTokenAudit())
 	router.POST("/api/user/manage", middleware.AdminAuth(), ManageUser)
@@ -723,4 +723,156 @@ func TestUpdateUserSettingKeepsWhatTheRequestLeavesOut(t *testing.T) {
 			assert.Equal(t, tc.want, user.GetSetting())
 		})
 	}
+}
+
+func TestDailyQuotaPolicyRejectsInvalidQuota(t *testing.T) {
+	for _, body := range []string{
+		`{}`, `{"daily_quota":null}`, `{"daily_quota":-1}`,
+		`{"daily_quota":1.5}`, `{"daily_quota":"100"}`,
+		fmt.Sprintf(`{"daily_quota":%d}`, common.MaxWalletQuota+1),
+	} {
+		t.Run(body, func(t *testing.T) {
+			recorder := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(recorder)
+			c.Request = httptest.NewRequest(http.MethodPut, "/api/group/quota-policies/workmate", strings.NewReader(body))
+			c.Params = gin.Params{{Key: "group", Value: "workmate"}}
+			UpdateDailyQuotaPolicy(c)
+			assert.Contains(t, recorder.Body.String(), `"success":false`)
+		})
+	}
+}
+
+func TestUpdateSelfRejectsDailyQuotaOverride(t *testing.T) {
+	for _, body := range []string{
+		`{"daily_quota_override":0}`, `{"daily_quota_override":null}`,
+		`{"language":"en","daily_quota_override":100}`,
+		`{"sidebar_modules":"{}","daily_quota_override":100}`,
+	} {
+		t.Run(body, func(t *testing.T) {
+			recorder := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(recorder)
+			c.Request = httptest.NewRequest(http.MethodPut, "/api/user/self", strings.NewReader(body))
+			c.Set("id", 1)
+			c.Set("role", common.RoleCommonUser)
+			UpdateSelf(c)
+			assert.Contains(t, recorder.Body.String(), `"success":false`)
+		})
+	}
+}
+
+func TestDailyQuotaUserManagementAndReadResponses(t *testing.T) {
+	db := setupManageUserTestDB(t)
+	require.NoError(t, model.MigrateDailyWalletSchema(db))
+	require.NoError(t, model.InitializeDailyQuotaPolicies())
+	createQuotaTestOperator(t, db, common.RoleAdminUser)
+	require.NoError(t, model.UpdateDailyQuotaPolicy("workmate", 1000, 9999))
+	request := func(method, path, body string, handler gin.HandlerFunc, userID int) *httptest.ResponseRecorder {
+		t.Helper()
+		recorder := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(recorder)
+		c.Request = httptest.NewRequest(method, path, strings.NewReader(body))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Set("id", userID)
+		c.Set("role", common.RoleAdminUser)
+		// A token's routing group must not select the user's daily policy.
+		c.Set("group", "vip")
+		c.Params = gin.Params{{Key: "id", Value: strconv.Itoa(userID)}}
+		handler(c)
+		return recorder
+	}
+	created := request(http.MethodPost, "/api/user/", `{"username":"quota-managed","password":"password123","role":1,"group":"workmate","daily_quota_override":0}`, CreateUser, 9999)
+	require.Contains(t, created.Body.String(), `"success":true`)
+	var user model.User
+	require.NoError(t, db.Where("username = ?", "quota-managed").First(&user).Error)
+	require.Equal(t, "workmate", user.Group)
+	for _, tc := range []struct {
+		name, override, source string
+		limit                  int
+		wantSuccess            bool
+	}{
+		{name: "absent preserves zero", source: "user", wantSuccess: true},
+		{name: "null restores group", override: `,"daily_quota_override":null`, source: "group", limit: 1000, wantSuccess: true},
+		{name: "number selects user", override: `,"daily_quota_override":300`, source: "user", limit: 300, wantSuccess: true},
+		{name: "invalid is atomic", override: `,"daily_quota_override":-1`, source: "user", limit: 300},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			body := fmt.Sprintf(`{"id":%d,"username":"quota-managed","group":"workmate"%s}`, user.Id, tc.override)
+			updated := request(http.MethodPut, "/api/user/", body, UpdateUser, 9999)
+			require.Contains(t, updated.Body.String(), fmt.Sprintf(`"success":%t`, tc.wantSuccess))
+			for _, read := range []struct {
+				path    string
+				handler gin.HandlerFunc
+				list    bool
+			}{
+				{path: "/api/user/", handler: GetAllUsers, list: true},
+				{path: "/api/user/search?keyword=quota-managed", handler: SearchUsers, list: true},
+				{path: "/api/user/" + strconv.Itoa(user.Id), handler: GetUser},
+				{path: "/api/user/self", handler: GetSelf},
+			} {
+				result := request(http.MethodGet, read.path, "", read.handler, user.Id)
+				var response struct {
+					Success bool           `json:"success"`
+					Data    map[string]any `json:"data"`
+				}
+				require.NoError(t, common.Unmarshal(result.Body.Bytes(), &response))
+				require.True(t, response.Success, result.Body.String())
+				data := response.Data
+				if read.list {
+					items, ok := data["items"].([]any)
+					require.True(t, ok, result.Body.String())
+					data = nil
+					for _, item := range items {
+						candidate := item.(map[string]any)
+						if candidate["username"] == user.Username {
+							data = candidate
+							break
+						}
+					}
+					require.NotNil(t, data, result.Body.String())
+				}
+				snapshot, ok := data["daily_quota"].(map[string]any)
+				require.True(t, ok, result.Body.String())
+				assert.Equal(t, "workmate", snapshot["group"])
+				assert.Equal(t, tc.source, snapshot["source"])
+				assert.EqualValues(t, tc.limit, snapshot["limit_quota"])
+				assert.Equal(t, "Asia/Shanghai", snapshot["timezone"])
+				assert.NotContains(t, data, "daily_quota_override")
+			}
+		})
+	}
+}
+
+func TestDailyQuotaPolicyWritesConfigurationAudit(t *testing.T) {
+	db := setupManageUserTestDB(t)
+	require.NoError(t, model.MigrateDailyWalletSchema(db))
+	require.NoError(t, model.InitializeDailyQuotaPolicies())
+	createQuotaTestOperator(t, db, common.RoleRootUser)
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Request = httptest.NewRequest(http.MethodPut, "/api/group/quota-policies/workmate", strings.NewReader(`{"daily_quota":0}`))
+	c.Params = gin.Params{{Key: "group", Value: "workmate"}}
+	c.Set("id", 9999)
+	c.Set("role", common.RoleRootUser)
+	UpdateDailyQuotaPolicy(c)
+	require.Contains(t, recorder.Body.String(), `"success":true`)
+	var audits []model.AuditLog
+	require.NoError(t, model.LOG_DB.Find(&audits).Error)
+	require.Len(t, audits, 1)
+	assert.Equal(t, "option.update", audits[0].Action)
+	assert.Equal(t, model.AuditCategoryOperation, audits[0].Category)
+	var topups int64
+	require.NoError(t, model.LOG_DB.Model(&model.Log{}).Where("type = ?", model.LogTypeTopup).Count(&topups).Error)
+	assert.Zero(t, topups)
+	policies := httptest.NewRecorder()
+	listContext, _ := gin.CreateTestContext(policies)
+	listContext.Request = httptest.NewRequest(http.MethodGet, "/api/group/quota-policies", nil)
+	GetDailyQuotaPolicies(listContext)
+	var response struct {
+		Success bool                     `json:"success"`
+		Data    []model.DailyQuotaPolicy `json:"data"`
+	}
+	require.NoError(t, common.Unmarshal(policies.Body.Bytes(), &response))
+	require.True(t, response.Success)
+	require.NotEmpty(t, response.Data)
+	assert.Contains(t, policies.Body.String(), `"daily_quota":0`)
 }

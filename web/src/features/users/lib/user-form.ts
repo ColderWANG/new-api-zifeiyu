@@ -23,11 +23,11 @@ import {
   type AdminPermissionMatrix,
   normalizeAdminPermissions,
 } from '@/lib/admin-permissions'
-import { quotaUnitsToDollars } from '@/lib/format'
+import { parseQuotaFromDollars, quotaUnitsToDollars } from '@/lib/format'
 import { ROLE } from '@/lib/roles'
 
 import { DEFAULT_GROUP } from '../constants'
-import { type UserFormData, type User } from '../types'
+import type { UserFormData, User } from '../types'
 
 // ============================================================================
 // Form Schema
@@ -38,7 +38,17 @@ export const userFormSchema = z.object({
   display_name: z.string().optional(),
   password: z.string().optional(),
   role: z.number().optional(),
-  quota_dollars: z.number().min(0).optional(),
+  quota_dollars: z.number().optional(),
+  daily_quota_override_dollars: z
+    .number()
+    .finite()
+    .min(0)
+    .refine(
+      (amount) => Number.isSafeInteger(parseQuotaFromDollars(amount)),
+      'Invalid amount'
+    )
+    .nullable()
+    .optional(),
   group: z.string().optional(),
   remark: z.string().optional(),
   admin_permissions: z
@@ -58,6 +68,7 @@ export const USER_FORM_DEFAULT_VALUES: UserFormValues = {
   password: '',
   role: 1, // Default to common user
   quota_dollars: 0,
+  daily_quota_override_dollars: null,
   group: DEFAULT_GROUP,
   remark: '',
   // Filled against the backend catalog at render time; see UsersMutateDrawer.
@@ -82,6 +93,16 @@ export function transformFormDataToPayload(
     password: data.password || undefined,
   }
 
+  if (
+    data.group === 'workmate' &&
+    data.daily_quota_override_dollars !== undefined
+  ) {
+    payload.daily_quota_override =
+      data.daily_quota_override_dollars === null
+        ? null
+        : parseQuotaFromDollars(data.daily_quota_override_dollars)
+  }
+
   const role = userId === undefined ? data.role || 1 : (data.role ?? 0)
 
   // Only send the permission matrix when the target is an admin and the catalog
@@ -97,6 +118,7 @@ export function transformFormDataToPayload(
   // For create: only send required fields
   if (userId === undefined) {
     payload.role = role
+    payload.group = data.group
   } else {
     // For update: quota is adjusted atomically via /api/user/manage, not sent here
     payload.group = data.group
@@ -113,12 +135,17 @@ export function transformFormDataToPayload(
  * the catalog at render time in UsersMutateDrawer.
  */
 export function transformUserToFormDefaults(user: User): UserFormValues {
+  const overrideQuota = user.daily_quota
+    ? user.daily_quota.override_quota
+    : user.daily_quota_override
   return {
     username: user.username,
     display_name: user.display_name,
     password: '',
     role: user.role,
     quota_dollars: quotaUnitsToDollars(user.quota),
+    daily_quota_override_dollars:
+      overrideQuota == null ? null : quotaUnitsToDollars(overrideQuota),
     group: user.group || DEFAULT_GROUP,
     remark: user.remark || '',
     admin_permissions: user.admin_permissions ?? {},

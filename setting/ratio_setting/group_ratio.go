@@ -10,9 +10,10 @@ import (
 )
 
 var defaultGroupRatio = map[string]float64{
-	"default": 1,
-	"vip":     1,
-	"svip":    1,
+	"default":  1,
+	"vip":      1,
+	"svip":     1,
+	"workmate": 1,
 }
 
 var groupRatioMap = types.NewRWMap[string, float64]()
@@ -73,7 +74,13 @@ func GroupRatio2JSONString() string {
 }
 
 func UpdateGroupRatioByJSONString(jsonStr string) error {
-	return types.LoadFromJsonString(groupRatioMap, jsonStr)
+	if err := types.LoadFromJsonString(groupRatioMap, jsonStr); err != nil {
+		return err
+	}
+	if _, ok := groupRatioMap.Get("workmate"); !ok {
+		groupRatioMap.Set("workmate", 1)
+	}
+	return nil
 }
 
 func GetGroupRatio(name string) float64 {

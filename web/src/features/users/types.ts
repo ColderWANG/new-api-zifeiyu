@@ -19,6 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 import { z } from 'zod'
 
 import type { AdminPermissionMatrix } from '@/lib/admin-permissions'
+import { dailyQuotaSchema } from '@/lib/daily-quota'
 
 // ============================================================================
 // User Schema & Types
@@ -43,6 +44,8 @@ export const userSchema = z.object({
   telegram_id: z.string().optional(),
   email: z.string().optional(),
   quota: z.number(),
+  daily_quota: dailyQuotaSchema.nullable().optional(),
+  daily_quota_override: z.number().nullable().optional(),
   used_quota: z.number(),
   request_count: z.number(),
   group: z.string(),
@@ -125,6 +128,7 @@ export interface UserFormData {
   quota?: number // Only used when updating user
   group?: string // Only used when updating user
   remark?: string // Only used when updating user
+  daily_quota_override?: number | null
   admin_permissions?: AdminPermissionMatrix
 }
 

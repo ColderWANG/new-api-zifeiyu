@@ -17,6 +17,8 @@ import (
 	"github.com/QuantumNous/new-api/pkg/billingexpr"
 	"github.com/QuantumNous/new-api/pkg/jsplugin"
 	relaycommon "github.com/QuantumNous/new-api/relay/common"
+	"github.com/QuantumNous/new-api/relaykit/dto"
+	"github.com/QuantumNous/new-api/setting/operation_setting"
 	"github.com/QuantumNous/new-api/setting/ratio_setting"
 	"github.com/QuantumNous/new-api/types"
 	"github.com/gin-gonic/gin"
@@ -64,6 +66,12 @@ func TestMain(m *testing.M) {
 		panic("failed to migrate: " + err.Error())
 	}
 
+	if err := model.MigrateDailyWalletSchema(db); err != nil {
+		panic("failed to migrate daily wallets: " + err.Error())
+	}
+	if err := model.InitializeDailyQuotaPolicies(); err != nil {
+		panic("failed to initialize daily quota policies: " + err.Error())
+	}
 	os.Exit(m.Run())
 }
 
@@ -74,6 +82,9 @@ func TestMain(m *testing.M) {
 func truncate(t *testing.T) {
 	t.Helper()
 	t.Cleanup(func() {
+		model.DB.Exec("DELETE FROM daily_wallet_requests")
+		model.DB.Exec("DELETE FROM daily_wallet_periods")
+		model.DB.Exec("DELETE FROM daily_wallet_audits")
 		model.DB.Exec("DELETE FROM tasks")
 		model.DB.Exec("DELETE FROM users")
 		model.DB.Exec("DELETE FROM tokens")
@@ -1809,4 +1820,200 @@ func TestSettle_TokenRecalcFallsBackToCompletionTokens(t *testing.T) {
 			assert.Equal(t, testCase.wantQuota, task.Quota)
 		})
 	}
+}
+
+// Workmate membership follows the stored user group, regardless of API route group
+// or a saved subscription preference; its request must reserve even trusted wallets.
+func TestDailyWalletSessionUsesCanonicalGroupAndFinalizesZeroDelta(t *testing.T) {
+	truncate(t)
+	const userID, tokenID = 8501, 8501
+	seedUser(t, userID, 100000000)
+	require.NoError(t, model.DB.Model(&model.User{}).Where("id = ?", userID).Update("group", "workmate").Error)
+	seedToken(t, tokenID, userID, "daily-wallet-session", 100000000)
+	before, err := model.EnsureDailyWallet(userID)
+	require.NoError(t, err)
+	require.NotNil(t, before)
+	oldTrust := operation_setting.GetQuotaSetting().TrustQuotaUSD
+	operation_setting.GetQuotaSetting().TrustQuotaUSD = 0.000001
+	t.Cleanup(func() { operation_setting.GetQuotaSetting().TrustQuotaUSD = oldTrust })
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	c.Request = httptest.NewRequest(http.MethodPost, "/v1/chat/completions", nil)
+	c.Set("token_quota", 100000000)
+	info := &relaycommon.RelayInfo{
+		UserId: userID, UserGroup: "default", UsingGroup: "default",
+		TokenId: tokenID, TokenKey: "daily-wallet-session", RequestId: "daily-wallet-session",
+		StartTime: time.Now(), UserSetting: dto.UserSetting{BillingPreference: "subscription_only"},
+	}
+	session, apiErr := NewBillingSession(c, info, 100)
+	require.Nil(t, apiErr)
+	require.NotNil(t, session)
+	assert.False(t, session.trusted)
+	assert.Equal(t, BillingSourceWallet, info.BillingSource)
+	assert.Equal(t, before.PeriodID, info.DailyWalletPeriodID)
+	assert.Equal(t, before.Balance-100, getUserQuota(t, userID))
+	require.NoError(t, session.Settle(100))
+	applied, err := model.SettleDailyWalletRequest(userID, info.DailyWalletRequestID, info.DailyWalletPeriodID, 100)
+	require.NoError(t, err)
+	assert.False(t, applied, "zero-delta session settlement must close the pending ledger")
+	require.NoError(t, session.Settle(100))
+	assert.Equal(t, 100000000-100, getTokenRemainQuota(t, tokenID))
+}
+
+func TestDailyWalletSessionKeepsOrdinaryDebtSemantics(t *testing.T) {
+	truncate(t)
+	const userID = 8502
+	seedUser(t, userID, 1)
+	require.NoError(t, model.DB.Model(&model.User{}).Where("id = ?", userID).Update("group", "workmate").Error)
+	before, err := model.EnsureDailyWallet(userID)
+	require.NoError(t, err)
+	require.NotNil(t, before)
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	c.Request = httptest.NewRequest(http.MethodPost, "/v1/chat/completions", nil)
+	info := &relaycommon.RelayInfo{UserId: userID, IsPlayground: true, StartTime: time.Now(), RequestId: "daily-wallet-debt"}
+	session, apiErr := NewBillingSession(c, info, 100)
+	require.Nil(t, apiErr)
+	require.NoError(t, session.Reserve(before.Balance+10))
+	assert.Equal(t, -10, getUserQuota(t, userID))
+	require.NoError(t, session.Settle(before.Balance+20))
+	assert.Equal(t, -20, getUserQuota(t, userID))
+}
+
+func TestDailyWalletTaskReplayAndOldPeriodIsolation(t *testing.T) {
+	truncate(t)
+	const userID, tokenID, channelID = 8503, 8503, 8503
+	seedUser(t, userID, 1)
+	require.NoError(t, model.DB.Model(&model.User{}).Where("id = ?", userID).Update("group", "workmate").Error)
+	seedToken(t, tokenID, userID, "daily-wallet-old-task", 900)
+	seedChannel(t, channelID)
+	oldTime := time.Now().Add(-24 * time.Hour)
+	old, err := model.EnsureDailyWalletAt(userID, oldTime)
+	require.NoError(t, err)
+	require.NotNil(t, old)
+	current, err := model.EnsureDailyWallet(userID)
+	require.NoError(t, err)
+	require.NotNil(t, current)
+	require.NotEqual(t, old.PeriodID, current.PeriodID)
+	require.NoError(t, model.ReserveDailyWalletRequest(userID, "daily-wallet-old-task", old.PeriodID, 100, true))
+	task := makeTask(userID, channelID, 100, tokenID, BillingSourceWallet, 0)
+	task.PrivateData.DailyWalletPeriodID = old.PeriodID
+	task.PrivateData.DailyWalletRequestID = "daily-wallet-old-task"
+	require.NoError(t, task.Insert())
+	var reloaded model.Task
+	require.NoError(t, model.DB.First(&reloaded, task.ID).Error)
+	assert.Equal(t, old.PeriodID, reloaded.PrivateData.DailyWalletPeriodID)
+	assert.Equal(t, "daily-wallet-old-task", reloaded.PrivateData.DailyWalletRequestID)
+	seedChargedAccounting(t, userID, channelID, tokenID, 100, 1)
+	stale := reloaded
+	RecalculateTaskQuota(context.Background(), &reloaded, 200, common.NewMessage("Adjusted task quota"))
+	logCount := countLogs(t)
+	RecalculateTaskQuota(context.Background(), &stale, 200, common.NewMessage("Adjusted task quota"))
+	assert.Equal(t, logCount, countLogs(t))
+	assert.Equal(t, 800, getTokenRemainQuota(t, tokenID))
+	assert.Equal(t, current.Balance, getUserQuota(t, userID))
+	used, requests := getUserUsageAccounting(t, userID)
+	assert.Equal(t, 200, used)
+	assert.Equal(t, 1, requests)
+	stale = reloaded
+	require.True(t, RefundTaskQuota(context.Background(), &reloaded, "Task failed"))
+	logCount = countLogs(t)
+	require.True(t, RefundTaskQuota(context.Background(), &stale, "Task failed"))
+	assert.Equal(t, logCount, countLogs(t))
+	assert.Equal(t, 1000, getTokenRemainQuota(t, tokenID))
+	assert.Equal(t, current.Balance, getUserQuota(t, userID))
+	used, requests = getUserUsageAccounting(t, userID)
+	assert.Zero(t, used)
+	assert.Equal(t, 1, requests)
+}
+
+func TestDailyWalletAsyncPendingAndTokenReservationRollback(t *testing.T) {
+	truncate(t)
+	const userID, tokenID = 8504, 8504
+	seedUser(t, userID, 1)
+	require.NoError(t, model.DB.Model(&model.User{}).Where("id = ?", userID).Update("group", "workmate").Error)
+	seedToken(t, tokenID, userID, "daily-wallet-pending", 200)
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	c.Request = httptest.NewRequest(http.MethodPost, "/v1/chat/completions", nil)
+	info := &relaycommon.RelayInfo{
+		UserId: userID, TokenId: tokenID, TokenKey: "daily-wallet-pending",
+		StartTime: time.Now(), RequestId: "daily-wallet-pending", ImageRequestCount: 1,
+		ChannelMeta: &relaycommon.ChannelMeta{},
+	}
+	session, apiErr := NewBillingSession(c, info, 100)
+	require.Nil(t, apiErr)
+	balance := getUserQuota(t, userID)
+	require.Error(t, session.Reserve(250), "token limit must reject the additional reservation")
+	assert.Equal(t, balance, getUserQuota(t, userID), "wallet reservation must roll back with the token failure")
+	assert.Equal(t, 100, getTokenRemainQuota(t, tokenID))
+	require.NoError(t, session.Reserve(150))
+	balance -= 50
+	assert.Equal(t, balance, getUserQuota(t, userID), "successful image reservation charges only the additional quantity")
+	assert.Equal(t, 50, getTokenRemainQuota(t, tokenID))
+	info.DailyWalletPending = true
+	require.NoError(t, session.Settle(150))
+	snapshot, err := model.EnsureDailyWallet(userID)
+	require.NoError(t, err)
+	assert.Equal(t, 150, snapshot.PendingQuota)
+	assert.Zero(t, snapshot.SpentQuota)
+	task := model.InitTask("daily-wallet", info)
+	task.Quota = 150
+	require.NoError(t, task.Insert())
+	assert.Equal(t, info.DailyWalletPeriodID, task.PrivateData.DailyWalletPeriodID)
+	assert.Equal(t, info.DailyWalletRequestID, task.PrivateData.DailyWalletRequestID)
+	RecalculateTaskQuota(context.Background(), task, 150, common.NewMessage("Task completed"))
+	snapshot, err = model.EnsureDailyWallet(userID)
+	require.NoError(t, err)
+	assert.Zero(t, snapshot.PendingQuota)
+	assert.Equal(t, 150, snapshot.SpentQuota)
+	assert.Equal(t, balance, getUserQuota(t, userID))
+	assert.Zero(t, countLogs(t), "a same-quota completion must not add a difference log")
+}
+
+func TestDailyWalletMidjourneyPersistsPeriodAndRefundsOnce(t *testing.T) {
+	truncate(t)
+	const userID, tokenID, channelID = 8505, 8505, 8505
+	seedUser(t, userID, 1)
+	require.NoError(t, model.DB.Model(&model.User{}).Where("id = ?", userID).Update("group", "workmate").Error)
+	seedToken(t, tokenID, userID, "daily-wallet-midjourney", 1000)
+	seedChannel(t, channelID)
+	info := &relaycommon.RelayInfo{
+		UserId: userID, TokenId: tokenID, TokenKey: "daily-wallet-midjourney",
+		StartTime: time.Now().Add(-24 * time.Hour), RequestId: "daily-wallet-midjourney",
+		ChannelMeta: &relaycommon.ChannelMeta{ChannelId: channelID},
+	}
+	task := &model.Midjourney{UserId: userID, ChannelId: channelID, MjId: "daily-wallet-midjourney", Action: "IMAGINE"}
+	prepared, err := PrepareMidjourneyTaskBilling(info, task, 100, true)
+	require.NoError(t, err)
+	require.True(t, prepared)
+	require.NoError(t, task.Insert())
+	billed, err := SettleMidjourneyTaskBilling(info, task, prepared)
+	require.NoError(t, err)
+	require.True(t, billed)
+	seedChargedAccounting(t, userID, channelID, tokenID, 100, 1)
+	current, err := model.EnsureDailyWallet(userID)
+	require.NoError(t, err)
+	old, err := model.EnsureDailyWalletAt(userID, info.StartTime)
+	require.NoError(t, err)
+	assert.Equal(t, 100, old.PendingQuota)
+	assert.NotEqual(t, current.PeriodID, old.PeriodID)
+	reloaded := getMidjourneyTask(t, task.Id)
+	billed, err = SettleMidjourneyTaskBilling(info, &reloaded, prepared)
+	require.NoError(t, err)
+	assert.False(t, billed, "replayed submit must not repeat token or consume accounting")
+	assert.Equal(t, 900, getTokenRemainQuota(t, tokenID))
+	assert.Equal(t, old.PeriodID, reloaded.DailyWalletPeriodID)
+	assert.Equal(t, info.DailyWalletRequestID, reloaded.DailyWalletRequestID)
+	encoded, err := common.Marshal(reloaded)
+	require.NoError(t, err)
+	assert.NotContains(t, string(encoded), "daily_wallet", "billing identifiers are private")
+	FinalizeMidjourneyTaskBilling(context.Background(), &reloaded)
+	stale := reloaded
+	require.True(t, RefundMidjourneyQuota(context.Background(), &reloaded, "Composition failed"))
+	logs := countLogs(t)
+	require.True(t, RefundMidjourneyQuota(context.Background(), &stale, "Composition failed"))
+	assert.Equal(t, logs, countLogs(t))
+	assert.Equal(t, current.Balance, getUserQuota(t, userID))
+	assert.Equal(t, 1000, getTokenRemainQuota(t, tokenID))
+	used, requests := getUserUsageAccounting(t, userID)
+	assert.Zero(t, used)
+	assert.Equal(t, 1, requests)
 }

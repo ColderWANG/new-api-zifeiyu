@@ -371,6 +371,8 @@ func SetApiRouter(router *gin.Engine) {
 		groupRoute.Use(middleware.AdminAuth())
 		{
 			groupRoute.GET("/", controller.GetGroups)
+			groupRoute.GET("/quota-policies", controller.GetDailyQuotaPolicies)
+			groupRoute.PUT("/quota-policies/:group", middleware.RootAuth(), controller.UpdateDailyQuotaPolicy)
 		}
 
 		prefillGroupRoute := apiRouter.Group("/prefill_group")

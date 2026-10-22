@@ -134,6 +134,7 @@ func main() {
 
 	// Subscription quota reset task (daily/weekly/monthly/custom)
 	service.StartSubscriptionQuotaResetTask()
+	service.StartDailyWalletResetTask()
 	go model.RunGameMaintenance()
 
 	// Report this process as a system instance so the System Info page can show

@@ -34,6 +34,7 @@ import {
   useSystemConfigStore,
 } from '@/stores/system-config-store'
 
+import { DailyWalletCard } from '../daily-wallet-card'
 import { SummaryCards } from '../summary-cards'
 
 let client: QueryClient
@@ -98,3 +99,41 @@ it.each([
     )
   }
 )
+
+it('daily wallet card keeps negative balances, pending costs and the Shanghai reset visible on narrow layouts', () => {
+  render(
+    <DailyWalletCard
+      quota={{
+        group: 'workmate',
+        limit_quota: 50,
+        group_quota: 50,
+        override_quota: null,
+        source: 'group',
+        period_id: 1,
+        business_date: '2026-10-20',
+        balance: -10,
+        spent_quota: 60,
+        pending_quota: 5,
+        next_reset_at: 1792512000,
+        timezone: 'Asia/Shanghai',
+      }}
+    />
+  )
+  expect(
+    screen.getByRole('region', { name: 'Workmate daily wallet' })
+  ).toHaveClass('min-w-0')
+  const balance = screen.getByText('-$10')
+  expect(balance).toHaveClass('wrap-anywhere')
+  expect(balance).not.toHaveClass('truncate')
+  expect(screen.getByText('Daily reset amount')).toBeVisible()
+  expect(screen.getByText('Spent today')).toBeVisible()
+  expect(screen.getByText('Pending charges')).toBeVisible()
+  expect(screen.getByText('$5')).toBeVisible()
+  expect(screen.getByText(/Asia\/Shanghai\)$/)).toHaveAttribute(
+    'datetime',
+    new Date(1792512000 * 1000).toISOString()
+  )
+  expect(screen.getByText(/Asia\/Shanghai\)$/)).toHaveTextContent(
+    'Oct 21, 2026, 12:00 AM'
+  )
+})

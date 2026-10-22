@@ -28,14 +28,16 @@ import { getUserQuotaDates } from '@/features/dashboard/api'
 import { useSummaryCardsConfig } from '@/features/dashboard/hooks/use-dashboard-config'
 import type { QuotaDataItem } from '@/features/dashboard/types'
 import { useStatus } from '@/hooks/use-status'
+import { getSelf } from '@/lib/api'
 import { getCurrencyLabel, isCurrencyDisplayEnabled } from '@/lib/currency'
 import { formatNumber, formatQuota } from '@/lib/format'
 import { requireServerSuccess } from '@/lib/server-error-message'
 import { computeTimeRange } from '@/lib/time'
 import { cn } from '@/lib/utils'
-import { useAuthStore } from '@/stores/auth-store'
+import { useAuthStore, type AuthUser } from '@/stores/auth-store'
 
 import { StatCard } from '../ui/stat-card'
+import { DailyWalletCard } from './daily-wallet-card'
 
 const SUMMARY_SPARKLINE_BUCKETS = 12
 
@@ -141,6 +143,17 @@ export function SummaryCards() {
   const { t } = useTranslation()
   const user = useAuthStore((state) => state.auth.user)
   const { status, loading } = useStatus()
+  const walletQuery = useQuery({
+    queryKey: ['daily-wallet-self', user?.id],
+    queryFn: async (): Promise<AuthUser> =>
+      requireServerSuccess(await getSelf()).data,
+    enabled: user?.group === 'workmate',
+    refetchInterval: 30_000,
+    staleTime: 15_000,
+  })
+  const dailyQuota = walletQuery.data
+    ? walletQuery.data.daily_quota
+    : user?.daily_quota
 
   const summaryTimeRange = useMemo(() => computeTimeRange(1), [])
   const remainQuota = Number(user?.quota ?? 0)
@@ -292,79 +305,83 @@ export function SummaryCards() {
         </div>
 
         <aside className='@container flex min-w-0 flex-col justify-between gap-5 bg-white p-5 sm:p-6 lg:border-l lg:border-black/10'>
-          <div className='flex flex-col gap-5'>
-            <div className='flex items-center justify-between'>
-              <span className='mm-label text-neutral-600'>
-                {t('Credit remaining')}
-              </span>
-              <span className='flex items-center gap-1.5 text-[11px] font-medium text-neutral-600'>
-                <span
-                  className={cn('size-1.5 bg-current', healthCfg.dotClass)}
-                  aria-hidden='true'
-                />
-                {t(healthCfg.labelKey)}
-              </span>
-            </div>
+          {dailyQuota ? (
+            <DailyWalletCard quota={dailyQuota} />
+          ) : (
+            <div className='flex flex-col gap-5'>
+              <div className='flex items-center justify-between'>
+                <span className='mm-label text-neutral-600'>
+                  {t('Credit remaining')}
+                </span>
+                <span className='flex items-center gap-1.5 text-[11px] font-medium text-neutral-600'>
+                  <span
+                    className={cn('size-1.5 bg-current', healthCfg.dotClass)}
+                    aria-hidden='true'
+                  />
+                  {t(healthCfg.labelKey)}
+                </span>
+              </div>
 
-            <div
-              className='max-w-full font-mono text-[length:clamp(1rem,var(--balance-font-size),2.75rem)] leading-tight font-bold tracking-tight wrap-anywhere text-black tabular-nums'
-              // Size against the card, not the viewport. Keep the complete value;
-              // exceptionally long currency labels can wrap at the readable minimum.
-              style={
-                {
-                  '--balance-font-size': `${150 / balanceDisplay.length}cqi`,
-                } as CSSProperties
-              }
-            >
-              {balanceDisplay}
-            </div>
+              <div
+                className='max-w-full font-mono text-[length:clamp(1rem,var(--balance-font-size),2.75rem)] leading-tight font-bold tracking-tight wrap-anywhere text-black tabular-nums'
+                // Size against the card, not the viewport. Keep the complete value;
+                // exceptionally long currency labels can wrap at the readable minimum.
+                style={
+                  {
+                    '--balance-font-size': `${150 / balanceDisplay.length}cqi`,
+                  } as CSSProperties
+                }
+              >
+                {balanceDisplay}
+              </div>
 
-            <Button
-              variant='outline'
-              className='h-10 rounded-none border border-black bg-white px-5 font-mono text-xs tracking-[0.14em] text-black uppercase transition-none hover:bg-black hover:text-white'
-              render={<Link to='/wallet' />}
-            >
-              {t('Wallet')}
-              <ArrowRight data-icon='inline-end' />
-            </Button>
+              <Button
+                variant='outline'
+                className='h-10 rounded-none border border-black bg-white px-5 font-mono text-xs tracking-[0.14em] text-black uppercase transition-none hover:bg-black hover:text-white'
+                render={<Link to='/wallet' />}
+              >
+                {t('Wallet')}
+                <ArrowRight data-icon='inline-end' />
+              </Button>
 
-            <div className='grid gap-0 border border-white/25 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2'>
-              <div className='border-black/10 bg-white px-4 py-3'>
-                <div className='flex items-center gap-1.5 text-[11px] font-medium text-neutral-600'>
-                  <Flame className='size-3.5 shrink-0' aria-hidden='true' />
-                  <span className='truncate'>{t('Last 24h usage')}</span>
+              <div className='grid gap-0 border border-white/25 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2'>
+                <div className='border-black/10 bg-white px-4 py-3'>
+                  <div className='flex items-center gap-1.5 text-[11px] font-medium text-neutral-600'>
+                    <Flame className='size-3.5 shrink-0' aria-hidden='true' />
+                    <span className='truncate'>{t('Last 24h usage')}</span>
+                  </div>
+                  <div className='mt-2 truncate text-sm font-semibold text-black tabular-nums'>
+                    {formatQuota(recentUsage)}
+                  </div>
                 </div>
-                <div className='mt-2 truncate text-sm font-semibold text-black tabular-nums'>
-                  {formatQuota(recentUsage)}
+                <div className='border-black/10 bg-white px-4 py-3'>
+                  <div className='flex items-center gap-1.5 text-[11px] font-medium text-neutral-600'>
+                    {runwayDays !== null && runwayDays < 3 ? (
+                      <TrendingDown
+                        className='size-3.5 shrink-0'
+                        aria-hidden='true'
+                      />
+                    ) : (
+                      <ShieldCheck
+                        className='size-3.5 shrink-0'
+                        aria-hidden='true'
+                      />
+                    )}
+                    <span className='truncate'>{t('Runway')}</span>
+                  </div>
+                  <div
+                    className={cn(
+                      'mt-2 truncate text-sm font-semibold text-black tabular-nums',
+                      healthLevel === 'critical' && 'text-black',
+                      healthLevel === 'caution' && 'text-black'
+                    )}
+                  >
+                    {runwayDisplay}
+                  </div>
                 </div>
               </div>
-              <div className='border-black/10 bg-white px-4 py-3'>
-                <div className='flex items-center gap-1.5 text-[11px] font-medium text-neutral-600'>
-                  {runwayDays !== null && runwayDays < 3 ? (
-                    <TrendingDown
-                      className='size-3.5 shrink-0'
-                      aria-hidden='true'
-                    />
-                  ) : (
-                    <ShieldCheck
-                      className='size-3.5 shrink-0'
-                      aria-hidden='true'
-                    />
-                  )}
-                  <span className='truncate'>{t('Runway')}</span>
-                </div>
-                <div
-                  className={cn(
-                    'mt-2 truncate text-sm font-semibold text-black tabular-nums',
-                    healthLevel === 'critical' && 'text-black',
-                    healthLevel === 'caution' && 'text-black'
-                  )}
-                >
-                  {runwayDisplay}
-                </div>
-              </div>
             </div>
-          </div>
+          )}
         </aside>
       </div>
     </section>

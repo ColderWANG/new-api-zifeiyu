@@ -72,6 +72,7 @@ import {
   type AdminPermissionMatrix,
 } from '@/lib/admin-permissions'
 import { getCurrencyDisplay, getCurrencyLabel } from '@/lib/currency'
+import type { DailyQuota } from '@/lib/daily-quota'
 import { formatQuota, parseQuotaFromDollars } from '@/lib/format'
 import { handleServerError } from '@/lib/handle-server-error'
 import { accountPasswordSchema } from '@/lib/password-policy'
@@ -96,6 +97,7 @@ import {
   transformUserToFormDefaults,
 } from '../lib'
 import type { User } from '../types'
+import { DailyQuotaFields } from './daily-quota-fields'
 import { UserQuotaDialog } from './user-quota-dialog'
 import { useUsers } from './users-provider'
 
@@ -116,6 +118,9 @@ export function UsersMutateDrawer({
   const currentUser = useAuthStore((s) => s.auth.user)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [quotaDialogOpen, setQuotaDialogOpen] = useState(false)
+  const [dailyQuota, setDailyQuota] = useState<DailyQuota | null | undefined>(
+    currentRow?.daily_quota
+  )
   // Matrix as loaded from the server; an unchanged matrix is not resubmitted so
   // routine edits of an administrator do not require step-up verification.
   const loadedPermissions = useRef<AdminPermissionMatrix | undefined>(undefined)
@@ -148,6 +153,7 @@ export function UsersMutateDrawer({
       getUser(currentRow.id)
         .then((result) => {
           if (result.success && result.data) {
+            setDailyQuota(result.data.daily_quota)
             loadedPermissions.current = result.data.admin_permissions
             form.reset(transformUserToFormDefaults(result.data))
           } else {
@@ -157,6 +163,7 @@ export function UsersMutateDrawer({
         .catch((error) => handleServerError(error, t('Failed to load')))
     } else if (open && !isUpdate) {
       // For create, reset to defaults
+      setDailyQuota(null)
       form.reset(USER_FORM_DEFAULT_VALUES)
     }
   }, [open, isUpdate, currentRow, form, t])
@@ -167,6 +174,7 @@ export function UsersMutateDrawer({
 
   const currentQuotaRaw = form.watch('quota_dollars') || 0
   const selectedRole = form.watch('role')
+  const selectedGroup = form.watch('group')
   const canEditAdminPermissions = currentUser?.role === ROLE.SUPER_ADMIN
   const targetIsAdmin = (selectedRole ?? currentRow?.role ?? 0) >= ROLE.ADMIN
 
@@ -188,6 +196,12 @@ export function UsersMutateDrawer({
         currentRow?.id,
         permissionCatalog
       )
+      if (
+        isUpdate &&
+        !form.getFieldState('daily_quota_override_dollars').isDirty
+      ) {
+        delete payload.daily_quota_override
+      }
       if (
         isUpdate &&
         payload.admin_permissions &&
@@ -263,6 +277,7 @@ export function UsersMutateDrawer({
     try {
       const result = requireServerSuccess(await getUser(currentRow.id))
       if (result.success && result.data) {
+        setDailyQuota(result.data.daily_quota)
         loadedPermissions.current = result.data.admin_permissions
         form.reset(transformUserToFormDefaults(result.data))
       }
@@ -409,6 +424,46 @@ export function UsersMutateDrawer({
                   )}
                 />
               </SideDrawerSection>
+
+              {!isUpdate && (
+                <SideDrawerSection>
+                  <FormField
+                    control={form.control}
+                    name='group'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Group')}</FormLabel>
+                        <FormControl>
+                          <Combobox
+                            options={groups.map((group) => ({
+                              value: group,
+                              label: group,
+                            }))}
+                            onValueChange={field.onChange}
+                            value={field.value}
+                            className='w-full'
+                            placeholder={t('Select a group')}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </SideDrawerSection>
+              )}
+              {selectedGroup === 'workmate' && (
+                <SideDrawerSection>
+                  <h3 className='text-sm font-medium'>
+                    {t('Workmate daily wallet')}
+                  </h3>
+                  <DailyQuotaFields
+                    form={form}
+                    current={dailyQuota}
+                    joining={currentRow?.group !== 'workmate'}
+                    disabled={isSubmitting}
+                  />
+                </SideDrawerSection>
+              )}
 
               {/* Group & Quota Settings (Update only) */}
               {isUpdate && (

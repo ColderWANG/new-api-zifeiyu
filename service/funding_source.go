@@ -4,7 +4,9 @@ import (
 	"errors"
 	"time"
 
+	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/model"
+	relaycommon "github.com/QuantumNous/new-api/relay/common"
 )
 
 // ---------------------------------------------------------------------------
@@ -33,13 +35,47 @@ type FundingSource interface {
 var ErrInsufficientWalletQuota = errors.New("wallet quota insufficient")
 
 type WalletFunding struct {
-	userId   int
-	consumed int // 实际预扣的用户额度
+	userId    int
+	consumed  int // 实际预扣的用户额度
+	periodID  int64
+	requestID string
+	relayInfo *relaycommon.RelayInfo
+}
+
+// bindDailyWalletRequest freezes the canonical user's request day before any funds move.
+func bindDailyWalletRequest(info *relaycommon.RelayInfo) error {
+	if info.DailyWalletPeriodID > 0 {
+		return nil
+	}
+	snapshot, err := model.EnsureDailyWalletAt(info.UserId, info.StartTime)
+	if err != nil {
+		return err
+	}
+	if snapshot == nil {
+		return nil
+	}
+	info.UserQuota = snapshot.Balance
+	info.DailyWalletPeriodID = snapshot.PeriodID
+	info.DailyWalletRequestID = info.RequestId
+	if info.DailyWalletRequestID == "" {
+		info.DailyWalletRequestID = common.NewRequestId()
+	}
+	return nil
 }
 
 func (w *WalletFunding) Source() string { return BillingSourceWallet }
 
 func (w *WalletFunding) PreConsume(amount int) error {
+	if w.periodID > 0 {
+		if err := model.ReserveDailyWalletRequest(w.userId, w.requestID, w.periodID, w.consumed+amount, true); err != nil {
+			if errors.Is(err, model.ErrDailyWalletInsufficient) {
+				return ErrInsufficientWalletQuota
+			}
+			return err
+		}
+		w.consumed += amount
+		return nil
+	}
 	if amount <= 0 {
 		return nil
 	}
@@ -55,6 +91,14 @@ func (w *WalletFunding) PreConsume(amount int) error {
 }
 
 func (w *WalletFunding) Settle(delta int) error {
+	if w.periodID > 0 {
+		actual := w.consumed + delta
+		if w.relayInfo != nil && w.relayInfo.DailyWalletPending {
+			return model.ReserveDailyWalletRequest(w.userId, w.requestID, w.periodID, actual, false)
+		}
+		_, err := model.SettleDailyWalletRequest(w.userId, w.requestID, w.periodID, actual)
+		return err
+	}
 	if delta == 0 {
 		return nil
 	}
@@ -65,6 +109,12 @@ func (w *WalletFunding) Settle(delta int) error {
 }
 
 func (w *WalletFunding) Refund() error {
+	if w.periodID > 0 {
+		return refundWithRetry(func() error {
+			_, err := model.AdjustDailyWalletRequest(w.userId, w.requestID, w.periodID, w.consumed, 0, true)
+			return err
+		})
+	}
 	if w.consumed <= 0 {
 		return nil
 	}

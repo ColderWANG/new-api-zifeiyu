@@ -146,7 +146,10 @@ func PreWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, usag
 		return fmt.Errorf("token quota is not enough, token remain quota: %s, need quota: %s", logger.FormatQuota(token.RemainQuota), logger.FormatQuota(quota))
 	}
 
+	wasPending := relayInfo.DailyWalletPending
+	relayInfo.DailyWalletPending = true
 	err = PostConsumeQuota(relayInfo, quota, 0, false)
+	relayInfo.DailyWalletPending = wasPending
 	if err != nil {
 		return err
 	}
@@ -426,6 +429,7 @@ func PreConsumeTokenQuota(relayInfo *relaycommon.RelayInfo, quota int) error {
 }
 
 type postConsumeQuotaResult struct {
+	AlreadyApplied bool
 	FundingApplied bool
 	TokenApplied   bool
 }
@@ -437,8 +441,39 @@ func PostConsumeQuota(relayInfo *relaycommon.RelayInfo, quota int, preConsumedQu
 
 func postConsumeQuotaWithResult(relayInfo *relaycommon.RelayInfo, quota int, preConsumedQuota int, sendEmail bool) (result postConsumeQuotaResult, err error) {
 
-	// 1) Consume from wallet quota OR subscription item
-	if relayInfo != nil && relayInfo.BillingSource == BillingSourceSubscription {
+	if relayInfo == nil {
+		return result, errors.New("relay info is missing")
+	}
+	if err := bindDailyWalletRequest(relayInfo); err != nil {
+		return result, err
+	}
+	if relayInfo.DailyWalletPeriodID > 0 {
+		relayInfo.BillingSource = BillingSourceWallet
+		if relayInfo.DailyWalletPending {
+			target := relayInfo.DailyWalletReservedQuota + quota
+			var applied bool
+			applied, err = model.ReserveDailyWalletRequestWithResult(relayInfo.UserId, relayInfo.DailyWalletRequestID, relayInfo.DailyWalletPeriodID, target, false)
+			if err == nil {
+				relayInfo.DailyWalletReservedQuota = target
+				if !applied {
+					result.AlreadyApplied = true
+					result.FundingApplied = true
+					return result, nil
+				}
+			}
+		} else {
+			var applied bool
+			applied, err = model.SettleDailyWalletRequest(relayInfo.UserId, relayInfo.DailyWalletRequestID, relayInfo.DailyWalletPeriodID, preConsumedQuota+quota)
+			if err == nil && !applied {
+				result.AlreadyApplied = true
+				result.FundingApplied = true
+				return result, nil
+			}
+		}
+		if err != nil {
+			return result, err
+		}
+	} else if relayInfo.BillingSource == BillingSourceSubscription {
 		if relayInfo.SubscriptionId == 0 {
 			return result, errors.New("subscription id is missing")
 		}

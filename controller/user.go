@@ -343,6 +343,12 @@ func GetAllUsers(c *gin.Context) {
 		common.ApiError(c, err)
 		return
 	}
+	for _, user := range users {
+		if err := model.AttachDailyQuota(user); err != nil {
+			common.ApiError(c, err)
+			return
+		}
+	}
 
 	pageInfo.SetTotal(int(total))
 	pageInfo.SetItems(users)
@@ -373,6 +379,12 @@ func SearchUsers(c *gin.Context) {
 		common.ApiError(c, err)
 		return
 	}
+	for _, user := range users {
+		if err := model.AttachDailyQuota(user); err != nil {
+			common.ApiError(c, err)
+			return
+		}
+	}
 
 	pageInfo.SetTotal(int(total))
 	pageInfo.SetItems(users)
@@ -398,6 +410,10 @@ func GetUser(c *gin.Context) {
 	myRole := c.GetInt("role")
 	if !canManageTargetRole(myRole, user.Role) {
 		common.ApiErrorT(c, "No permission to access users of same or higher level")
+		return
+	}
+	if err := model.AttachDailyQuota(user); err != nil {
+		common.ApiError(c, err)
 		return
 	}
 	user.AdminPermissions = authz.Capabilities(user.Id, user.Role)
@@ -472,6 +488,10 @@ func GetSelf(c *gin.Context) {
 		common.ApiError(c, err)
 		return
 	}
+	if err := model.AttachDailyQuota(user); err != nil {
+		common.ApiError(c, err)
+		return
+	}
 	responseData := buildSelfUserData(user)
 	// The authenticated role is loaded from GetUserCache. It should equal the
 	// row role, but use it for capabilities so GetSelf and login/refresh remain
@@ -495,7 +515,7 @@ func buildSelfUserData(user *model.User) map[string]any {
 	userSetting := user.GetSetting()
 	permissions := calculateUserPermissions(user.Role)
 	permissions["admin_permissions"] = authz.Capabilities(user.Id, user.Role)
-	return map[string]any{
+	data := map[string]any{
 		"id":                user.Id,
 		"username":          user.Username,
 		"display_name":      user.DisplayName,
@@ -523,6 +543,10 @@ func buildSelfUserData(user *model.User) map[string]any {
 		"sidebar_modules":   userSetting.SidebarModules, // 正确提取sidebar_modules字段
 		"permissions":       permissions,
 	}
+	if user.DailyQuota != nil {
+		data["daily_quota"] = user.DailyQuota
+	}
+	return data
 }
 
 // 计算用户权限的辅助函数
@@ -705,7 +729,11 @@ func UpdateUser(c *gin.Context) {
 		authzTouched = touched
 		return err
 	}); err != nil {
-		common.ApiError(c, err)
+		if errors.Is(err, model.ErrInvalidDailyQuota) {
+			common.ApiErrorT(c, "Invalid parameters")
+		} else {
+			common.ApiError(c, err)
+		}
 		return
 	}
 	if authzTouched {
@@ -781,6 +809,10 @@ func AdminClearUserBinding(c *gin.Context) {
 func UpdateSelf(c *gin.Context) {
 	var requestData map[string]any
 	if err := common.DecodeJson(c.Request.Body, &requestData); err != nil {
+		common.ApiErrorT(c, "Invalid parameters")
+		return
+	}
+	if _, exists := requestData["daily_quota_override"]; exists {
 		common.ApiErrorT(c, "Invalid parameters")
 		return
 	}
@@ -1031,10 +1063,12 @@ func CreateUser(c *gin.Context) {
 	}
 	// Even for admin users, we cannot fully trust them!
 	cleanUser := model.User{
-		Username:    user.Username,
-		Password:    user.Password,
-		DisplayName: user.DisplayName,
-		Role:        user.Role, // 保持管理员设置的角色
+		Username:                user.Username,
+		Password:                user.Password,
+		DisplayName:             user.DisplayName,
+		Role:                    user.Role, // 保持管理员设置的角色
+		Group:                   user.Group,
+		DailyQuotaOverrideInput: user.DailyQuotaOverrideInput,
 	}
 	authzTouched := false
 	if err := model.DB.Transaction(func(tx *gorm.DB) error {
@@ -1045,7 +1079,11 @@ func CreateUser(c *gin.Context) {
 		authzTouched = touched
 		return err
 	}); err != nil {
-		common.ApiError(c, err)
+		if errors.Is(err, model.ErrInvalidDailyQuota) {
+			common.ApiErrorT(c, "Invalid parameters")
+		} else {
+			common.ApiError(c, err)
+		}
 		return
 	}
 	if authzTouched {

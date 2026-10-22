@@ -205,7 +205,7 @@ func runMidjourneyTaskUpdateOnce(ctx context.Context, report func(processed, tot
 			if (task.Progress != "100%" && responseItem.FailReason != "") || (task.Progress == "100%" && task.Status == "FAILURE") {
 				logger.LogInfo(ctx, common.LogText("%s failed: %s", task.MjId, task.FailReason))
 				task.Progress = "100%"
-				if task.Quota != 0 {
+				if task.Quota != 0 || task.DailyWalletPeriodID > 0 {
 					shouldReturnQuota = true
 				}
 			}
@@ -214,6 +214,8 @@ func runMidjourneyTaskUpdateOnce(ctx context.Context, report func(processed, tot
 				logger.LogError(ctx, common.LogText("UpdateMidjourneyTask task error: %s", err.Error()))
 			} else if won && shouldReturnQuota {
 				service.RefundMidjourneyQuota(ctx, task, "Composition failed")
+			} else if won && task.Status == "SUCCESS" {
+				service.FinalizeMidjourneyTaskBilling(ctx, task)
 			}
 		}
 	}
