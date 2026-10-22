@@ -32,11 +32,20 @@ func parseCodexOAuthKey(raw string) (*CodexOAuthKey, error) {
 	if strings.TrimSpace(raw) == "" {
 		return nil, errors.New("codex channel: empty oauth key")
 	}
-	var key CodexOAuthKey
+	var key struct {
+		CodexOAuthKey
+		Tokens *CodexOAuthKey `json:"tokens"`
+	}
 	if err := common.Unmarshal([]byte(raw), &key); err != nil {
 		return nil, errors.New("codex channel: invalid oauth key json")
 	}
-	return &key, nil
+	if key.Tokens != nil {
+		if key.Tokens.LastRefresh == "" {
+			key.Tokens.LastRefresh = key.LastRefresh
+		}
+		return key.Tokens, nil
+	}
+	return &key.CodexOAuthKey, nil
 }
 
 func RefreshCodexChannelCredential(ctx context.Context, channelID int, opts CodexCredentialRefreshOptions) (*CodexOAuthKey, *model.Channel, error) {

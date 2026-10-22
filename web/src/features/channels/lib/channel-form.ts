@@ -165,12 +165,14 @@ function isCodexCredential(value: string | undefined): boolean {
   try {
     const parsed = parseOptionalJson(value)
     if (parsed === undefined) return true
+    if (!isJsonObjectValue(parsed)) return false
+    const credential = 'tokens' in parsed ? parsed.tokens : parsed
     return (
-      isJsonObjectValue(parsed) &&
-      typeof parsed.access_token === 'string' &&
-      parsed.access_token.trim().length > 0 &&
-      typeof parsed.account_id === 'string' &&
-      parsed.account_id.trim().length > 0
+      isJsonObjectValue(credential) &&
+      typeof credential.access_token === 'string' &&
+      credential.access_token.trim().length > 0 &&
+      typeof credential.account_id === 'string' &&
+      credential.account_id.trim().length > 0
     )
   } catch {
     return false
