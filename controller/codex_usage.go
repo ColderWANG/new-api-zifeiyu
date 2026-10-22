@@ -23,6 +23,7 @@ func GetCodexChannelUsage(c *gin.Context) {
 		service.FetchCodexWhamUsage,
 		common.LogText("failed to fetch codex usage"),
 		"Failed to fetch usage. Please try again later",
+		true,
 	)
 }
 
@@ -32,6 +33,7 @@ func GetCodexChannelRateLimitResetCredits(c *gin.Context) {
 		service.FetchCodexWhamRateLimitResetCredits,
 		common.LogText("failed to fetch codex reset credits"),
 		"Failed to fetch reset credit details. Please try again later",
+		false,
 	)
 }
 
@@ -41,6 +43,7 @@ func ResetCodexChannelUsage(c *gin.Context) {
 		service.ConsumeCodexWhamRateLimitResetCredit,
 		common.LogText("failed to reset codex usage"),
 		"Failed to reset usage. Please try again later",
+		false,
 	)
 }
 
@@ -57,6 +60,7 @@ func fetchCodexChannelWhamData(
 	fetch codexWhamFetchFunc,
 	logPrefix string,
 	userMessage string,
+	includeEstimate bool,
 ) {
 	channelId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -162,5 +166,39 @@ func fetchCodexChannelWhamData(
 	if !ok {
 		resp["message"] = fmt.Sprintf("upstream status: %d", statusCode)
 	}
+	if includeEstimate && ok {
+		resp["weekly_usd_estimate"] = codexWeeklyEstimate(ch.Id, accountID, body)
+	}
 	c.JSON(http.StatusOK, resp)
+}
+
+type codexUsageWindow struct {
+	UsedPercent        *float64 `json:"used_percent"`
+	ResetAt            int64    `json:"reset_at"`
+	LimitWindowSeconds int64    `json:"limit_window_seconds"`
+}
+
+func codexWeeklyEstimate(channelID int, accountID string, body []byte) model.CodexWeeklyUSDEstimate {
+	result := model.CodexWeeklyUSDEstimate{Status: "unavailable"}
+	var usage struct {
+		RateLimit struct {
+			PrimaryWindow   *codexUsageWindow `json:"primary_window"`
+			SecondaryWindow *codexUsageWindow `json:"secondary_window"`
+		} `json:"rate_limit"`
+	}
+	if err := common.Unmarshal(body, &usage); err != nil {
+		return result
+	}
+	for _, window := range []*codexUsageWindow{usage.RateLimit.PrimaryWindow, usage.RateLimit.SecondaryWindow} {
+		if window == nil || window.UsedPercent == nil || window.LimitWindowSeconds < 5*24*60*60 || window.LimitWindowSeconds > 9*24*60*60 {
+			continue
+		}
+		estimate, err := model.ObserveCodexWeeklyUsage(channelID, accountID, window.ResetAt, window.LimitWindowSeconds, *window.UsedPercent, time.Now())
+		if err != nil {
+			common.SysError(common.LogText("failed to estimate codex weekly usage: %s", err.Error()))
+			return result
+		}
+		return estimate
+	}
+	return result
 }

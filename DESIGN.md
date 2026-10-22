@@ -80,3 +80,8 @@
 
 ## Open questions
 - [x] Chromium verified the API-backed group editor, user override drawer, and Workmate dashboard at 1440×1000 and 390×844 on 2026-10-20. Reviewed screenshots retain the neutral palette and readable wrapped amounts; no horizontal page overflow or browser page errors. No design-critical product choice remains unresolved.
+
+## Codex channel weekly estimate
+- The existing channel account-and-usage dialog shows a compact estimate card immediately below the base rate-limit windows. Amounts use explicit USD formatting regardless of the site's display currency.
+- First query, too-small changes, and unavailable billing data have distinct explanations. A numerical estimate appears only after meaningful observations in the same upstream weekly window.
+- The card shows estimated total and remaining USD equivalents alongside the observed channel spend and upstream percentage change. Copy explicitly says the result is an estimate: other account activity, model mix, and local prices can change it. The card never presents the number as an official subscription limit.

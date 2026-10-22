@@ -74,6 +74,7 @@ import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
+import { toIntlLocale } from '@/i18n/languages'
 import dayjs from '@/lib/dayjs'
 import { formatDateTimeStr, formatTimestampToDate } from '@/lib/format'
 import { createServerError, getServerMessage } from '@/lib/server-error-message'
@@ -151,6 +152,19 @@ export type CodexUsageDialogData = {
   message?: string
   upstream_status?: number
   data?: Record<string, unknown>
+  weekly_usd_estimate?: {
+    status:
+      | 'available'
+      | 'insufficient_samples'
+      | 'insufficient_change'
+      | 'unavailable'
+    estimated_limit_usd: number | null
+    estimated_remaining_usd: number | null
+    observed_spend_usd: number | null
+    observed_percent_points: number | null
+    current_window_spend_usd: number | null
+    sample_count: number
+  }
 }
 
 type CodexUsageDialogProps = {
@@ -538,6 +552,94 @@ function RateLimitWindowGrid(props: {
       />
       <RateLimitWindow title={t('Weekly Window')} window={props.weeklyWindow} />
     </div>
+  )
+}
+
+function WeeklyUSDEstimate(props: {
+  estimate: CodexUsageDialogData['weekly_usd_estimate']
+}) {
+  const { t, i18n } = useTranslation()
+  const estimate = props.estimate
+  const locale = toIntlLocale(i18n.resolvedLanguage || i18n.language)
+  const formatUSD = (value: number | null | undefined) =>
+    value == null || !Number.isFinite(value)
+      ? '-'
+      : new Intl.NumberFormat(locale, {
+          style: 'currency',
+          currency: 'USD',
+          maximumFractionDigits: 2,
+        }).format(value)
+
+  let statusText = t(
+    'Weekly usage or channel billing records are unavailable for estimation.'
+  )
+  if (estimate?.status === 'insufficient_samples') {
+    statusText = t(
+      'Query again after channel usage to collect a second weekly sample.'
+    )
+  } else if (estimate?.status === 'insufficient_change') {
+    statusText = t(
+      'The observed change is too small. Refresh after more channel usage.'
+    )
+  }
+
+  return (
+    <Card size='sm' className='gap-0 border-dashed py-0'>
+      <CardHeader className='p-4 pb-2'>
+        <CardTitle className='text-sm font-semibold'>
+          {t('Estimated weekly USD limit')}
+        </CardTitle>
+        <CardDescription className='text-xs'>
+          {t(
+            'Based on the change in this channel’s billed USD and upstream weekly usage percentage.'
+          )}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className='space-y-3 p-4 pt-0'>
+        {estimate?.current_window_spend_usd != null ? (
+          <p className='text-sm'>
+            {t('Channel billed this week')}:{' '}
+            <span className='font-mono tabular-nums'>
+              {formatUSD(estimate.current_window_spend_usd)}
+            </span>
+          </p>
+        ) : null}
+        {estimate?.status === 'available' ? (
+          <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
+            <div>
+              <p className='text-muted-foreground text-xs'>
+                {t('Estimated weekly limit')}
+              </p>
+              <p className='mt-1 font-mono text-xl font-semibold tabular-nums'>
+                {formatUSD(estimate.estimated_limit_usd)}
+              </p>
+            </div>
+            <div>
+              <p className='text-muted-foreground text-xs'>
+                {t('Estimated remaining')}
+              </p>
+              <p className='mt-1 font-mono text-xl font-semibold tabular-nums'>
+                {formatUSD(estimate.estimated_remaining_usd)}
+              </p>
+            </div>
+            <p className='text-muted-foreground text-xs sm:col-span-2'>
+              {t('Observed channel spend')}:{' '}
+              {formatUSD(estimate.observed_spend_usd)}
+              {' · '}
+              {t('Upstream usage increase')}:{' '}
+              {estimate.observed_percent_points?.toFixed(1)}%
+            </p>
+          </div>
+        ) : (
+          <p className='text-muted-foreground text-xs'>{statusText}</p>
+        )}
+        <p className='text-muted-foreground border-t pt-3 text-xs leading-relaxed'>
+          {t(
+            'Estimate only. Other activity on the same account, model mix, and local prices can change the result; this is not an official dollar limit.'
+          )}
+        </p>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -1244,6 +1346,7 @@ export function CodexUsageDialog({
             fiveHourWindow={fiveHourWindow}
             weeklyWindow={weeklyWindow}
           />
+          <WeeklyUSDEstimate estimate={response?.weekly_usd_estimate} />
         </div>
 
         {additionalRateLimits.length > 0 ? (

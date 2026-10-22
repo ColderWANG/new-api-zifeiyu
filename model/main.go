@@ -344,6 +344,7 @@ func migrateDB() error {
 
 	err := DB.AutoMigrate(
 		&Channel{},
+		&CodexWeeklyEstimateObservation{},
 		&Token{},
 		&User{},
 		&UserSession{},
