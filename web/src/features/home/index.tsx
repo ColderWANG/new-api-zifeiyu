@@ -27,6 +27,7 @@ import { useAuthStore } from '@/stores/auth-store'
 import { CTA, Features, Hero } from './components'
 
 import './monochrome.css'
+import { BowDecorations } from './components/bow-decorations'
 import { useHomePageContent } from './hooks'
 
 export function Home() {
@@ -118,11 +119,15 @@ export function Home() {
 
   return (
     <PublicLayout showMainContainer={false}>
-      {/* Minimalist Monochrome editorial shell */}
-      <main className='mm mm-lines mm-noise relative flex min-h-svh flex-col overflow-hidden bg-white text-black'>
+      <main className='mm mm-lines mm-noise bg-background text-foreground relative flex min-h-svh flex-col overflow-hidden'>
+        <div
+          aria-hidden
+          className='pointer-events-none absolute inset-0 bg-gradient-to-br from-pink-100/70 via-pink-50/30 to-rose-100/50'
+        />
+        <BowDecorations />
         <div aria-hidden className='pointer-events-none absolute inset-0'>
-          <div className='absolute inset-y-0 left-8 hidden w-px bg-black/10 lg:block' />
-          <div className='absolute inset-y-0 right-8 hidden w-px bg-black/10 lg:block' />
+          <div className='bg-primary/10 absolute inset-y-0 left-8 hidden w-px lg:block' />
+          <div className='bg-primary/10 absolute inset-y-0 right-8 hidden w-px lg:block' />
         </div>
         <Hero isAuthenticated={isAuthenticated} />
         <hr className='mm-rule relative z-10 mx-6 md:mx-10' />

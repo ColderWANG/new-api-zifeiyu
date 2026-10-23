@@ -33,7 +33,7 @@ export function Hero(props: HeroProps) {
   return (
     <section className='relative z-10 border-b-4 border-black px-5 py-16 sm:px-8 md:py-24 lg:py-32'>
       <div className='mx-auto max-w-6xl'>
-        <div className='grid gap-10 sm:gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,44rem)] lg:gap-16'>
+        <div className='grid gap-10 sm:gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:gap-16'>
           <div className='min-w-0'>
             <div className='mb-8 flex items-center gap-3 sm:mb-10 sm:gap-4'>
               <span className='size-3 border-2 border-black' aria-hidden />
@@ -42,7 +42,7 @@ export function Hero(props: HeroProps) {
               <span className='mm-label'>{t('Docs')}</span>
             </div>
 
-            <h1 className='mm-display text-[clamp(3.2rem,13vw,10rem)] uppercase'>
+            <h1 className='mm-display text-[clamp(3.2rem,6vw,5.5rem)] uppercase'>
               {t('API')}
               <br />
               {t('Gateway')}
